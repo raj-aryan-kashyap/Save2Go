@@ -211,7 +211,7 @@
                 <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="fixed bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden space-y-3 pointer-events-auto">
+            <div id="mapDetailTrayHUD" class="fixed bottom-[92px] left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden space-y-3 pointer-events-auto">
                 <div class="flex justify-between items-start gap-2">
                     <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -274,10 +274,10 @@
 
     <div class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/80 px-6 py-4 flex justify-around items-center shrink-0 z-[490] rounded-t-2xl shadow-2xl">
         <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="flex flex-col items-center gap-1 text-pink-500">
-            <span class="text-xl">🗺️</span><span class="text-[10px] font-bold tracking-wide">Map Canvas</span>
+            <span class="text-xl">🗺️</span><span class="text-[10px] font-bold tracking-wide">Map</span>
         </button>
         <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="flex flex-col items-center gap-1 text-slate-500">
-            <span class="text-xl">🗂️</span><span class="text-[10px] font-bold tracking-wide">Vault List</span>
+            <span class="text-xl">🗂️</span><span class="text-[10px] font-bold tracking-wide">Saved Spot</span>
         </button>
         <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="flex flex-col items-center gap-1 text-slate-500">
             <span class="text-xl">⏳</span><span class="text-[10px] font-bold tracking-wide">Itinerary</span>
@@ -328,7 +328,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.4.2";
+        const APP_VERSION = "v1.4.3";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -339,7 +339,6 @@
         let showStarredOnly = JSON.parse(localStorage.getItem('compass_starred_only')) || false;
         let hideCompletedSpotsStateBool = localStorage.getItem('compass_hide_completed') !== null ? JSON.parse(localStorage.getItem('compass_hide_completed')) : true;
         
-        // Anti-race condition locks container
         let operationalStateLocksRegistry = new Set();
 
         let userLat = 48.8566; let userLon = 2.3522;
@@ -611,6 +610,7 @@
 
         function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
 
+        // Live telemetry connection intercept mapping layers
         function setupNetworkListeners() {
             window.addEventListener('online', updateNetworkStatusHUD);
             window.addEventListener('offline', updateNetworkStatusHUD);
@@ -901,7 +901,6 @@
             
             const processed = getFilteredDatasetRows();
             
-            // UPDATED: Dynamically updates the Showing X / Y indicator text
             if (counterHUD) {
                 counterHUD.innerText = `Showing ${processed.length} / ${travelSpots.length} Spots`;
             }
@@ -947,10 +946,9 @@
             });
         }
 
-        // IMPROVED: State protection layer stops asynchronous data overwrites on rapid interactions
         async function updateCloudAction(rowId, action, value, spotName) {
             const lockKey = `${rowId}_${action}`;
-            if (operationalStateLocksRegistry.has(lockKey)) return; // Reject double-taps
+            if (operationalStateLocksRegistry.has(lockKey)) return; 
             operationalStateLocksRegistry.add(lockKey);
 
             const target = travelSpots.find(s => s.rowid === rowId);
@@ -964,7 +962,6 @@
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName, deviceMeta: cachedHardwareString })
                 });
-                // Delay background refresh slightly to let cloud storage write cycles settle completely
                 setTimeout(async () => {
                     await syncData(false);
                     operationalStateLocksRegistry.delete(lockKey);
