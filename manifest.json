@@ -1,0 +1,17 @@
+{
+  "name": "InstaCompass Shared Vault",
+  "short_name": "InstaCompass",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "description": "Collaborative, location-aware couples travel companion synced directly with Google Sheets.",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/fluent/512/compass.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
