@@ -21,6 +21,12 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
         
+        /* NEW: Subtle Scrollbar Styling for Dropdowns */
+        .subtle-scrollbar::-webkit-scrollbar { width: 4px; }
+        .subtle-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.3); border-radius: 10px; }
+        .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+        .subtle-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
         .view-panel {
             position: absolute;
             top: 0;
@@ -83,7 +89,7 @@
         <div class="max-w-md mx-auto relative w-full h-0">
             
             <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
-                <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto no-scrollbar flex-1 max-h-64 pb-1">
+                <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1">
                     </div>
                 <div class="pt-2 mt-1.5 border-t border-slate-800 bg-slate-900 text-center shrink-0">
                     <button onclick="clearAllSelectedCityCheckboxes()" class="text-[10px] font-bold text-pink-400 active:text-pink-300 transition-colors">Clear Filter</button>
@@ -91,7 +97,7 @@
             </div>
 
             <div id="filterCategoryDropdownPopupBox" class="absolute right-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
-                <div class="overflow-y-auto no-scrollbar flex-1 max-h-64 pb-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer">
+                <div class="overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer">
                     </div>
                 <div class="sticky bottom-0 bg-slate-900 pt-2 border-t border-slate-800 shrink-0 space-y-2 text-center" id="stickyDropdownFreezePanel">
                     <div id="hideCompletedTargetRowContainer"></div>
@@ -243,7 +249,7 @@
         <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
             <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
-                    <span class="animate-pulse">⬇| Pull to check database streams...</span>
+                    <span class="animate-pulse">⬇️ Pull to check database streams...</span>
                 </div>
                 <div id="spots-list" class="p-4 space-y-3 pb-32"></div>
             </div>
@@ -314,7 +320,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.3.8";
+        const APP_VERSION = "v1.3.9";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -607,9 +613,14 @@
             renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
-        // Programmatically updates dynamic active popup containers if open during filters updates
+        // IMPROVED: Visually unchecks all filter elements when pressed
         function clearAllFilterCheckboxes() {
-            checkedFilterStateArray = []; localStorage.setItem('compass_active_filters', JSON.stringify([]));
+            checkedFilterStateArray = []; 
+            localStorage.setItem('compass_active_filters', JSON.stringify([]));
+            
+            const checkboxes = document.getElementById('checkboxScrollRegionContainer').querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            
             updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
@@ -742,7 +753,6 @@
             mapMarkersLayerGroup.addLayer(leafMarker);
         }
 
-        // CRITICAL RE-FIX: Completely binds variable logic and functions to the Map View Preview Card Tray
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
@@ -770,7 +780,6 @@
             document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
             document.getElementById('trayActionBtn').href = spotObj.latitude ? `http://googleusercontent.com/maps.google.com/?q=${spotObj.latitude},${spotObj.longitude}` : "#";
 
-            // Restores Visibility Checks on Ticket Routing Rows
             const ticketRow = document.getElementById('trayTicketRow');
             const ticketBtn = document.getElementById('trayTicketBtn');
             if (ticketLink.trim() !== "") {
@@ -786,7 +795,6 @@
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
-            // Explicitly map interactive mutations safely onto the DOM instance nodes
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
             doneBtn.onclick = function() {
                 updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
@@ -808,7 +816,6 @@
             if (plusBtn) plusBtn.classList.remove('hidden');
         }
 
-        // CRITICAL RE-FIX: Fully reinstates links, action buttons, and visual state modifications inside Vault List Cards
         function renderList() {
             const container = document.getElementById('spots-list');
             if(!container) return; 
@@ -910,8 +917,14 @@
             updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
+        // IMPROVED: Visually unchecks all city elements when pressed
         function clearAllSelectedCityCheckboxes() {
-            checkedCitiesStateArray = []; localStorage.setItem('compass_active_cities', JSON.stringify([]));
+            checkedCitiesStateArray = []; 
+            localStorage.setItem('compass_active_cities', JSON.stringify([]));
+            
+            const checkboxes = document.getElementById('cityHUDChecklistContainer').querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            
             updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
