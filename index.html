@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>InstaCompass</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -21,7 +21,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
         
-        /* Fixed Viewport Hub Panel Overrides */
+        /* Viewport Transition Hub Overrides */
         .view-panel {
             position: absolute;
             top: 0;
@@ -99,7 +99,7 @@
     </div>
 
     <div id="settingsDrawer" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden transition-all duration-300 flex justify-end">
-        <div class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl">
+        <div class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl overflow-y-auto no-scrollbar pb-24">
             <div class="space-y-6">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                     <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">⚙️ Control Settings</h3>
@@ -134,7 +134,7 @@
                 </div>
             </div>
             
-            <div id="deviceMetaText" class="text-[9px] text-center text-slate-500 font-mono leading-tight space-y-0.5">
+            <div id="deviceMetaText" class="text-[9px] text-center text-slate-500 font-mono leading-tight space-y-0.5 pt-6">
                 <div id="meta-version" class="text-slate-500 text-[9px] font-bold">Version: Loading...</div>
                 <div id="meta-id">Device ID: Loading...</div>
                 <div id="meta-hardware" class="text-slate-600 text-[8px]">Specs: Detecting...</div>
@@ -223,19 +223,35 @@
         <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0"></div>
             
-            <div id="mapDetailTrayHUD" class="absolute bottom-20 left-4 right-4 bg-slate-900/95 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl shadow-2xl z-[450] hidden transform transition-all duration-200">
+            <div id="mapDetailTrayHUD" class="absolute bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[450] hidden transform transition-all duration-200 space-y-3">
                 <div class="flex justify-between items-start gap-2">
-                    <div class="space-y-1 max-w-[72%]">
+                    <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">City</span>
+                            <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">City • Category</span>
                             <span id="trayStarredBadge" class="hidden text-[9px] font-black tracking-wide text-amber-400">★ Starred</span>
+                            <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
                         </div>
-                        <h4 id="traySpotTitle" class="text-sm font-bold text-slate-100 truncate">Spot Name</h4>
-                        <p id="traySpotNotes" class="text-[11px] text-slate-400 line-clamp-2 leading-tight">Notes text...</p>
+                        <h3 id="traySpotTitle" class="text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]">Spot Name</h3>
                     </div>
-                    <div class="flex flex-col items-end gap-2 shrink-0">
-                        <button onclick="document.getElementById('mapDetailTrayHUD').classList.add('hidden')" class="text-slate-500 text-xs font-bold px-1.5 py-0.5">✕</button>
-                        <a id="trayActionBtn" href="#" target="_blank" class="px-3 py-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-[11px] font-bold rounded-xl shadow-lg">Open Reel</a>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span id="trayDistanceBadge" class="text-xs font-mono text-pink-400 font-bold bg-pink-500/10 px-2 py-1 rounded-lg">📍 0.0km</span>
+                        <button onclick="document.getElementById('mapDetailTrayHUD').classList.add('hidden')" class="w-6 h-6 bg-slate-950 border border-slate-800 text-slate-400 rounded-full flex items-center justify-center font-bold text-xs active:scale-90">✕</button>
+                    </div>
+                </div>
+                
+                <p id="traySpotNotes" class="text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-16 overflow-y-auto no-scrollbar">Notes context...</p>
+                
+                <div class="flex flex-col gap-2 pt-0.5">
+                    <div class="flex gap-2">
+                        <a id="trayOpenReelBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
+                        <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>
+                    </div>
+                    <div id="trayTicketRow" class="hidden">
+                        <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
+                    </div>
+                    <div class="flex gap-2 justify-end pt-1">
+                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">✓ Done</button>
+                        <button id="trayStarToggleBtn" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">★ Star</button>
                     </div>
                 </div>
             </div>
@@ -320,7 +336,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.2.0";
+        const APP_VERSION = "v1.2.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -880,7 +896,7 @@
             const count = checkedCitiesStateArray.length;
             if (count === 0) {
                 textNode.innerText = "All Cities";
-                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 flex items-center justify-center gap-1 truncate";
+                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-center gap-1 truncate";
             } else {
                 textNode.innerText = count === 1 ? checkedCitiesStateArray[0] : `Cities (${count})`;
                 btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl p-2.5 text-center text-xs font-black text-pink-400 flex items-center justify-center gap-1 truncate";
@@ -1051,20 +1067,56 @@
             });
         }
 
+        // FULL SPECIFICATION RE-ENGINEERED MAP DETAIL CARD BINDING HOOKS
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
+            const isDone = spotObj.status?.toLowerCase() === 'done';
+            const isBooked = spotObj.status?.toLowerCase() === 'booked';
+            const ticketLink = spotObj.ticket_url || "";
+
+            // Dynamic Text Nodes Mapping
             document.getElementById('traySpotTitle').innerText = spotObj.spot_name || "Unnamed Destination";
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
-            document.getElementById('traySpotNotes').innerText = spotObj.notes || "No custom vibe parameters assigned.";
-            
-            // FIXED REDIRECT ROUTE FOR TRAY ACTION CARD
-            document.getElementById('trayActionBtn').href = spotObj.latitude ? `https://www.google.com/maps/search/?api=1&query=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
-            document.getElementById('trayActionBtn').innerText = spotObj.latitude ? "Get Direction" : "Open Reel";
+            document.getElementById('traySpotNotes').innerText = spotObj.notes || "No custom notes assigned.";
+            document.getElementById('trayDistanceBadge').innerText = `📍 ${spotObj.distStr || 'Map View'}`;
 
+            // Core Navigation Anchor Triggers
+            document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
+            document.getElementById('trayActionBtn').href = spotObj.latitude ? `http://googleusercontent.com/maps.google.com/?q=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
+
+            // Booked Tag and Ticket URLs visibility conditions
+            const bookedBadge = document.getElementById('trayBookedBadge');
+            const ticketRow = document.getElementById('trayTicketRow');
+            const ticketBtn = document.getElementById('trayTicketBtn');
+
+            if (isBooked) bookedBadge.classList.remove('hidden'); else bookedBadge.classList.add('hidden');
+            if (ticketLink !== "") {
+                ticketRow.classList.remove('hidden');
+                ticketBtn.href = ticketLink;
+            } else {
+                ticketRow.classList.add('hidden');
+            }
+
+            // Starred Badge visibility conditions
             const starredBadge = document.getElementById('trayStarredBadge');
-            if(isStarredBool) starredBadge.classList.remove('hidden');
-            else starredBadge.classList.add('hidden');
-            
+            if (isStarredBool) starredBadge.classList.remove('hidden'); else starredBadge.classList.add('hidden');
+
+            // Interactive Cloud Mutation Controls 
+            const doneBtn = document.getElementById('trayDoneToggleBtn');
+            const starBtn = document.getElementById('trayStarToggleBtn');
+
+            doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
+            doneBtn.onclick = () => {
+                updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
+                tray.classList.add('hidden');
+            };
+
+            starBtn.innerText = isStarredBool ? 'Unstar' : '★ Star';
+            starBtn.onclick = () => {
+                updateCloudAction(spotObj.rowid, 'toggle_priority', isStarredBool ? 'Normal' : 'Starred', spotObj.spot_name);
+                tray.classList.add('hidden');
+            };
+
             tray.classList.remove('hidden');
         }
 
@@ -1115,8 +1167,7 @@
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                            
-                            ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap">🗺️ Get Direction</a>` : ''}
+                            ${spot.latitude ? `<a href="http://googleusercontent.com/maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>` : ''}
                         </div>
                         ${ticketLink !== "" ? `
                             <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
