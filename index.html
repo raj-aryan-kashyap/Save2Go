@@ -1,326 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>InstaCompass</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link class="manifest-ref" rel="manifest" href="manifest.json">
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
-    <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-        
-        /* NEW: Subtle Scrollbar Styling for Dropdowns */
-        .subtle-scrollbar::-webkit-scrollbar { width: 4px; }
-        .subtle-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.3); border-radius: 10px; }
-        .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-        .subtle-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
-
-        .view-panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transform: scale(1);
-            pointer-events: none;
-            visibility: hidden;
-            transition: opacity 0.25s ease-in-out;
-        }
-        .view-panel.active-view {
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-        }
-
-        .custom-map-cube {
-            background: rgba(15, 23, 42, 0.95) !important;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            border-radius: 10px !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: 16px !important;
-            width: 36px !important;
-            height: 36px !important;
-        }
-        .starred-cube-border {
-            border: 2px solid rgba(245, 158, 11, 0.9) !important;
-            box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
-        }
-
-        .cluster-map-cube {
-            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
-            border: 2px solid rgba(255, 255, 255, 0.8) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.6) !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-weight: 900 !important;
-            color: #ffffff !important;
-            font-size: 12px !important;
-            width: 40px !important;
-            height: 40px !important;
-        }
-    </style>
-</head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col overflow-hidden selection:bg-pink-500/30 select-none">
-
-    <div id="dropdownBlurBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[500] hidden transition-all duration-300"></div>
-
-    <div class="fixed top-[112px] left-0 right-0 px-4 pointer-events-none z-[600]">
-        <div class="max-w-md mx-auto relative w-full h-0">
-            
-            <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
-                <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1">
-                    </div>
-                <div class="pt-2 mt-1.5 border-t border-slate-800 bg-slate-900 text-center shrink-0">
-                    <button onclick="clearAllSelectedCityCheckboxes()" class="text-[10px] font-bold text-pink-400 active:text-pink-300 transition-colors">Clear Filter</button>
-                </div>
-            </div>
-
-            <div id="filterCategoryDropdownPopupBox" class="absolute right-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
-                <div class="overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer">
-                    </div>
-                <div class="sticky bottom-0 bg-slate-900 pt-2 border-t border-slate-800 shrink-0 space-y-2 text-center" id="stickyDropdownFreezePanel">
-                    <div id="hideCompletedTargetRowContainer"></div>
-                    <button onclick="clearAllFilterCheckboxes()" class="text-[10px] font-bold text-pink-400 active:text-pink-300 transition-colors block mx-auto">Clear Filter</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="userModal" class="fixed inset-0 bg-slate-950 z-[9999] flex flex-col justify-center items-center p-6 hidden">
-        <div class="text-center w-full max-w-xs space-y-6">
-            <div class="text-6xl filter drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">🌍</div>
-            <div class="space-y-1">
-                <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">InstaCompass</h2>
-                <p class="text-xs text-slate-400 font-semibold tracking-wide">Who is holding the map right now?</p>
-            </div>
-            
-            <div class="space-y-3 pt-2 text-left">
-                <div id="loginDropdownContainer">
-                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none"></select>
-                </div>
-                <div id="loginDividerLine" class="relative flex items-center justify-center my-2">
-                    <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase">Or Register New</span>
-                    <hr class="w-full border-slate-900">
-                </div>
-                <div>
-                    <input type="text" id="customUsernameInput" placeholder="Type name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none">
-                </div>
-                <button onclick="handleInitialLoginSubmit()" id="beginSessionBtn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-center font-black py-3.5 rounded-xl text-white text-xs uppercase tracking-wider">
-                    Begin
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="settingsDrawer" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden flex justify-end">
-        <div class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl overflow-y-auto no-scrollbar pb-24">
-            <div class="space-y-6">
-                <div class="flex justify-between items-center pb-3 border-b border-slate-800">
-                    <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">⚙️ Control Settings</h3>
-                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
-                </div>
-                <div class="space-y-2">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Change My Profile Name</label>
-                    <input type="text" id="settingsRenameField" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-200 focus:outline-none">
-                    <button onclick="commitProfileRename()" class="w-full py-2 bg-slate-800 rounded-lg text-[11px] font-bold">Update Profile Label</button>
-                </div>
-                <hr class="border-slate-800">
-                <div id="settingsSwitchUserSection" class="space-y-2">
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none"></select>
-                    <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
-                </div>
-                <hr class="border-slate-800">
-                <div class="space-y-2">
-                    <button onclick="triggerSecureServerHistoryPurgeVault()" class="w-full py-2 bg-red-950/20 text-red-400 border border-red-900/40 text-[11px] font-bold rounded-lg">Purge Cloud Logs</button>
-                    <button onclick="clearDeviceSessionAndLogout()" class="w-full mt-2 py-2 bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-bold rounded-lg">Logout Session</button>
-                </div>
-            </div>
-            <div id="deviceMetaText" class="text-[9px] text-center text-slate-500 font-mono space-y-0.5">
-                <div id="meta-version" class="text-[9px] font-bold">Version: Loading...</div>
-                <div id="meta-id">Device ID: Loading...</div>
-                <div id="meta-hardware" class="text-[8px]">Specs: Detecting...</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-slate-900/70 backdrop-blur-xl border-b border-slate-800 p-4 shadow-2xl z-40 shrink-0 relative rounded-b-2xl">
-        <div class="flex justify-between items-center mb-3">
-            <div>
-                <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">📍 InstaCompass</h1>
-                <div class="flex items-center gap-2 mt-0.5">
-                    <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span id="syncText" class="text-[9px] font-mono text-slate-500">Cache Loading...</span>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button onclick="forceReRequestGPSHardware()" id="gpsBadgeButton" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400">
-                    <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="gpsBadgeText">GPS Active</span>
-                </button>
-                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs">🔄</button>
-                <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-xs">⚙️</button>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-12 gap-2 mt-1 items-center relative">
-            <div class="col-span-5 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden">
-                <button onclick="setPriorityFilterState(false)" id="toggleOptionShowAll" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10">Show All</button>
-                <button onclick="setPriorityFilterState(true)" id="toggleOptionStarred" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500">Starred</button>
-            </div>
-            <div class="col-span-4 relative">
-                <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 truncate shadow-inner">
-                    <span id="cityHUDTriggerText" class="truncate">All Cities</span><span>▼</span>
-                </button>
-            </div>
-            <div class="col-span-3 relative">
-                <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
-                    <span>Filters</span><span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="flex-1 relative w-full h-full overflow-hidden z-10">
-        
-        <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950">
-            <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0"></div>
-            
-            <div class="absolute bottom-[240px] right-4 z-[400] flex flex-col gap-2.5">
-                <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🔍</button>
-                <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
-            </div>
-            
-            <div id="mapDetailTrayHUD" class="fixed bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden space-y-3 pointer-events-auto">
-                <div class="flex justify-between items-start gap-2">
-                    <div>
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">Global</span>
-                            <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400">★ Starred</span>
-                            <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
-                        </div>
-                        <h3 id="traySpotTitle" class="text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]">Spot Name</h3>
-                    </div>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
-                        <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
-                    </div>
-                </div>
-                
-                <p id="traySpotNotes" class="text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-16 overflow-y-auto no-scrollbar">Notes context...</p>
-                
-                <div class="flex flex-col gap-2 pt-0.5">
-                    <div class="flex gap-2">
-                        <a id="trayOpenReelBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                        <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold">🗺️ Get Direction</a>
-                    </div>
-                    <div id="trayTicketRow" class="hidden">
-                        <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
-                    </div>
-                    
-                    <div class="flex gap-2 justify-end pt-2 border-t border-slate-800/60 mt-1">
-                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-1.5 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
-                        <button id="trayStarToggleBtn" class="text-xs px-3 py-1.5 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
-            <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full">
-                <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
-                    <span class="animate-pulse">⬇️ Pull to check database streams...</span>
-                </div>
-                <div id="spots-list" class="p-4 space-y-3 pb-32"></div>
-            </div>
-        </div>
-
-        <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
-            <div class="space-y-2 max-w-xs">
-                <div class="text-4xl">🛠️</div>
-                <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Module</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Work in progress matrix engine.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/80 px-6 py-4 flex justify-around items-center shrink-0 z-[490] rounded-t-2xl shadow-2xl">
-        <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="flex flex-col items-center gap-1 text-pink-500">
-            <span class="text-xl">🗺️</span><span class="text-[10px] font-bold tracking-wide">Map Canvas</span>
-        </button>
-        <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="flex flex-col items-center gap-1 text-slate-500">
-            <span class="text-xl">🗂️</span><span class="text-[10px] font-bold tracking-wide">Vault List</span>
-        </button>
-        <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="flex flex-col items-center gap-1 text-slate-500">
-            <span class="text-xl">⏳</span><span class="text-[10px] font-bold tracking-wide">Itinerary</span>
-        </button>
-    </div>
-
-    <button id="globalFloatingActionPlusButton" onclick="toggleQuickAddModal(true)" class="fixed bottom-24 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 z-[450] border border-white/10">➕</button>
-
-    <div id="quickAddModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-end hidden transition-all duration-300">
-        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl relative">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
-                <h3 class="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">🚀 Add New Spot to Vault</h3>
-                <button onclick="toggleQuickAddModal(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
-            </div>
-            
-            <div class="space-y-3 text-xs">
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Source URL</label>
-                    <input type="url" id="new-url" placeholder="https://..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Target City</label>
-                        <input type="text" id="new-city" placeholder="e.g., Paris" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Category Type</label>
-                        <input type="text" id="new-category" placeholder="e.g., Food Spot" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Spot Name</label>
-                    <input type="text" id="new-keyword" placeholder="e.g., Hidden Arch Viewpoint" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Vibe Check / Notes</label>
-                    <textarea id="new-notes" rows="3" placeholder="Optimal angles, suggestions..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none"></textarea>
-                </div>
-                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 mt-2">
-                    <span class="font-bold text-slate-400 uppercase tracking-wider">Prioritize Selection?</span>
-                    <button onclick="toggleFormPriorityState()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold">Normal</button>
-                </div>
-                <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-sm">
-                    💾 Sync to Shared Google Sheet
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const APP_VERSION = "v1.3.9";
+<script>
+        const APP_VERSION = "v1.4.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -333,7 +12,8 @@
         
         let userLat = 48.8566; let userLon = 2.3522;
         let areaContextStr = "Unknown Coordinates"; let cachedHardwareString = "Unknown Device Model";
-        let gpsStatusCachedBool = true; let activeTabID = 'map';
+        let gpsStatusCachedBool = false; let activeTabID = 'map';
+        let liveGpsWatchId = null; // Tracks persistent hardware connection hook
         
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
         let startY = 0; let isPulling = false;
@@ -361,7 +41,7 @@
             } else {
                 initializeSessionDashboard();
             }
-            setupNetworkListeners();
+            setupNetworkListeners(); // Instantly activates hyper-responsive connection tracking
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
@@ -414,8 +94,10 @@
             if (navigator.permissions && navigator.permissions.query) {
                 navigator.permissions.query({ name: 'geolocation' }).then(status => {
                     const checkState = () => {
-                        if (status.state === 'denied') { gpsStatusCachedBool = false; updateGpsHudStatus(false, "GPS Off"); }
-                        else if (status.state === 'granted') { gpsStatusCachedBool = true; updateGpsHudStatus(true, "GPS Active"); }
+                        if (status.state === 'denied') { 
+                            gpsStatusCachedBool = false; 
+                            updateGpsHudStatus(false, "GPS Off"); 
+                        }
                     };
                     status.onchange = checkState; checkState();
                 });
@@ -457,24 +139,54 @@
             } catch(e) {}
         }
 
+        // IMPROVED: Initializes persistent tracking for background hardware updates
         function initializeSessionDashboard() {
             syncData(true);
-            navigator.geolocation.getCurrentPosition(pos => {
-                gpsStatusCachedBool = true; updateGpsHudStatus(true, "GPS Active");
-                userLat = pos.coords.latitude; userLon = pos.coords.longitude;
-                updateUserMarkerPulseOnMap(); calculateSmartCityDefaultFilters();
-                renderList(); plotDynamicMarkersOnCanvasMap();
-            }, () => {
-                gpsStatusCachedBool = false; updateGpsHudStatus(false, "⚠️ GPS Off");
-                calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
-            }, { enableHighAccuracy: true, timeout: 4000 });
+            startLiveHardwareGPSTracking();
+            updateNetworkStatusHUD(); // Run immediate network diagnostic pass on startup
         }
 
-        function updateUserMarkerPulseOnMap() {
-            if(!leafletMapInstance) return;
-            if(userPositionPulseCircle) userPositionPulseCircle.remove();
-            leafletMapInstance.setView([userLat, userLon], 12);
-            userPositionPulseCircle = L.circleMarker([userLat, userLon], { radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 }).addTo(leafletMapInstance);
+        // NEW: Real-time background location subscriber loop
+        function startLiveHardwareGPSTracking() {
+            if (!navigator.geolocation) {
+                gpsStatusCachedBool = false;
+                updateGpsHudStatus(false, "Unsupported");
+                return;
+            }
+            if (liveGpsWatchId !== null) navigator.geolocation.clearWatch(liveGpsWatchId);
+
+            liveGpsWatchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    gpsStatusCachedBool = true;
+                    updateGpsHudStatus(true, "GPS Active");
+                    
+                    userLat = pos.coords.latitude;
+                    userLon = pos.coords.longitude;
+                    
+                    // Smoothly repositions the blue location pulse dot on map shifts
+                    if (leafletMapInstance) {
+                        if (userPositionPulseCircle) {
+                            userPositionPulseCircle.setLatLng([userLat, userLon]);
+                        } else {
+                            userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
+                                radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
+                            }).addTo(leafletMapInstance);
+                        }
+                    }
+                    
+                    // Live recalculation of distance metrics across loaded views
+                    renderList();
+                },
+                (err) => {
+                    gpsStatusCachedBool = false;
+                    if (err.code === err.PERMISSION_DENIED) {
+                        updateGpsHudStatus(false, "⚠️ GPS Denied");
+                    } else {
+                        updateGpsHudStatus(false, "⚠️ GPS Error");
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
         }
 
         function switchMasterMenuDashboardTab(targetTabID) {
@@ -484,7 +196,12 @@
             document.getElementById(`nav-tab-${targetTabID}`).className = "flex flex-col items-center gap-1 text-pink-500";
             document.getElementById(`view-${targetTabID}`).classList.add('active-view');
             activeTabID = targetTabID;
-            if(targetTabID === 'map' && leafletMapInstance) { setTimeout(() => { leafletMapInstance.invalidateSize(); }, 50); }
+            if(targetTabID === 'map' && leafletMapInstance) { 
+                setTimeout(() => { 
+                    leafletMapInstance.invalidateSize(); 
+                    if(gpsStatusCachedBool) leafletMapInstance.setView([userLat, userLon], leafletMapInstance.getZoom());
+                }, 50); 
+            }
         }
 
         function toggleCityDropdownOverlayMenu(event) {
@@ -525,21 +242,33 @@
             const btn = document.getElementById('gpsBadgeButton');
             const dot = document.getElementById('gpsDotSignal');
             const text = document.getElementById('gpsBadgeText');
+            if(!btn || !dot || !text) return;
+            
             if (isActive) {
                 btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400";
-                dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"; text.innerText = message || "GPS Active";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"; 
+                text.innerText = message || "GPS Active";
             } else {
                 btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400";
-                dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500"; text.innerText = message || "⚠️ GPS Off";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500"; 
+                text.innerText = message || "⚠️ GPS Off";
             }
         }
 
         function triggerRecenterToGpsHardwareAction() {
             if (!leafletMapInstance) return;
-            navigator.geolocation.getCurrentPosition(pos => {
-                userLat = pos.coords.latitude; userLon = pos.coords.longitude;
-                updateUserMarkerPulseOnMap(); leafletMapInstance.setView([userLat, userLon], 14, { animate: true });
-            }, () => { alert("Please grant device location access permissions."); }, { enableHighAccuracy: true, timeout: 5000 });
+            if (gpsStatusCachedBool) {
+                leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
+            } else {
+                updateGpsHudStatus(false, "Pinging...");
+                navigator.geolocation.getCurrentPosition(pos => {
+                    userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                    gpsStatusCachedBool = true;
+                    updateGpsHudStatus(true, "GPS Active");
+                    startLiveHardwareGPSTracking();
+                    leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
+                }, () => { alert("Please grant device location access permissions."); }, { enableHighAccuracy: true, timeout: 4000 });
+            }
         }
 
         function snapMapViewportToSelectedCityBounds() {
@@ -549,13 +278,33 @@
         }
 
         function forceReRequestGPSHardware() {
-            navigator.geolocation.getCurrentPosition(pos => {
-                userLat = pos.coords.latitude; userLon = pos.coords.longitude;
-                updateUserMarkerPulseOnMap(); calculateSmartCityDefaultFilters(); syncData(true);
-            }, null, { enableHighAccuracy: true, timeout: 5000 });
+            startLiveHardwareGPSTracking();
         }
 
         function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
+
+        // NEW: Real-time network intercept system triggers instantaneous structural state changes
+        function setupNetworkListeners() {
+            window.addEventListener('online', updateNetworkStatusHUD);
+            window.addEventListener('offline', updateNetworkStatusHUD);
+        }
+
+        // NEW: Handles immediate network connection updates
+        function updateNetworkStatusHUD() {
+            const indicator = document.getElementById('networkIndicator');
+            const syncText = document.getElementById('syncText');
+            if(!indicator || !syncText) return;
+
+            if (navigator.onLine) {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
+                syncText.className = "text-[9px] font-mono text-slate-500";
+                syncText.innerText = "Synced Live Data";
+            } else {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse";
+                syncText.className = "text-[9px] font-mono text-red-400 font-bold";
+                syncText.innerText = "OFFLINE MODE";
+            }
+        }
 
         function setPriorityFilterState(shouldShowStarredOnly) {
             showStarredOnly = shouldShowStarredOnly;
@@ -613,14 +362,11 @@
             renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
-        // IMPROVED: Visually unchecks all filter elements when pressed
         function clearAllFilterCheckboxes() {
             checkedFilterStateArray = []; 
             localStorage.setItem('compass_active_filters', JSON.stringify([]));
-            
             const checkboxes = document.getElementById('checkboxScrollRegionContainer').querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(cb => cb.checked = false);
-            
             updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
@@ -917,14 +663,11 @@
             updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
-        // IMPROVED: Visually unchecks all city elements when pressed
         function clearAllSelectedCityCheckboxes() {
             checkedCitiesStateArray = []; 
             localStorage.setItem('compass_active_cities', JSON.stringify([]));
-            
             const checkboxes = document.getElementById('cityHUDChecklistContainer').querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(cb => cb.checked = false);
-            
             updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
@@ -941,12 +684,6 @@
             }
         }
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-        
         function toggleQuickAddModal(show) { document.getElementById('quickAddModal').classList.toggle('hidden', !show); }
         
         let formPriorityState = "Normal";
@@ -985,7 +722,7 @@
 
         async function syncData(isManualForce) {
             const syncText = document.getElementById('syncText');
-            syncText.innerText = "Checking cloud...";
+            if (syncText && isManualForce) syncText.innerText = "Checking cloud...";
             try {
                 const response = await fetch(API_URL);
                 const cloudData = await response.json();
@@ -993,16 +730,13 @@
                     travelSpots = cloudData;
                     localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
                     calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
-                    syncText.innerText = "Synced Live Data";
+                    updateNetworkStatusHUD();
                 }
-            } catch (e) { syncText.innerText = "Offline Mode"; }
+            } catch (e) { if(syncText) syncText.innerText = "Offline Mode"; }
         }
         
         async function triggerSecureServerHistoryPurgeVault() {}
         function clearDeviceSessionAndLogout() {}
         function commitProfileRename() {}
         function switchUserSessionViaSettings() {}
-        function setupNetworkListeners() {}
     </script>
-</body>
-</html>
