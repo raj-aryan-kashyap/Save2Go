@@ -21,44 +21,50 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
         
-        /* Smooth, clean tab transitions */
+        /* Fixed Viewport Hub Panel Overrides */
         .view-panel {
             position: absolute;
-            inset: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
             opacity: 0;
-            transform: scale(0.99);
+            transform: scale(1);
             pointer-events: none;
-            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            visibility: hidden;
+            transition: opacity 0.25s ease-in-out;
         }
         .view-panel.active-view {
             opacity: 1;
-            transform: scale(1);
+            visibility: visible;
             pointer-events: auto;
         }
 
         /* Glassmorphic custom map tokens */
         .custom-map-cube {
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            width: 34px !important;
-            height: 34px !important;
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 16px !important;
+            width: 36px !important;
+            height: 36px !important;
         }
-        .custom-map-cube.starred-cube {
-            border: 1.5px solid rgba(245, 158, 11, 0.8);
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+        .starred-cube-border {
+            border: 2px solid rgba(245, 158, 11, 0.9) !important;
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
         }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col overflow-hidden selection:bg-pink-500/30 select-none">
 
-    <div id="userModal" class="fixed inset-0 bg-slate-950 z-[100] flex flex-col justify-center items-center p-6 hidden">
+    <div id="userModal" class="fixed inset-0 bg-slate-950 z-[9999] flex flex-col justify-center items-center p-6 hidden">
         <div class="text-center w-full max-w-xs space-y-6">
             <div class="text-6xl filter drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">🌍</div>
             <div class="space-y-1">
@@ -92,7 +98,7 @@
         </div>
     </div>
 
-    <div id="settingsDrawer" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[80] hidden transition-all duration-300 flex justify-end">
+    <div id="settingsDrawer" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden transition-all duration-300 flex justify-end">
         <div class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl">
             <div class="space-y-6">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-800">
@@ -136,7 +142,7 @@
         </div>
     </div>
 
-    <div id="filterMenuDrawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[70] hidden items-end transition-all duration-300">
+    <div id="filterMenuDrawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[990] hidden items-end transition-all duration-300">
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[75vh] flex flex-col shadow-2xl relative">
             <button onclick="toggleFilterDrawerMenu(false)" class="absolute top-5 right-5 w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:scale-90 transition-transform">✕</button>
 
@@ -214,10 +220,10 @@
 
     <div class="flex-1 relative w-full h-full overflow-hidden z-10">
         
-        <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950 flex flex-col">
-            <div id="map-render-element" class="w-full h-full bg-slate-950 z-10"></div>
+        <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950">
+            <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0"></div>
             
-            <div id="mapDetailTrayHUD" class="absolute bottom-4 left-4 right-4 bg-slate-900/95 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl shadow-2xl z-40 hidden transform transition-all duration-200">
+            <div id="mapDetailTrayHUD" class="absolute bottom-20 left-4 right-4 bg-slate-900/95 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl shadow-2xl z-[450] hidden transform transition-all duration-200">
                 <div class="flex justify-between items-start gap-2">
                     <div class="space-y-1 max-w-[72%]">
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -254,7 +260,7 @@
         </div>
     </div>
 
-    <div class="fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-xl border-t border-slate-800/80 px-6 py-3.5 flex justify-around items-center shrink-0 z-[90] rounded-t-2xl shadow-2xl">
+    <div class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/80 px-6 py-4 flex justify-around items-center shrink-0 z-[999] rounded-t-2xl shadow-2xl">
         <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="flex flex-col items-center gap-1 text-pink-500 transition-colors">
             <span class="text-xl">🗺️</span>
             <span class="text-[10px] font-bold tracking-wide">Map Canvas</span>
@@ -269,11 +275,11 @@
         </button>
     </div>
 
-    <button onclick="toggleQuickAddModal(true)" class="fixed bottom-20 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-[85] border border-white/10">
+    <button onclick="toggleQuickAddModal(true)" class="fixed bottom-24 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-[995] border border-white/10">
         ➕
     </button>
 
-    <div id="quickAddModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[110] flex items-end hidden transition-all duration-300">
+    <div id="quickAddModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-end hidden transition-all duration-300">
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                 <h3 class="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">🚀 Add New Spot to Vault</h3>
@@ -314,7 +320,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.1.5";
+        const APP_VERSION = "v1.1.8";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -371,6 +377,7 @@
         };
 
         function initLeafletMapEngineCanvas() {
+            if (leafletMapInstance) return;
             leafletMapInstance = L.map('map-render-element', {
                 zoomControl: false,
                 attributionControl: false
@@ -423,6 +430,7 @@
         }
 
         function setupNativePullToRefreshGestures() {
+            if (!GESTURE_CONTAINER) return;
             GESTURE_CONTAINER.addEventListener('touchstart', (e) => {
                 if (GESTURE_CONTAINER.scrollTop === 0) {
                     startY = e.touches[0].pageY;
@@ -552,11 +560,10 @@
             if(targetTabID === 'map' && leafletMapInstance) {
                 setTimeout(() => {
                     leafletMapInstance.invalidateSize();
-                }, 150);
+                }, 50);
             }
         }
 
-        // FIXED LOG IN PIPELINE: Forces synchronous execution parameters
         async function handleInitialLoginSubmit() {
             const dropdownVal = document.getElementById('loginDropdown') ? document.getElementById('loginDropdown').value : "";
             const textVal = document.getElementById('customUsernameInput').value.trim();
@@ -574,7 +581,6 @@
             
             if (textVal !== "") {
                 try {
-                    // Await network response directly before loading viewports
                     await fetch(API_URL, {
                         method: 'POST',
                         mode: 'no-cors',
@@ -584,7 +590,6 @@
                 } catch(e){}
             }
             
-            // Re-fetch sheet user registry array to instantly populate configuration drawers
             await populateUserDropdowns();
             
             submitBtn.innerText = "Begin";
@@ -839,6 +844,11 @@
             updateCityHUDTriggerButtonLabelText();
         }
 
+        document.getElementById('cityFilterHUDTriggerBtn').onclick = function(event) {
+            event.stopPropagation();
+            document.getElementById('cityHUDDropdownPopupBox').classList.toggle('hidden');
+        };
+
         function handleCityHUDCheckboxEventToggle(checkboxElement) {
             const val = checkboxElement.value;
             if (checkboxElement.checked) {
@@ -881,11 +891,11 @@
             syncPriorityFilterViewModeUI();
             
             const list = document.getElementById('spots-list');
-            list.style.opacity = "0.3";
+            if (list) list.style.opacity = "0.3";
             setTimeout(() => {
                 renderList();
                 plotDynamicMarkersOnCanvasMap();
-                list.style.opacity = "1";
+                if (list) list.style.opacity = "1";
             }, 100);
         }
 
@@ -1017,13 +1027,14 @@
                 else if(catStr.includes("shop") || catStr.includes("store") || catStr.includes("bag")) categoryIconEmoji = "🛍️";
                 else if(catStr.includes("bar") || catStr.includes("drink") || catStr.includes("vibe")) categoryIconEmoji = "🍸";
 
-                const iconHTML = `<div class="custom-map-cube font-sans">${categoryIconEmoji}</div>`;
+                // Injected CSS formatting fixes natively inside Leaflet marker configurations
+                const iconHTML = `<div class="custom-map-cube ${isStarred ? 'starred-cube-border' : ''}">${categoryIconEmoji}</div>`;
                 
                 const customMarkerIcon = L.divIcon({
                     html: iconHTML,
-                    className: isStarred ? 'starred-cube' : '',
-                    iconSize: [34, 34],
-                    iconAnchor: [17, 17]
+                    className: '',
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18]
                 });
 
                 const leafMarker = L.marker([parseFloat(spot.latitude), parseFloat(spot.longitude)], {
@@ -1055,6 +1066,7 @@
 
         function renderList() {
             const container = document.getElementById('spots-list');
+            if(!container) return;
             container.innerHTML = '';
 
             const processed = getFilteredDatasetRows();
@@ -1062,9 +1074,9 @@
             const noticeRow = document.getElementById('crossCountryNoticeRow');
             let distantItemCount = processed.filter(s => s.distRaw > 1200 && s.distRaw !== 99999).length;
             if (distantItemCount > 0 && processed.length === distantItemCount && gpsStatusCachedBool) {
-                noticeRow.classList.remove('hidden');
+                if (noticeRow) noticeRow.classList.remove('hidden');
             } else {
-                noticeRow.classList.add('hidden');
+                if (noticeRow) noticeRow.classList.add('hidden');
             }
 
             if(processed.length === 0) {
