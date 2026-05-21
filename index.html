@@ -18,16 +18,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-        
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        .shimmer-bg {
-            background: linear-gradient(90deg, #0f172a 25%, #1e293b 50%, #0f172a 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-pink-500/30 select-none overflow-hidden">
@@ -54,7 +44,7 @@
                     <hr class="w-full border-slate-900">
                 </div>
                 <div>
-                    <input type="text" id="customUsernameInput" placeholder="Type custom name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none focus:border-pink-500">
+                    <input type="text" id="customUsernameInput" placeholder="Type name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none focus:border-pink-500">
                 </div>
                 <button onclick="handleInitialLoginSubmit()" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-center font-bold py-3 rounded-xl text-white text-xs active:scale-95 transition-transform shadow-lg shadow-pink-950/20">
                     Enter Dashboard Engine
@@ -88,9 +78,12 @@
 
                 <hr class="border-slate-800">
 
-                <div class="space-y-2 pt-2">
-                    <label class="block text-[10px] font-bold text-red-400 uppercase tracking-widest">Device Session Storage</label>
-                    <button onclick="clearDeviceSessionAndLogout()" class="w-full py-2.5 bg-red-950/40 hover:bg-red-900 border border-red-900/60 text-red-200 text-xs font-bold rounded-xl transition-all active:scale-95">
+                <div class="space-y-2 pt-1">
+                    <label class="block text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1.5">Administrative Server Tools</label>
+                    <button onclick="triggerSecureServerHistoryPurgeVault()" class="w-full py-2 bg-red-950/20 text-red-400 hover:bg-red-950 border border-red-900/40 text-[11px] font-bold rounded-lg transition-colors">
+                        💥 Purge Server Log History
+                    </button>
+                    <button onclick="clearDeviceSessionAndLogout()" class="w-full mt-2 py-2 bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-bold rounded-lg transition-colors">
                         🚪 Logout / Start Fresh
                     </button>
                 </div>
@@ -110,66 +103,62 @@
                     <h3 class="text-sm font-black uppercase tracking-wider text-slate-200">🔍 Filter Preferences</h3>
                     <p class="text-[10px] text-slate-500">Select tags to narrow your itinerary search context</p>
                 </div>
-                <button onclick="clearAllFilterCheckboxes()" class="text-[11px] font-bold text-pink-500 bg-pink-500/10 border border-pink-500/20 px-3 py-1.5 rounded-xl active:scale-95 transition-transform">Clear All</button>
+                <button onclick="clearAllFilterCheckboxes()" class="text-[11px] font-bold text-pink-500 bg-pink-500/10 border border-pink-500/20 px-3 py-1.5 rounded-xl">Clear All</button>
             </div>
-            
             <div id="checkboxContainer" class="flex-1 overflow-y-auto space-y-2.5 py-2 pr-1 no-scrollbar text-xs font-semibold text-slate-300">
                 </div>
-            
-            <button onclick="toggleFilterDrawerMenu(false)" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-center font-bold py-3 rounded-xl text-white text-xs shadow-lg active:scale-98 transition-all">
+            <button onclick="toggleFilterDrawerMenu(false)" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 text-center font-bold py-3 rounded-xl text-white text-xs shadow-lg">
                 Apply Filters & Save State
             </button>
         </div>
     </div>
 
-    <div class="sticky top-0 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 p-4 z-50 shadow-lg shrink-0">
+    <div class="bg-slate-900/70 backdrop-blur-xl border-b border-slate-800 p-4 shadow-2xl z-50 shrink-0 relative rounded-b-2xl">
         <div class="flex justify-between items-center mb-3">
             <div>
                 <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">📍 InstaCompass</h1>
                 <div class="flex items-center gap-2 mt-0.5">
                     <div class="flex items-center gap-1">
-                        <span id="networkIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="syncText" class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Connected</span>
+                        <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="syncText" class="text-[9px] font-mono tracking-wide text-slate-500">Cache Loaded</span>
                     </div>
                 </div>
             </div>
             
             <div class="flex items-center gap-2">
-                <button onclick="forceReRequestGPSHardware()" id="gpsBadgeButton" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 bg-emerald-500/10 border-emerald-500/30 text-emerald-400">
+                <button onclick="forceReRequestGPSHardware()" id="gpsBadgeButton" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400">
                     <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="gpsBadgeText">GPS Active</span>
                 </button>
-                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs active:rotate-180 transition-transform duration-500">🔄</button>
-                <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-xs active:scale-95 transition-transform">⚙️</button>
+                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs active:rotate-180 transition-transform duration-500">🔄</button>
+                <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-xs active:scale-95 transition-transform">⚙️</button>
             </div>
         </div>
         
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-2 items-center mb-2">
             <div class="relative flex-1">
                 <input type="text" id="searchInput" placeholder="Search locations or pick a city..." 
-                       class="w-full bg-slate-950 text-sm rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 border border-slate-800 focus:outline-none focus:ring-1 focus:ring-pink-500">
+                       class="w-full bg-slate-950/80 text-sm rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 border border-slate-800/80 focus:outline-none focus:ring-1 focus:ring-pink-500">
                 <div id="autocomplete-results" class="absolute w-full bg-slate-900 rounded-xl mt-1 shadow-2xl border border-slate-800 max-h-60 overflow-y-auto hidden z-50"></div>
             </div>
             
-            <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="p-3 bg-slate-950 border border-slate-800 rounded-xl font-bold text-xs text-slate-400 flex items-center gap-1.5 shrink-0 active:scale-95 transition-transform">
+            <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="p-3 bg-slate-950/80 border border-slate-800/80 rounded-xl font-bold text-xs text-slate-400 flex items-center gap-1.5 shrink-0 active:scale-95 transition-transform">
                 <span>🎛️ Filters</span>
                 <span id="activeFilterBadgeCount" class="hidden w-4 h-4 bg-pink-600 text-white font-black text-[9px] rounded-full flex items-center justify-center">0</span>
             </button>
         </div>
-    </div>
 
-    <div class="px-4 mt-3 shrink-0">
-        <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-900 flex justify-between items-center text-[11px] text-slate-400">
+        <div class="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/50 flex justify-between items-center text-[10px] text-slate-400 mt-2">
             <div>Target sorting: <span id="current-target-name" class="text-pink-400 font-bold">Your Live GPS</span></div>
             <button onclick="resetToGPS()" class="text-violet-400 underline font-bold">Reset</button>
         </div>
     </div>
 
-    <div id="gesture-touch-container" class="flex-1 overflow-y-auto mt-2 no-scrollbar relative">
-        <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-xs font-bold text-slate-500 transition-all duration-200 bg-slate-950/40">
-            <span class="animate-bounce">⬇️ Pull down to force reload database...</span>
+    <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative">
+        <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
+            <span class="animate-pulse">⬇️ Keep pulling to force sync database...</span>
         </div>
         
-        <div id="spots-list" class="p-4 space-y-3">
+        <div id="spots-list" class="p-4 space-y-3 pb-24">
             </div>
     </div>
 
@@ -210,7 +199,7 @@
                     <span class="font-bold text-slate-400 uppercase tracking-wider">Prioritize Selection?</span>
                     <button onclick="toggleFormPriority()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold">⭐ Normal</button>
                 </div>
-                <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg active:scale-[0.98] transition-all text-sm">
+                <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-sm">
                     💾 Sync to Shared Google Sheet
                 </button>
             </div>
@@ -223,8 +212,6 @@
         let currentUser = localStorage.getItem('compass_user');
         let deviceId = localStorage.getItem('compass_device_id') || generateAndSaveDeviceId();
         let travelSpots = JSON.parse(localStorage.getItem('compass_cache')) || [];
-        
-        // Load persistent multi-checkbox matrix configurations from device local states memory
         let checkedFilterStateArray = JSON.parse(localStorage.getItem('compass_active_filters')) || [];
         
         let userLat = 48.8566; 
@@ -233,7 +220,6 @@
         let areaContextStr = "Unknown Coordinates";
         let cachedHardwareString = "Unknown Device Model";
         
-        // Touch state variables for Pull-to-Refresh
         let startY = 0;
         let isPulling = false;
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
@@ -245,6 +231,12 @@
             document.getElementById('meta-hardware').innerText = `Model: ${cachedHardwareString}`;
             
             populateUserDropdowns();
+            
+            // INITIALIZATION FIX: Boot instantly from last cached view state data
+            if (travelSpots.length > 0) {
+                renderList();
+            }
+            
             if (!currentUser) {
                 document.getElementById('userModal').classList.remove('hidden');
             } else {
@@ -295,7 +287,6 @@
             }
         }
 
-        // Touch input listener engines parsing swiping drag events
         function setupNativePullToRefreshGestures() {
             GESTURE_CONTAINER.addEventListener('touchstart', (e) => {
                 if (GESTURE_CONTAINER.scrollTop === 0) {
@@ -308,10 +299,8 @@
                 if (!isPulling) return;
                 const currentY = e.touches[0].pageY;
                 const diff = currentY - startY;
-                
                 if (diff > 0) {
-                    // Restrict dragging height tracking metrics boundaries
-                    const heightBound = Math.min(diff * 0.4, 60);
+                    const heightBound = Math.min(diff * 0.4, 50);
                     PULL_INDICATOR.style.height = `${heightBound}px`;
                 }
             }, { passive: true });
@@ -321,9 +310,7 @@
                 isPulling = false;
                 const currentHeight = parseInt(PULL_INDICATOR.style.height || 0);
                 PULL_INDICATOR.style.height = '0px';
-                
-                // If dragged past 45 pixels, fire database updates instantly
-                if (currentHeight >= 45) {
+                if (currentHeight >= 40) {
                     syncData(true);
                 }
             }, { passive: true });
@@ -332,6 +319,7 @@
         async function populateUserDropdowns() {
             const dropdowns = [document.getElementById('loginDropdown'), document.getElementById('settingsSwitchUserDropdown')];
             try {
+                // Optimization: Target clean dedicated data registry setup tab parameters
                 const response = await fetch(`${API_URL}?action=get_users`);
                 const usersList = await response.json();
                 
@@ -341,14 +329,14 @@
                     usersList.forEach(user => {
                         const opt = document.createElement('option');
                         opt.value = user;
-                        opt.innerText = `🧔 ${user}`;
+                        opt.innerText = user; // Stripped all graphic emoticons here
                         dd.appendChild(opt);
                     });
                 });
             } catch(e) {
                 dropdowns.forEach(dd => {
                     if(!dd) return;
-                    dd.innerHTML = '<option value="Aryan">Aryan</option><option value="Wife">Wife</option>';
+                    dd.innerHTML = '<option value="Aryan">Aryan</option>';
                 });
             }
         }
@@ -357,20 +345,16 @@
             document.getElementById('userBadge').innerText = `👤 ${currentUser}`;
             document.getElementById('settingsRenameField').value = currentUser;
             
-            // AUTOMATION ENFORCEMENT: Force background execution pulls on startup sequence
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    updateGpsHudStatus(true, "GPS Active");
-                    userLat = pos.coords.latitude;
-                    userLon = pos.coords.longitude;
-                    syncData(false); // Fires background verification loop automatically
-                }, () => {
-                    updateGpsHudStatus(false, "⚠️ GPS Off");
-                    syncData(false);
-                });
-            } else {
+            // Execute automated delta validation sync checks in background context natively
+            navigator.geolocation.getCurrentPosition(pos => {
+                updateGpsHudStatus(true, "GPS Active");
+                userLat = pos.coords.latitude;
+                userLon = pos.coords.longitude;
+                syncData(false); 
+            }, () => {
+                updateGpsHudStatus(false, "⚠️ GPS Off");
                 syncData(false);
-            }
+            });
         }
 
         async function handleInitialLoginSubmit() {
@@ -384,6 +368,18 @@
             document.getElementById('userModal').classList.add('hidden');
             
             initializeSessionDashboard();
+            
+            // Register new names to the clean directory tab if typing a registration record
+            if (textVal !== "") {
+                try {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'register_new_user', new_name: chosenName, deviceMeta: cachedHardwareString })
+                    });
+                } catch(e){}
+            }
             await resolveGeocodeAndLogSession();
         }
 
@@ -392,22 +388,22 @@
             const dot = document.getElementById('gpsDotSignal');
             const text = document.getElementById('gpsBadgeText');
             if (isActive) {
-                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400";
                 dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
                 text.innerText = message || "GPS Active";
             } else {
-                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 bg-amber-500/10 border-amber-500/40 text-amber-400";
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400";
                 dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
                 text.innerText = message || "⚠️ GPS Off";
             }
         }
 
         function forceReRequestGPSHardware() {
-            updateGpsHudStatus(true, "Pinging GPS...");
+            updateGpsHudStatus(true, "Pinging...");
             navigator.geolocation.getCurrentPosition(pos => {
                 userLat = pos.coords.latitude;
                 userLon = pos.coords.longitude;
-                updateGpsHudStatus(true, "GPS Linked");
+                updateGpsHudStatus(true, "GPS Active");
                 syncData(false);
             }, () => {
                 updateGpsHudStatus(false, "⚠️ GPS Off");
@@ -453,6 +449,46 @@
             if(show) buildDynamicShoppingCheckboxList();
         }
 
+        // SECURE PURGE ENGINE: Prompting verification gates to purge historical row layers securely
+        async function triggerSecureServerHistoryPurgeVault() {
+            const quirkyConfirm = confirm("🚨 WOAH TRAVELER! You are about to initiate an absolute server history scrub. \n\nThis wipes all recorded multi-user timestamps, logs, and geolocation tracking footprints from the cloud permanently. \n\nAre you 100% certain you want to proceed?");
+            if(!quirkyConfirm) return;
+
+            const adminPasswordInput = prompt("🔒 IDENTITY VERIFICATION REQUIRED:\n\nPlease enter the master server access password configuration key written in your spreadsheet's AppConfig vault tab below:");
+            if(!adminPasswordInput) return;
+
+            toggleSettingsMenu(false);
+            const syncText = document.getElementById('syncText');
+            syncText.innerText = "Authorizing purge request...";
+
+            try {
+                const req = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' }, // Standard text channel configuration to prevent preflight blocks
+                    body: JSON.stringify({
+                        action: 'purge_server_history',
+                        user: currentUser,
+                        deviceId: deviceId,
+                        password: adminPasswordInput
+                    })
+                });
+                const res = await req.json();
+                
+                if (res.result === "success") {
+                    alert("💥 SERVER RESET COMPLETE!\n\nThe cloud history rows have been scrubbed clean down to the primary tracking headers successfully.");
+                    syncText.innerText = "Logs Purged";
+                } else if (res.result === "auth_failed") {
+                    alert("❌ ACCESS DENIED:\n\nThe password you provided did not match the entry saved inside your Google Sheet's AppConfig vault.");
+                    syncText.innerText = "Auth Error";
+                } else {
+                    alert("Server rejection error: " + res.error);
+                }
+            } catch(err) {
+                alert("Cloud execution gateway connection timeout.");
+                syncText.innerText = "Network Error";
+            }
+        }
+
         async function commitProfileRename() {
             const newName = document.getElementById('settingsRenameField').value.trim();
             if(!newName || newName === currentUser) return;
@@ -493,51 +529,49 @@
         }
 
         function setupNetworkListeners() {
-            window.addEventListener('online', () => document.getElementById('networkIndicator').className = "w-2 h-2 rounded-full bg-emerald-500");
-            window.addEventListener('offline', () => document.getElementById('networkIndicator').className = "w-2 h-2 rounded-full bg-amber-500");
+            window.addEventListener('online', () => document.getElementById('networkIndicator').className = "w-1.5 h-1.5 rounded-full bg-emerald-500");
+            window.addEventListener('offline', () => document.getElementById('networkIndicator').className = "w-1.5 h-1.5 rounded-full bg-amber-500");
         }
 
-        function injectSkeletonLoaderView() {
-            const container = document.getElementById('spots-list');
-            container.innerHTML = '';
-            for(let i = 0; i < 4; i++) {
-                const skeletonCard = document.createElement('div');
-                skeletonCard.className = "p-4 rounded-2xl border border-slate-900 bg-slate-900/40 space-y-3 animate-pulse";
-                skeletonCard.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="w-1/2 h-3.5 bg-slate-800 rounded-lg"></div>
-                        <div class="w-12 h-5 bg-slate-800 rounded-lg"></div>
-                    </div>
-                    <div class="w-3/4 h-4 bg-slate-800 rounded-xl mt-2"></div>
-                    <div class="w-full h-8 bg-slate-950/60 rounded-xl border border-slate-900/40"></div>
-                `;
-                container.appendChild(skeletonCard);
-            }
-        }
-
+        // RE-ENGINEERED BACKGROUND DELTA SYNC LAYER: Background fetching without viewport tearing
         async function syncData(isManualForce) {
-            injectSkeletonLoaderView();
             const syncText = document.getElementById('syncText');
-            syncText.innerText = "Syncing with cloud...";
+            syncText.innerText = "Checking cloud...";
+            
+            // Only force visible skeletons if there is absolutely zero cached row trees available locally
+            if (travelSpots.length === 0) {
+                document.getElementById('spots-list').innerHTML = `
+                    <div class="p-4 rounded-2xl bg-slate-900/40 border border-slate-900 animate-pulse space-y-2">
+                        <div class="h-4 bg-slate-800 rounded w-1/3"></div><div class="h-3 bg-slate-800 rounded w-full"></div>
+                    </div>
+                `;
+            }
+
             try {
                 const response = await fetch(API_URL);
                 const cloudData = await response.json();
                 if(Array.isArray(cloudData)) {
-                    travelSpots = cloudData;
-                    localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
+                    // Stringify structures to compare structural signatures cleanly
+                    const signatureOld = JSON.stringify(travelSpots);
+                    const signatureNew = JSON.stringify(cloudData);
+                    
+                    if (signatureOld !== signatureNew) {
+                        travelSpots = cloudData;
+                        localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
+                        renderList(); // Only perform UI tree insertion operations when changes exist
+                        syncText.innerText = "Synced Live Data";
+                    } else {
+                        syncText.innerText = "Up to Date";
+                    }
                 }
-                syncText.innerText = "Synced Just Now";
             } catch (e) {
-                syncText.innerText = "Sync Error (Using Cache)";
+                syncText.innerText = "Offline Mode";
             }
-            renderList();
         }
 
-        // Builds dynamic checkbox elements inside the Drawer layout node
         function buildDynamicShoppingCheckboxList() {
             const container = document.getElementById('checkboxContainer');
             container.innerHTML = '';
-            
             let uniqueCategories = new Set();
             travelSpots.forEach(spot => {
                 if (spot.category) {
@@ -547,13 +581,10 @@
                     });
                 }
             });
-
             uniqueCategories.forEach(cat => {
                 const wrapper = document.createElement('label');
                 wrapper.className = "flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-900/60 cursor-pointer active:bg-slate-900";
-                
                 const isChecked = checkedFilterStateArray.includes(cat);
-                
                 wrapper.innerHTML = `
                     <span>${cat}</span>
                     <input type="checkbox" value="${cat}" ${isChecked ? 'checked' : ''} 
@@ -572,7 +603,6 @@
             } else {
                 checkedFilterStateArray = checkedFilterStateArray.filter(i => i !== val);
             }
-            // Retain choice parameters matrix to memory state
             localStorage.setItem('compass_active_filters', JSON.stringify(checkedFilterStateArray));
             updateHeaderBadgeHUDCounters();
             renderList();
@@ -581,10 +611,8 @@
         function clearAllFilterCheckboxes() {
             checkedFilterStateArray = [];
             localStorage.setItem('compass_active_filters', JSON.stringify([]));
-            
             const checkboxes = document.getElementById('checkboxContainer').querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(cb => cb.checked = false);
-            
             updateHeaderBadgeHUDCounters();
             renderList();
         }
@@ -593,7 +621,6 @@
             const badge = document.getElementById('activeFilterBadgeCount');
             const triggerBtn = document.getElementById('filterMenuTriggerBtn');
             const count = checkedFilterStateArray.length;
-            
             if(count > 0) {
                 badge.innerText = count;
                 badge.classList.remove('hidden');
@@ -622,9 +649,6 @@
                 return { ...spot, distRaw: dist, distStr: dist > 1000 ? 'No Location' : (dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`) };
             }).sort((a, b) => a.distRaw - b.distRaw);
 
-            if (showStarredOnly) processed = processed.filter(s => s.priority === 'High' || s.priority === '🔥');
-            
-            // Checklist filtering intersection calculation array matrix
             if (checkedFilterStateArray.length > 0) {
                 processed = processed.filter(spot => {
                     if(!spot.category) return false;
@@ -642,8 +666,6 @@
                 const isDone = spot.status?.toLowerCase() === 'done';
                 const isBooked = spot.status?.toLowerCase() === 'booked';
                 const isHigh = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥';
-                
-                // CORRECTED logic parsing: Ensure the ticket_url fallback string checks are completely normalized
                 const ticketLink = spot.ticket_url || "";
 
                 const card = document.createElement('div');
@@ -667,13 +689,11 @@
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                            ${spot.latitude ? `<a href="http://maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95">🗺️ Map</a>` : ''}
+                            ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95">🗺️ Map</a>` : ''}
                         </div>
-                        
                         ${ticketLink !== "" ? `
-                            <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 hover:bg-emerald-700 text-center text-xs font-bold py-2.5 rounded-xl text-white block transition-colors">📄 View Ticket Details</a>
+                            <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
                         ` : ''}
-
                         <div class="flex gap-2 mt-1 justify-end">
                             <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
                             <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : '🔥'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? '★ Unstar' : '⭐ Star'}</button>
