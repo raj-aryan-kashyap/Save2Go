@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
+    <link class="manifest-ref" rel="manifest" href="manifest.json">
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
@@ -21,7 +21,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
         
-        /* Viewport Transition Hub Overrides */
+        /* Fixed Viewport Hub Panel Overrides */
         .view-panel {
             position: absolute;
             top: 0;
@@ -171,7 +171,7 @@
                 <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">📍 InstaCompass</h1>
                 <div class="flex items-center gap-2 mt-0.5">
                     <div class="flex items-center gap-1">
-                        <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                         <span id="syncText" class="text-[9px] font-mono tracking-wide text-slate-500">Cache Loaded</span>
                     </div>
                 </div>
@@ -186,19 +186,24 @@
             </div>
         </div>
         
-        <div class="grid grid-cols-3 gap-2 mt-1">
-            <button onclick="togglePriorityFilterViewMode()" id="priorityToggleHUDButton" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1">
-                <span id="priorityToggleHUDIndicator" class="text-[11px]">○</span>
-                <span id="priorityToggleHUDText">Starred Only</span>
-            </button>
+        <div class="grid grid-cols-12 gap-2 mt-1 items-center">
             
-            <div class="relative">
-                <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate">
-                    <span id="cityHUDTriggerText" class="truncate">All Cities</span>
-                    <span class="text-[8px] text-slate-600">▼</span>
+            <div class="col-span-5 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden">
+                <button onclick="setPriorityFilterState(false)" id="toggleOptionShowAll" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10">
+                    Show All
+                </button>
+                <button onclick="setPriorityFilterState(true)" id="toggleOptionStarred" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-slate-500">
+                    Starred
+                </button>
+            </div>
+            
+            <div class="col-span-4 relative">
+                <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate shadow-inner">
+                    <span id="cityHUDTriggerText" class="truncate font-black">All Cities</span>
+                    <span class="text-[7px] text-slate-500 shrink-0">▼</span>
                 </button>
                 
-                <div id="cityHUDDropdownPopupBox" class="absolute right-0 left-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden z-[600] flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
+                <div id="cityHUDDropdownPopupBox" class="absolute left-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden z-[600] flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
                     <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold max-h-44 overflow-y-auto no-scrollbar">
                         </div>
                     <div class="pt-1.5 mt-1.5 border-t border-slate-800/80 text-center">
@@ -207,7 +212,7 @@
                 </div>
             </div>
 
-            <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5">
+            <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="col-span-3 bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1">
                 <span>Filters</span>
                 <span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
             </button>
@@ -271,7 +276,7 @@
             <div class="space-y-2 max-w-xs">
                 <div class="text-4xl">🛠️</div>
                 <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Builder</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Work in progress workspace engine module layer. Structuring timeline dashboards coming later.</p>
+                <p class="text-xs text-slate-500 leading-relaxed">Work in progress workspace workspace engine module layer. Structuring timeline dashboards coming later.</p>
             </div>
         </div>
     </div>
@@ -336,7 +341,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.2.5";
+        const APP_VERSION = "v1.3.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -896,15 +901,16 @@
             const count = checkedCitiesStateArray.length;
             if (count === 0) {
                 textNode.innerText = "All Cities";
-                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-center gap-1 truncate";
+                btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate shadow-inner";
             } else {
                 textNode.innerText = count === 1 ? checkedCitiesStateArray[0] : `Cities (${count})`;
-                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl p-2.5 text-center text-xs font-black text-pink-400 flex items-center justify-center gap-1 truncate";
+                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-pink-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate shadow-inner";
             }
         }
 
-        function togglePriorityFilterViewMode() {
-            showStarredOnly = !showStarredOnly;
+        // NEW BALANCED TWO-WAY TOGGLE ACTION CONTROLLER
+        function setPriorityFilterState(shouldShowStarredOnly) {
+            showStarredOnly = shouldShowStarredOnly;
             localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
             syncPriorityFilterViewModeUI();
             
@@ -918,17 +924,17 @@
         }
 
         function syncPriorityFilterViewModeUI() {
-            const text = document.getElementById('priorityToggleHUDText');
-            const indicator = document.getElementById('priorityToggleHUDIndicator');
-            const btn = document.getElementById('priorityToggleHUDButton');
+            const showAllBtn = document.getElementById('toggleOptionShowAll');
+            const starredBtn = document.getElementById('toggleOptionStarred');
+            
             if (showStarredOnly) {
-                text.innerText = "Starred Only";
-                indicator.innerText = "★";
-                btn.className = "w-full bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-center text-xs font-black text-amber-400 flex items-center justify-center gap-1";
+                // Starred activated style (illuminated yellow/amber tone)
+                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-slate-500 bg-transparent";
+                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10";
             } else {
-                text.innerText = "Starred Only";
-                indicator.innerText = "○";
-                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 flex items-center justify-center gap-1";
+                // Show All activated style (illuminated yellow/amber tone)
+                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10";
+                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-slate-500 bg-transparent";
             }
         }
 
@@ -1067,24 +1073,20 @@
             });
         }
 
-        // FULL SPECIFICATION RE-ENGINEERED MAP DETAIL CARD BINDING HOOKS
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const isDone = spotObj.status?.toLowerCase() === 'done';
             const isBooked = spotObj.status?.toLowerCase() === 'booked';
             const ticketLink = spotObj.ticket_url || "";
 
-            // Dynamic Text Nodes Mapping
             document.getElementById('traySpotTitle').innerText = spotObj.spot_name || "Unnamed Destination";
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
             document.getElementById('traySpotNotes').innerText = spotObj.notes || "No custom notes assigned.";
             document.getElementById('trayDistanceBadge').innerText = `📍 ${spotObj.distStr || 'Map View'}`;
 
-            // Core Navigation Anchor Triggers
             document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
             document.getElementById('trayActionBtn').href = spotObj.latitude ? `http://googleusercontent.com/maps.google.com/?q=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
 
-            // Booked Tag and Ticket URLs visibility conditions
             const bookedBadge = document.getElementById('trayBookedBadge');
             const ticketRow = document.getElementById('trayTicketRow');
             const ticketBtn = document.getElementById('trayTicketBtn');
@@ -1097,11 +1099,9 @@
                 ticketRow.classList.add('hidden');
             }
 
-            // Starred Badge visibility conditions
             const starredBadge = document.getElementById('trayStarredBadge');
             if (isStarredBool) starredBadge.classList.remove('hidden'); else starredBadge.classList.add('hidden');
 
-            // Interactive Cloud Mutation Controls 
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
