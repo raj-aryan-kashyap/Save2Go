@@ -53,6 +53,7 @@
             font-size: 16px !important;
             width: 36px !important;
             height: 36px !important;
+            transition: opacity 0.2s tracking;
         }
         .starred-cube-border {
             border: 2px solid rgba(245, 158, 11, 0.9) !important;
@@ -244,15 +245,15 @@
                 <div class="flex flex-col gap-2 pt-0.5">
                     <div class="flex gap-2">
                         <a id="trayOpenReelBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                        <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺| Get Direction</a>
+                        <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>
                     </div>
                     <div id="trayTicketRow" class="hidden">
                         <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
                     </div>
                     
                     <div class="flex gap-2 justify-end pt-2 border-t border-slate-800/60 mt-1">
-                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-1.5 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
-                        <button id="trayStarToggleBtn" class="text-xs px-3 py-1.5 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
+                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-1.5 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-850 transition-colors">✓ Done</button>
+                        <button id="trayStarToggleBtn" class="text-xs px-3 py-1.5 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-850 transition-colors">★ Star</button>
                     </div>
                 </div>
             </div>
@@ -339,7 +340,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.3.4";
+        const APP_VERSION = "v1.3.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -998,7 +999,6 @@
             }
         }
 
-        // RE-ENGINEERED ARTIFACT: Implements custom freeze-panel logic at the bottom of category scroll paths
         function buildDynamicShoppingCheckboxList() {
             const scrollContainer = document.getElementById('checkboxScrollRegionContainer');
             const stickyPanel = document.getElementById('hideCompletedTargetRowContainer');
@@ -1030,7 +1030,6 @@
                 scrollContainer.appendChild(label);
             });
 
-            // Injection point onto the isolated freeze block overlay panel
             const hideCompletedLabel = document.createElement('label');
             hideCompletedLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 hover:bg-pink-500/10 text-pink-400 cursor-pointer active:bg-slate-950/60 text-xs font-bold w-full";
             hideCompletedLabel.innerHTML = `
@@ -1064,6 +1063,7 @@
             plotDynamicMarkersOnCanvasMap();
         }
 
+        // Programmatically updates dynamic active popup containers if open during filters updates
         function clearAllFilterCheckboxes() {
             checkedFilterStateArray = [];
             localStorage.setItem('compass_active_filters', JSON.stringify([]));
@@ -1118,6 +1118,7 @@
 
             processed.sort((a, b) => a.distRaw - b.distRaw);
 
+            // CRITICAL ENGINE RE-ROUTE: Allows completed markers to stream through if 'Hide Completed' is disabled
             if (hideCompletedSpotsStateBool) {
                 processed = processed.filter(s => (s.status || "").toLowerCase().trim() !== "done");
             }
@@ -1150,7 +1151,8 @@
                 if(!spot.latitude || !spot.longitude) return;
                 
                 const isStarred = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥' || spot.priority?.toLowerCase() === 'must do' || spot.priority?.toLowerCase() === 'starred';
-                
+                const isDone = (spot.status || "").toLowerCase().trim() === 'done';
+
                 let categoryIconEmoji = "📍";
                 const catStr = (spot.category || "").toLowerCase();
                 if(catStr.includes("food") || catStr.includes("cafe") || catStr.includes("dine")) categoryIconEmoji = "🍕";
@@ -1158,7 +1160,8 @@
                 else if(catStr.includes("shop") || catStr.includes("store") || catStr.includes("bag")) categoryIconEmoji = "🛍️";
                 else if(catStr.includes("bar") || catStr.includes("drink") || catStr.includes("vibe")) categoryIconEmoji = "🍸";
 
-                const iconHTML = `<div class="custom-map-cube ${isStarred ? 'starred-cube-border' : ''}">${categoryIconEmoji}</div>`;
+                // CRITICAL UI MIRRORING: Flags archived tokens with clear half-opacity classes directly on the map structure
+                const iconHTML = `<div class="custom-map-cube ${isStarred ? 'starred-cube-border' : ''} ${isDone ? 'opacity-40 filter grayscale' : ''}">${categoryIconEmoji}</div>`;
                 
                 const customMarkerIcon = L.divIcon({
                     html: iconHTML,
@@ -1183,16 +1186,27 @@
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
-            const isDone = spotObj.status?.toLowerCase() === 'done';
+            const isDone = (spotObj.status || "").toLowerCase().trim() === 'done';
             const isBooked = spotObj.status?.toLowerCase() === 'booked';
             const ticketLink = spotObj.ticket_url || "";
 
-            // CRITICAL ACTIONS MUTATOR: Force hides data insertion plus switch when sheets render
             if (plusBtn) plusBtn.classList.add('hidden');
 
-            document.getElementById('traySpotTitle').innerText = spotObj.spot_name || "Unnamed Destination";
+            // CRITICAL RENDER SYNCHRONICITY: Applies list-view structural mutations to the map information preview row card
+            const titleWidget = document.getElementById('traySpotTitle');
+            const notesWidget = document.getElementById('traySpotNotes');
+            
+            titleWidget.innerText = spotObj.spot_name || "Unnamed Destination";
+            notesWidget.innerText = spotObj.notes || "No custom notes assigned.";
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
-            document.getElementById('traySpotNotes').innerText = spotObj.notes || "No custom notes assigned.";
+
+            if (isDone) {
+                titleWidget.className = "text-base font-bold text-slate-500 line-through mt-1.5 truncate max-w-[190px]";
+                notesWidget.className = "text-xs text-slate-500 bg-slate-950/20 p-2.5 rounded-xl border border-slate-900/30 line-through leading-relaxed max-h-16 overflow-y-auto no-scrollbar";
+            } else {
+                titleWidget.className = "text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]";
+                notesWidget.className = "text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-16 overflow-y-auto no-scrollbar";
+            }
             
             const distanceBadge = document.getElementById('trayDistanceBadge');
             distanceBadge.innerText = spotObj.distStr;
@@ -1225,7 +1239,8 @@
 
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
             doneBtn.onclick = () => {
-                updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
+                const nextStatusValue = isDone ? 'Pending' : 'Done';
+                updateCloudAction(spotObj.rowid, 'update_status', nextStatusValue, spotObj.spot_name);
                 dismissMapDetailTrayHUDCard();
             };
 
@@ -1239,7 +1254,6 @@
             tray.classList.remove('hidden');
         }
 
-        // Programmatic closer wrapper that restores navigation buttons safely
         function dismissMapDetailTrayHUDCard() {
             document.getElementById('mapDetailTrayHUD').classList.add('hidden');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
@@ -1259,7 +1273,7 @@
             }
 
             processed.forEach(spot => {
-                const isDone = spot.status?.toLowerCase() === 'done';
+                const isDone = (spot.status || "").toLowerCase().trim() === 'done';
                 const isBooked = spot.status?.toLowerCase() === 'booked';
                 const isHigh = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥' || spot.priority?.toLowerCase() === 'must do' || spot.priority?.toLowerCase() === 'starred';
                 const ticketLink = spot.ticket_url || "";
@@ -1282,11 +1296,11 @@
                                 ${isHigh ? '<span class="text-[9px] font-black tracking-wide text-amber-400 flex items-center gap-0.5">★ Starred</span>' : ''}
                                 ${isBooked ? '<span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>' : ''}
                             </div>
-                            <h3 class="text-base font-bold text-slate-200 mt-1.5 truncate">${spot.spot_name || 'Unnamed Spot'}</h3>
+                            <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name || 'Unnamed Spot'}</h3>
                         </div>
                         <span class="${badgeStyleClass}">${spot.distStr}</span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-20 overflow-y-auto no-scrollbar">${spot.notes || 'No custom notes.'}</p>
+                    <p class="text-xs ${isDone ? 'text-slate-500 line-through border-slate-900/30' : 'text-slate-400 border-slate-900/60'} mt-2 bg-slate-950/40 p-2.5 rounded-xl border leading-relaxed max-h-20 overflow-y-auto no-scrollbar">${spot.notes || 'No custom notes.'}</p>
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
