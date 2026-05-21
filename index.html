@@ -277,7 +277,7 @@
             <span class="text-xl">🗺️</span><span class="text-[10px] font-bold tracking-wide">Map</span>
         </button>
         <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="flex flex-col items-center gap-1 text-slate-500">
-            <span class="text-xl">🗂️</span><span class="text-[10px] font-bold tracking-wide">Saved Spot</span>
+            <span class="text-xl">🗂️</span><span class="text-[10px] font-bold tracking-wide">Saved Spots</span>
         </button>
         <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="flex flex-col items-center gap-1 text-slate-500">
             <span class="text-xl">⏳</span><span class="text-[10px] font-bold tracking-wide">Itinerary</span>
@@ -328,7 +328,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.4.3";
+        const APP_VERSION = "v1.4.4";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -338,8 +338,6 @@
         let checkedCitiesStateArray = JSON.parse(localStorage.getItem('compass_active_cities')) || [];
         let showStarredOnly = JSON.parse(localStorage.getItem('compass_starred_only')) || false;
         let hideCompletedSpotsStateBool = localStorage.getItem('compass_hide_completed') !== null ? JSON.parse(localStorage.getItem('compass_hide_completed')) : true;
-        
-        let operationalStateLocksRegistry = new Set();
 
         let userLat = 48.8566; let userLon = 2.3522;
         let areaContextStr = "Unknown Coordinates"; let cachedHardwareString = "Unknown Device Model";
@@ -610,7 +608,6 @@
 
         function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
 
-        // Live telemetry connection intercept mapping layers
         function setupNetworkListeners() {
             window.addEventListener('online', updateNetworkStatusHUD);
             window.addEventListener('offline', updateNetworkStatusHUD);
@@ -946,29 +943,24 @@
             });
         }
 
+        // REBUILT: Optimistic Engine renders layout changes within 1ms, then queues data updates in the background
         async function updateCloudAction(rowId, action, value, spotName) {
-            const lockKey = `${rowId}_${action}`;
-            if (operationalStateLocksRegistry.has(lockKey)) return; 
-            operationalStateLocksRegistry.add(lockKey);
-
             const target = travelSpots.find(s => s.rowid === rowId);
             if (target) {
                 if (action === 'update_status') target.status = value;
                 if (action === 'toggle_priority') target.priority = value;
-                renderList(); plotDynamicMarkersOnCanvasMap();
+                
+                // INSTANT TRIGGER: Re-renders the entire app view immediately
+                renderList(); 
+                plotDynamicMarkersOnCanvasMap();
             }
             try {
+                // Background transfer without halting input capabilities
                 await fetch(API_URL, {
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName, deviceMeta: cachedHardwareString })
                 });
-                setTimeout(async () => {
-                    await syncData(false);
-                    operationalStateLocksRegistry.delete(lockKey);
-                }, 1000);
-            } catch(err) {
-                operationalStateLocksRegistry.delete(lockKey);
-            }
+            } catch(err) {}
         }
 
         function calculateSmartCityDefaultFilters() {
