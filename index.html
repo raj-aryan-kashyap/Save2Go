@@ -35,16 +35,19 @@
             </div>
             
             <div class="space-y-3 pt-2 text-left">
-                <div>
+                <div id="loginDropdownContainer">
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Select Active Explorer</label>
                     <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium focus:outline-none focus:border-pink-500 text-xs">
                         </select>
                 </div>
-                <div class="relative flex items-center justify-center my-2">
+                
+                <div id="loginDividerLine" class="relative flex items-center justify-center my-2">
                     <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase tracking-wider">Or Register New</span>
                     <hr class="w-full border-slate-900">
                 </div>
+                
                 <div>
+                    <label id="registerInputLabel" class="hidden text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Type Your Name</label>
                     <input type="text" id="customUsernameInput" placeholder="Type name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none focus:border-pink-500">
                 </div>
                 <button onclick="handleInitialLoginSubmit()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-center font-black py-3.5 rounded-xl text-white text-xs active:scale-95 transition-all shadow-lg shadow-emerald-950/20 tracking-wider uppercase">
@@ -70,11 +73,11 @@
 
                 <hr class="border-slate-800">
 
-                <div class="space-y-2">
+                <div id="settingsSwitchUserSection" class="space-y-2 transition-opacity duration-200">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Login As Someone Else</label>
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none">
+                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">
                         </select>
-                    <button onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white transition-opacity">Swap Active User Session</button>
+                    <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white transition-all disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed">Swap Active User Session</button>
                 </div>
 
                 <hr class="border-slate-800">
@@ -364,55 +367,87 @@
         }
 
         async function populateUserDropdowns() {
-            const dropdowns = [document.getElementById('loginDropdown'), document.getElementById('settingsSwitchUserDropdown')];
+            const loginDropdown = document.getElementById('loginDropdown');
+            const settingsDropdown = document.getElementById('settingsSwitchUserDropdown');
+            const dropdownContainer = document.getElementById('loginDropdownContainer');
+            const dividerLine = document.getElementById('loginDividerLine');
+            const registerLabel = document.getElementById('registerInputLabel');
+            const switchSection = document.getElementById('settingsSwitchUserSection');
+            const switchBtn = document.getElementById('settingsSwitchUserBtn');
+
             try {
                 const response = await fetch(`${API_URL}?action=get_users`);
                 const usersList = await response.json();
                 
-                dropdowns.forEach(dd => {
-                    if(!dd) return;
-                    dd.innerHTML = '';
-                    if (Array.isArray(usersList) && usersList.length > 0) {
-                        usersList.forEach(user => {
-                            const opt = document.createElement('option');
-                            opt.value = user;
-                            opt.innerText = user; 
-                            dd.appendChild(opt);
-                        });
-                    } else {
-                        dd.innerHTML = '<option value="">Register name below...</option>';
-                    }
-                });
+                if (Array.isArray(usersList) && usersList.length > 0) {
+                    // Users exist: Enable layout nodes completely
+                    dropdownContainer.style.display = 'block';
+                    dividerLine.style.display = 'flex';
+                    registerLabel.classList.add('hidden');
+                    switchSection.style.opacity = '1';
+                    settingsDropdown.disabled = false;
+                    switchBtn.disabled = false;
+
+                    loginDropdown.innerHTML = '';
+                    settingsDropdown.innerHTML = '';
+
+                    usersList.forEach(user => {
+                        const opt1 = document.createElement('option');
+                        opt1.value = user; opt1.innerText = user;
+                        loginDropdown.appendChild(opt1);
+
+                        const opt2 = document.createElement('option');
+                        opt2.value = user; opt2.innerText = user;
+                        settingsDropdown.appendChild(opt2);
+                    });
+                } else {
+                    // Empty list state: Enforce requested UX visual constraints
+                    dropdownContainer.style.display = 'none';
+                    dividerLine.style.display = 'none';
+                    registerLabel.classList.remove('hidden');
+                    switchSection.style.opacity = '0.3';
+                    settingsDropdown.disabled = true;
+                    switchBtn.disabled = true;
+                    settingsDropdown.innerHTML = '<option value="">No other names</option>';
+                }
             } catch(e) {
-                dropdowns.forEach(dd => { if(dd) dd.innerHTML = '<option value="">Error connecting</option>'; });
+                dropdownContainer.style.display = 'none';
+                dividerLine.style.display = 'none';
+                registerLabel.classList.remove('hidden');
+                switchSection.style.opacity = '0.3';
+                settingsDropdown.disabled = true;
+                switchBtn.disabled = true;
             }
         }
 
         function initializeSessionDashboard() {
-            document.getElementById('userBadge').innerText = `👤 ${currentUser}`;
-            document.getElementById('settingsRenameField').value = currentUser;
-            
+            // Main menu card target nodes fallback
+            syncData(true);
             navigator.geolocation.getCurrentPosition(pos => {
                 gpsStatusCachedBool = true;
                 updateGpsHudStatus(true, "GPS Active");
                 userLat = pos.coords.latitude;
                 userLon = pos.coords.longitude;
                 calculateSmartCityDefaultFilters();
-                syncData(true); 
+                renderList();
             }, () => {
                 gpsStatusCachedBool = false;
                 updateGpsHudStatus(false, "⚠️ GPS Off");
                 calculateSmartCityDefaultFilters();
-                syncData(true);
+                renderList();
             }, { enableHighAccuracy: true, timeout: 4000 });
         }
 
         async function handleInitialLoginSubmit() {
-            const dropdownVal = document.getElementById('loginDropdown').value;
+            const dropdownVal = document.getElementById('loginDropdown') ? document.getElementById('loginDropdown').value : "";
             const textVal = document.getElementById('customUsernameInput').value.trim();
-            const chosenName = textVal !== "" ? textVal : dropdownVal;
+            
+            // Priority evaluation logic mapping profiles cleanly
+            const dropdownVisible = document.getElementById('loginDropdownContainer').style.display !== 'none';
+            const chosenName = (textVal !== "") ? textVal : (dropdownVisible ? dropdownVal : "");
 
-            if(!chosenName || chosenName.startsWith("Register name") || chosenName.startsWith("No explorers")) { alert("Please type your name to begin."); return; }
+            if(!chosenName || chosenName === "") { alert("Please type your name to create your account registry session."); return; }
+            
             localStorage.setItem('compass_user', chosenName);
             currentUser = chosenName;
             document.getElementById('userModal').classList.add('hidden');
@@ -537,7 +572,6 @@
             const oldName = currentUser;
             localStorage.setItem('compass_user', newName);
             currentUser = newName;
-            document.getElementById('userBadge').innerText = `👤 ${newName}`;
             toggleSettingsMenu(false);
             try {
                 await fetch(API_URL, {
@@ -551,7 +585,7 @@
 
         function switchUserSessionViaSettings() {
             const selectedSwapName = document.getElementById('settingsSwitchUserDropdown').value;
-            if(!selectedSwapName) return;
+            if(!selectedSwapName || selectedSwapName === "") return;
             localStorage.setItem('compass_user', selectedSwapName);
             currentUser = selectedSwapName;
             initializeSessionDashboard();
@@ -673,6 +707,11 @@
             });
             updateCityHUDTriggerButtonLabelText();
         }
+
+        document.getElementById('cityFilterHUDTriggerBtn').onclick = function(event) {
+            event.stopPropagation();
+            document.getElementById('cityHUDDropdownPopupBox').classList.toggle('hidden');
+        };
 
         function toggleCityDropdownOverlayMenu(event) {
             event.stopPropagation(); 
@@ -899,7 +938,7 @@
                     body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName, deviceMeta: cachedHardwareString })
                 });
                 setTimeout(() => syncData(false), 800);
-            } catch (err) {}
+            } catch(err) {}
         }
 
         function setupSearchAutocomplete() {
