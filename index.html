@@ -85,7 +85,7 @@
                     <label id="registerInputLabel" class="hidden text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Type Your Name</label>
                     <input type="text" id="customUsernameInput" placeholder="Type name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none focus:border-pink-500">
                 </div>
-                <button onclick="handleInitialLoginSubmit()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-center font-black py-3.5 rounded-xl text-white text-xs active:scale-95 transition-all shadow-lg shadow-emerald-950/20 tracking-wider uppercase">
+                <button onclick="handleInitialLoginSubmit()" id="beginSessionBtn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-center font-black py-3.5 rounded-xl text-white text-xs active:scale-95 transition-all shadow-lg shadow-emerald-950/20 tracking-wider uppercase">
                     Begin
                 </button>
             </div>
@@ -314,7 +314,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.1.2";
+        const APP_VERSION = "v1.1.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -556,6 +556,7 @@
             }
         }
 
+        // FIXED LOG IN PIPELINE: Forces synchronous execution parameters
         async function handleInitialLoginSubmit() {
             const dropdownVal = document.getElementById('loginDropdown') ? document.getElementById('loginDropdown').value : "";
             const textVal = document.getElementById('customUsernameInput').value.trim();
@@ -564,14 +565,16 @@
 
             if(!chosenName || chosenName === "") { alert("Please type your name to create your account registry session."); return; }
             
+            const submitBtn = document.getElementById('beginSessionBtn');
+            submitBtn.innerText = "Registering...";
+            submitBtn.disabled = true;
+
             localStorage.setItem('compass_user', chosenName);
             currentUser = chosenName;
-            document.getElementById('userModal').classList.add('hidden');
-            
-            initializeSessionDashboard();
             
             if (textVal !== "") {
                 try {
+                    // Await network response directly before loading viewports
                     await fetch(API_URL, {
                         method: 'POST',
                         mode: 'no-cors',
@@ -580,6 +583,15 @@
                     });
                 } catch(e){}
             }
+            
+            // Re-fetch sheet user registry array to instantly populate configuration drawers
+            await populateUserDropdowns();
+            
+            submitBtn.innerText = "Begin";
+            submitBtn.disabled = false;
+            document.getElementById('userModal').classList.add('hidden');
+            
+            initializeSessionDashboard();
             await resolveGeocodeAndLogSession();
         }
 
