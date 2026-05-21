@@ -67,19 +67,20 @@
     <div class="fixed top-[112px] left-0 right-0 px-4 pointer-events-none z-[600]">
         <div class="max-w-md mx-auto relative w-full h-0">
             
-            <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-56 overflow-y-auto no-scrollbar">
-                <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold max-h-44 overflow-y-auto no-scrollbar">
+            <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-96 overflow-hidden">
+                <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto no-scrollbar flex-1 pb-1">
                     </div>
-                <div class="pt-1.5 mt-1.5 border-t border-slate-800/80 text-center">
+                <div class="pt-2 mt-1.5 border-t border-slate-800 bg-slate-900 text-center shrink-0">
                     <button onclick="clearAllSelectedCityCheckboxes()" class="text-[10px] font-bold text-pink-400 active:text-pink-300 transition-colors">Clear Filter</button>
                 </div>
             </div>
 
-            <div id="filterCategoryDropdownPopupBox" class="absolute right-4 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-56 overflow-y-auto no-scrollbar">
-                <div id="checkboxContainer" class="space-y-1 text-xs text-slate-300 font-semibold max-h-44 overflow-y-auto no-scrollbar">
+            <div id="filterCategoryDropdownPopupBox" class="absolute right-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-96 overflow-hidden">
+                <div class="overflow-y-auto no-scrollbar flex-1 pb-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer">
                     </div>
-                <div class="pt-1.5 mt-1.5 border-t border-slate-800/80 text-center">
-                    <button onclick="clearAllFilterCheckboxes()" class="text-[10px] font-bold text-pink-400 active:text-pink-300 transition-colors">Clear Filter</button>
+                <div class="sticky bottom-0 bg-slate-900 pt-2 border-t border-slate-800 shrink-0 space-y-2 text-center" id="stickyDropdownFreezePanel">
+                    <div id="hideCompletedTargetRowContainer"></div>
+                    <button onclick="clearAllFilterCheckboxes()" class="text-[10px] font-bold text-pink-400 active:text-pink-300 transition-colors block mx-auto">Clear Filter</button>
                 </div>
             </div>
 
@@ -217,12 +218,12 @@
         <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0"></div>
             
-            <div class="absolute bottom-40 right-4 z-[400] flex flex-col gap-2.5">
+            <div class="absolute bottom-[240px] right-4 z-[400] flex flex-col gap-2.5">
                 <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:scale-90 transition-all">🔍</button>
                 <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:scale-90 transition-all">🧭</button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="absolute bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[800] hidden transform transition-all duration-200 space-y-3">
+            <div id="mapDetailTrayHUD" class="absolute bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden transform transition-all duration-200 space-y-3">
                 <div class="flex justify-between items-start gap-2">
                     <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -234,7 +235,7 @@
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">Calculating...</span>
-                        <button onclick="document.getElementById('mapDetailTrayHUD').classList.add('hidden')" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:scale-90 transition-transform">✕</button>
+                        <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:scale-90 transition-transform">✕</button>
                     </div>
                 </div>
                 
@@ -243,13 +244,13 @@
                 <div class="flex flex-col gap-2 pt-0.5">
                     <div class="flex gap-2">
                         <a id="trayOpenReelBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                        <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>
+                        <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺| Get Direction</a>
                     </div>
                     <div id="trayTicketRow" class="hidden">
                         <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
                     </div>
                     
-                    <div class="flex gap-2 justify-end pt-2 border-t border-slate-800/40">
+                    <div class="flex gap-2 justify-end pt-2 border-t border-slate-800/60 mt-1">
                         <button id="trayDoneToggleBtn" class="text-xs px-3 py-1.5 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
                         <button id="trayStarToggleBtn" class="text-xs px-3 py-1.5 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
                     </div>
@@ -291,7 +292,7 @@
         </button>
     </div>
 
-    <button onclick="toggleQuickAddModal(true)" class="fixed bottom-24 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-[450] border border-white/10">
+    <button id="globalFloatingActionPlusButton" onclick="toggleQuickAddModal(true)" class="fixed bottom-24 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-[450] border border-white/10">
         ➕
     </button>
 
@@ -338,7 +339,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.3.3";
+        const APP_VERSION = "v1.3.4";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -755,7 +756,7 @@
         }
 
         async function triggerSecureServerHistoryPurgeVault() {
-            const quirkyConfirm = confirm("🚨 TOTAL RESET ALERT!\n\nYou are about to execute a deep clear script operation.\n\nProceed?");
+            const quirkyConfirm = confirm("🚨 TOTAL RESET ALERT!\n\nProceed?");
             if(!quirkyConfirm) return;
 
             const adminPasswordInput = prompt("🔒 PASSWORD CONFIRMATION:");
@@ -997,10 +998,14 @@
             }
         }
 
+        // RE-ENGINEERED ARTIFACT: Implements custom freeze-panel logic at the bottom of category scroll paths
         function buildDynamicShoppingCheckboxList() {
-            const container = document.getElementById('checkboxContainer');
-            if(!container) return;
-            container.innerHTML = '';
+            const scrollContainer = document.getElementById('checkboxScrollRegionContainer');
+            const stickyPanel = document.getElementById('hideCompletedTargetRowContainer');
+            if(!scrollContainer || !stickyPanel) return;
+            
+            scrollContainer.innerHTML = '';
+            stickyPanel.innerHTML = '';
             
             let uniqueCategories = new Set();
             travelSpots.forEach(spot => {
@@ -1022,22 +1027,19 @@
                            onchange="handleCheckboxToggleEvent(this)"
                            class="w-3.5 h-3.5 accent-pink-500 rounded border-slate-700 bg-slate-950 focus:ring-0">
                 `;
-                container.appendChild(label);
+                scrollContainer.appendChild(label);
             });
 
-            const divider = document.createElement('hr');
-            divider.className = "border-slate-800/80 my-1.5";
-            container.appendChild(divider);
-
+            // Injection point onto the isolated freeze block overlay panel
             const hideCompletedLabel = document.createElement('label');
-            hideCompletedLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 hover:bg-pink-500/10 text-pink-400 cursor-pointer active:bg-slate-950/60";
+            hideCompletedLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 hover:bg-pink-500/10 text-pink-400 cursor-pointer active:bg-slate-950/60 text-xs font-bold w-full";
             hideCompletedLabel.innerHTML = `
                 <span class="truncate pr-2 font-black">Hide Completed</span>
                 <input type="checkbox" id="hideCompletedFilterSystemCheckbox" ${hideCompletedSpotsStateBool ? 'checked' : ''}
                        onchange="handleHideCompletedStateToggleCheckboxEvent(this)"
                        class="w-3.5 h-3.5 accent-pink-500 rounded border-pink-500/30 bg-slate-950 focus:ring-0">
             `;
-            container.appendChild(hideCompletedLabel);
+            stickyPanel.appendChild(hideCompletedLabel);
             
             updateHeaderBadgeHUDCounters();
         }
@@ -1065,10 +1067,8 @@
         function clearAllFilterCheckboxes() {
             checkedFilterStateArray = [];
             localStorage.setItem('compass_active_filters', JSON.stringify([]));
-            const checkboxes = document.getElementById('checkboxContainer').querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(cb => {
-                if (cb.id !== "hideCompletedFilterSystemCheckbox") cb.checked = false;
-            });
+            const checkboxes = document.getElementById('checkboxScrollRegionContainer').querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
             updateHeaderBadgeHUDCounters();
             renderList();
             plotDynamicMarkersOnCanvasMap();
@@ -1180,12 +1180,15 @@
             });
         }
 
-        // CRITICAL RE-ENGINEERED OVERLAY MAPPING CONTROLLER HOOKS
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
+            const plusBtn = document.getElementById('globalFloatingActionPlusButton');
             const isDone = spotObj.status?.toLowerCase() === 'done';
             const isBooked = spotObj.status?.toLowerCase() === 'booked';
             const ticketLink = spotObj.ticket_url || "";
+
+            // CRITICAL ACTIONS MUTATOR: Force hides data insertion plus switch when sheets render
+            if (plusBtn) plusBtn.classList.add('hidden');
 
             document.getElementById('traySpotTitle').innerText = spotObj.spot_name || "Unnamed Destination";
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
@@ -1200,7 +1203,7 @@
             }
 
             document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
-            document.getElementById('trayActionBtn').href = spotObj.latitude ? `http://googleusercontent.com/maps.google.com/?q=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
+            document.getElementById('trayActionBtn').href = spotObj.latitude ? `https://www.google.com/maps/search/?api=1&query=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
 
             const bookedBadge = document.getElementById('trayBookedBadge');
             const ticketRow = document.getElementById('trayTicketRow');
@@ -1217,24 +1220,30 @@
             const starredBadge = document.getElementById('trayStarredBadge');
             if (isStarredBool) starredBadge.classList.remove('hidden'); else starredBadge.classList.add('hidden');
 
-            // CRITICAL RE-BINDING: Standardizes button interaction paths perfectly inside tray viewport cards
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
             doneBtn.onclick = () => {
                 updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
-                tray.classList.add('hidden');
+                dismissMapDetailTrayHUDCard();
             };
 
             starBtn.innerText = isStarredBool ? 'Unstar' : '★ Star';
             starBtn.onclick = () => {
                 const targetNextState = isStarredBool ? 'Normal' : 'Starred';
                 updateCloudAction(spotObj.rowid, 'toggle_priority', targetNextState, spotObj.spot_name);
-                tray.classList.add('hidden');
+                dismissMapDetailTrayHUDCard();
             };
 
             tray.classList.remove('hidden');
+        }
+
+        // Programmatic closer wrapper that restores navigation buttons safely
+        function dismissMapDetailTrayHUDCard() {
+            document.getElementById('mapDetailTrayHUD').classList.add('hidden');
+            const plusBtn = document.getElementById('globalFloatingActionPlusButton');
+            if (plusBtn) plusBtn.classList.remove('hidden');
         }
 
         function renderList() {
@@ -1281,7 +1290,7 @@
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                            ${spot.latitude ? `<a href="http://googleusercontent.com/maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>` : ''}
+                            ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>` : ''}
                         </div>
                         ${ticketLink !== "" ? `
                             <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
