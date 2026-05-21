@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>InstaCompass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        body { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-pink-500/30 select-none">
+
+    <div id="userModal" class="fixed inset-0 bg-slate-950 z-[100] flex flex-col justify-center items-center p-6 hidden">
+        <div class="text-center max-w-sm space-y-6">
+            <div class="text-5xl animate-bounce">🌍✈️🧭</div>
+            <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">InstaCompass</h2>
+            <p class="text-sm text-slate-400 font-medium">Hey there, adventurer! Who is holding the map right now?</p>
+            <div class="grid grid-cols-2 gap-4 pt-4">
+                <button onclick="selectUser('Aryan')" class="p-4 rounded-2xl bg-gradient-to-br from-pink-600 to-pink-700 font-bold shadow-lg shadow-pink-900/30 active:scale-95 transition-transform text-sm">🧔 Aryan</button>
+                <button onclick="selectUser('Wife')" class="p-4 rounded-2xl bg-gradient-to-br from-violet-600 to-violet-700 font-bold shadow-lg shadow-violet-900/30 active:scale-95 transition-transform text-sm">👩 My Better Half</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="sticky top-0 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 p-4 z-50 shadow-lg">
+        <div class="flex justify-between items-center mb-3">
+            <div>
+                <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">📍 InstaCompass</h1>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                    <span id="networkIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="syncText" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Connected</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span id="userBadge" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300">👤 Loading...</span>
+                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 active:rotate-180 transition-transform duration-500">🔄</button>
+            </div>
+        </div>
+        
+        <div class="relative mb-3">
+            <input type="text" id="searchInput" placeholder="Search locations or pick a city..." 
+                   class="w-full bg-slate-950 text-sm rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 border border-slate-800 focus:outline-none focus:ring-1 focus:ring-pink-500">
+            <div id="autocomplete-results" class="absolute w-full bg-slate-900 rounded-xl mt-1 shadow-2xl border border-slate-800 max-h-60 overflow-y-auto hidden z-50"></div>
+        </div>
+
+        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 text-xs font-bold">
+            <button onclick="setCategory('all')" id="cat-all" class="px-3 py-2 rounded-xl bg-pink-600 text-white whitespace-nowrap">🌟 All Spots</button>
+            <button onclick="setCategory('Food Spot')" id="cat-food" class="px-3 py-2 rounded-xl bg-slate-950 text-slate-400 whitespace-nowrap">🍔 Food</button>
+            <button onclick="setCategory('Photo Spot')" id="cat-photo" class="px-3 py-2 rounded-xl bg-slate-950 text-slate-400 whitespace-nowrap">📸 Photos</button>
+            <button onclick="toggleStarredFilter()" id="star-toggle" class="px-3 py-2 rounded-xl bg-slate-950 text-amber-500 border border-amber-500/20 whitespace-nowrap">⭐ Starred Only</button>
+        </div>
+    </div>
+
+    <div class="px-4 mt-3">
+        <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-900 flex justify-between items-center text-[11px] text-slate-400">
+            <div>Target sorting: <span id="current-target-name" class="text-pink-400 font-bold">Your Live GPS</span></div>
+            <button onclick="resetToGPS()" class="text-violet-400 underline font-bold">Reset</button>
+        </div>
+    </div>
+
+    <div id="spots-list" class="p-4 space-y-3 flex-1 overflow-y-auto">
+        <div class="text-center text-slate-600 py-12 text-sm animate-pulse">Initializing navigation...</div>
+    </div>
+
+    <button onclick="toggleQuickAddModal(true)" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-2xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-50 border border-white/10">
+        ➕
+    </button>
+
+    <div id="quickAddModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[90] flex items-end hidden transition-all duration-300">
+        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <h3 class="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">🚀 Add New Spot to Vault</h3>
+                <button onclick="toggleQuickAddModal(false)" class="text-xs bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-slate-400">Dismiss</button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Source URL (Instagram Link)</label>
+                    <input type="url" id="new-url" placeholder="https://instagram.com/p/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Target City</label>
+                        <input type="text" id="new-city" placeholder="e.g., Paris" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Category Type</label>
+                        <select id="new-category" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                            <option value="Food Spot">🍔 Food Spot</option>
+                            <option value="Photo Spot">📸 Photo Spot</option>
+                            <option value="Must Go">🌟 Must Go Landmark</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Spot Name / Keyword Anchor</label>
+                    <input type="text" id="new-keyword" placeholder="e.g., Hidden Arch Viewpoint" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500">
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Vibe Check / Practical Execution Notes</label>
+                    <textarea id="new-notes" rows="3" placeholder="Optimal angles, timings, or suggestions..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 mt-2">
+                    <span class="font-bold text-slate-400 uppercase tracking-wider">Prioritize Selection?</span>
+                    <button onclick="toggleFormPriority()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold">⭐ Normal</button>
+                </div>
+
+                <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg active:scale-[0.98] transition-all text-sm">
+                    💾 Sync to Shared Google Sheet
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // REPLACE THIS STRING WITH YOUR DEPLOYMENT WEB APP URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
+        
+        let currentUser = localStorage.getItem('compass_user');
+        let travelSpots = JSON.parse(localStorage.getItem('compass_cache')) || [];
+        
+        let userLat = 48.8566; // Fallback default map anchors
+        let userLon = 2.3522;
+        let activeCategory = 'all';
+        let showStarredOnly = false;
+        let formPriorityState = "Normal";
+        let searchTimeout;
+
+        window.onload = function() {
+            if (!currentUser) {
+                document.getElementById('userModal').classList.remove('hidden');
+            } else {
+                document.getElementById('userBadge').innerText = `👤 ${currentUser}`;
+                initLocationAndSync();
+            }
+            setupNetworkListeners();
+            setupSearchAutocomplete();
+        };
+
+        function selectUser(name) {
+            localStorage.setItem('compass_user', name);
+            currentUser = name;
+            document.getElementById('userBadge').innerText = `👤 ${name}`;
+            document.getElementById('userModal').classList.add('hidden');
+            initLocationAndSync();
+        }
+
+        function setupNetworkListeners() {
+            const updateStatus = () => {
+                const indicator = document.getElementById('networkIndicator');
+                const text = document.getElementById('syncText');
+                if (navigator.onLine) {
+                    indicator.className = "w-2 h-2 rounded-full bg-emerald-500";
+                    text.innerText = "Connected";
+                } else {
+                    indicator.className = "w-2 h-2 rounded-full bg-amber-500";
+                    text.innerText = "Offline Mode (Cache Active)";
+                }
+            };
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        function initLocationAndSync() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    userLat = pos.coords.latitude;
+                    userLon = pos.coords.longitude;
+                    syncData(false);
+                }, err => {
+                    syncData(false); // If GPS is blocked, continue loading from sheet anyway
+                }, { enableHighAccuracy: true });
+            } else {
+                syncData(false);
+            }
+        }
+
+        async function syncData(isManualForce) {
+            if (!navigator.onLine) {
+                if(isManualForce) alert("You are currently offline. Displaying standard device cache.");
+                renderList();
+                return;
+            }
+            const syncText = document.getElementById('syncText');
+            syncText.innerText = "Syncing with cloud...";
+            try {
+                const response = await fetch(API_URL);
+                const cloudData = await response.json();
+                if(Array.isArray(cloudData)) {
+                    travelSpots = cloudData;
+                    localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
+                }
+                syncText.innerText = "Synced Just Now";
+            } catch (e) {
+                console.error("Cloud framework sync interruption.", e);
+                syncText.innerText = "Sync Error (Using Cache)";
+            }
+            renderList();
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            if(!lat1 || !lon1 || !lat2 || !lon2) return 99999;
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function renderList() {
+            const container = document.getElementById('spots-list');
+            container.innerHTML = '';
+
+            let processed = travelSpots.map(spot => {
+                const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude || 0), parseFloat(spot.longitude || 0));
+                return { ...spot, distRaw: dist, distStr: dist > 1000 ? 'No Location' : (dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`) };
+            }).sort((a, b) => a.distRaw - b.distRaw);
+
+            if (showStarredOnly) processed = processed.filter(s => s.priority === 'High' || s.priority === '🔥');
+            if (activeCategory !== 'all') processed = processed.filter(s => s.category === activeCategory);
+
+            if(processed.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded in this view context.</div>`;
+                return;
+            }
+
+            processed.forEach(spot => {
+                const isDone = spot.status?.toLowerCase() === 'done';
+                const isBooked = spot.status?.toLowerCase() === 'booked';
+                const isHigh = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥';
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-2xl border transition-all ${isDone ? 'bg-slate-900/30 border-slate-950 opacity-40' : isBooked ? 'bg-slate-900 border-emerald-500/40 shadow-md' : 'bg-slate-900 border-slate-800'}`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city || 'Global'} • ${spot.category}</span>
+                                ${isHigh ? '<span class="text-[10px]">🔥 Must Do</span>' : ''}
+                                ${isBooked ? '<span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>' : ''}
+                            </div>
+                            <h3 class="text-base font-bold text-slate-200 mt-1.5">${spot.spot_name || 'Unnamed Spot'}</h3>
+                        </div>
+                        <span class="text-xs font-mono text-pink-400 font-bold bg-pink-500/10 px-2 py-1 rounded-lg shrink-0">📍 ${spot.distStr === 'No Location' ? 'Map View' : spot.distStr}</span>
+                    </div>
+                    
+                    <p class="text-xs text-slate-400 mt-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed">${spot.notes || 'No custom notes.'}</p>
+                    
+                    <div class="flex flex-col gap-2 mt-4">
+                        <div class="flex gap-2">
+                            <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white active:scale-95 transition-transform block">Open Reel 📸</a>
+                            ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95">🗺️ Map</a>` : ''}
+                        </div>
+                        
+                        ${isBooked && spot.ticket_url ? `
+                            <a href="${spot.ticket_url}" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
+                        ` : ''}
+
+                        <div class="flex gap-2 mt-1 justify-end">
+                            <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
+                            <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : '🔥'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? '★ Unstar' : '⭐ Star'}</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function updateCloudAction(rowId, action, value, spotName) {
+            const target = travelSpots.find(s => s.rowid === rowId);
+            if (target) {
+                if (action === 'update_status') target.status = value;
+                if (action === 'toggle_priority') target.priority = value;
+                renderList();
+            }
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName })
+                });
+                setTimeout(() => syncData(false), 800);
+            } catch (err) {
+                console.error("Failed cloud mutation injection setup.", err);
+            }
+        }
+
+        function setupSearchAutocomplete() {
+            const input = document.getElementById('searchInput');
+            const box = document.getElementById('autocomplete-results');
+
+            input.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value;
+                if (query.length < 3) { box.classList.add('hidden'); return; }
+
+                searchTimeout = setTimeout(() => {
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                        .then(res => res.json())
+                        .then(data => {
+                            box.innerHTML = '';
+                            if(data.length === 0) { box.classList.add('hidden'); return; }
+                            box.classList.remove('hidden');
+                            
+                            data.forEach(place => {
+                                const d = document.createElement('div');
+                                d.className = "p-3 text-xs border-b border-slate-700/50 hover:bg-slate-800 cursor-pointer text-slate-300 text-left";
+                                d.innerText = place.display_name;
+                                d.onclick = () => {
+                                    userLat = parseFloat(place.lat);
+                                    userLon = parseFloat(place.lon);
+                                    document.getElementById('current-target-name').innerText = place.name || "Custom Anchor Context";
+                                    box.classList.add('hidden');
+                                    input.value = place.name;
+                                    renderList();
+                                };
+                                box.appendChild(d);
+                            });
+                        });
+                }, 400);
+            });
+        }
+
+        function toggleQuickAddModal(show) {
+            document.getElementById('quickAddModal').classList.toggle('hidden', !show);
+        }
+
+        function toggleFormPriority() {
+            const btn = document.getElementById('form-priority-btn');
+            if(formPriorityState === "Normal") {
+                formPriorityState = "High";
+                btn.innerText = "🔥 High Priority";
+                btn.className = "px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500 text-amber-400 font-bold";
+            } else {
+                formPriorityState = "Normal";
+                btn.innerText = "⭐ Normal";
+                btn.className = "px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold";
+            }
+        }
+
+        async function submitNewSpotToCloud() {
+            const url = document.getElementById('new-url').value;
+            const city = document.getElementById('new-city').value;
+            const cat = document.getElementById('new-category').value;
+            const keyword = document.getElementById('new-keyword').value;
+            const notes = document.getElementById('new-notes').value;
+            const submitBtn = document.getElementById('form-submit-btn');
+
+            if(!keyword || !url) { alert("Provide a keyword title and an Instagram link."); return; }
+
+            submitBtn.innerText = "Injecting into Sheet Database...";
+            submitBtn.disabled = true;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'append_new_spot',
+                        user: currentUser,
+                        city: city || 'Global',
+                        spot_name: keyword,
+                        category: cat,
+                        instagram_url: url,
+                        notes: notes,
+                        priority: formPriorityState === "High" ? "🔥" : "Normal"
+                    })
+                });
+
+                document.getElementById('new-url').value = '';
+                document.getElementById('new-keyword').value = '';
+                document.getElementById('new-notes').value = '';
+                document.getElementById('new-city').value = '';
+                
+                toggleQuickAddModal(false);
+                setTimeout(() => syncData(false), 1000);
+            } catch(err) {
+                alert("Submission timed out.");
+            } finally {
+                submitBtn.innerText = "💾 Sync to Shared Google Sheet";
+                submitBtn.disabled = false;
+            }
+        }
+
+        function toggleStarredFilter() {
+            showStarredOnly = !showStarredOnly;
+            document.getElementById('star-toggle').className = showStarredOnly ? "px-3 py-2 rounded-xl bg-amber-500 text-slate-950 whitespace-nowrap" : "px-3 py-2 rounded-xl bg-slate-950 text-amber-500 border border-amber-500/20 whitespace-nowrap";
+            renderList();
+        }
+        
+        function setCategory(cat) {
+            activeCategory = cat;
+            ['all', 'food', 'photo'].forEach(id => document.getElementById(`cat-${id}`)?.classList.replace('bg-pink-600', 'bg-slate-950'));
+            ['all', 'food', 'photo'].forEach(id => document.getElementById(`cat-${id}`)?.classList.replace('text-white', 'text-slate-400'));
+            
+            const actId = cat === 'all' ? 'all' : (cat === 'Food Spot' ? 'food' : 'photo');
+            document.getElementById(`cat-${actId}`).classList.replace('bg-slate-950', 'bg-pink-600');
+            document.getElementById(`cat-${actId}`).classList.replace('text-slate-400', 'text-white');
+            renderList();
+        }
+
+        function resetToGPS() {
+            document.getElementById('current-target-name').innerText = "Your Live GPS";
+            document.getElementById('searchInput').value = "";
+            initLocationAndSync();
+        }
+    </script>
+</body>
+</html>
