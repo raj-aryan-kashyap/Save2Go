@@ -59,7 +59,6 @@
             box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
         }
 
-        /* Cluster View Overlap Tokens */
         .cluster-map-cube {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
             border: 2px solid rgba(255, 255, 255, 0.8) !important;
@@ -83,16 +82,16 @@
     <div class="fixed top-[112px] left-0 right-0 px-4 pointer-events-none z-[600]">
         <div class="max-w-md mx-auto relative w-full h-0">
             
-            <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-96 overflow-hidden">
-                <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto no-scrollbar flex-1 pb-1">
+            <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
+                <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto no-scrollbar flex-1 max-h-64 pb-1">
                     </div>
                 <div class="pt-2 mt-1.5 border-t border-slate-800 bg-slate-900 text-center shrink-0">
                     <button onclick="clearAllSelectedCityCheckboxes()" class="text-[10px] font-bold text-pink-400 active:text-pink-300 transition-colors">Clear Filter</button>
                 </div>
             </div>
 
-            <div id="filterCategoryDropdownPopupBox" class="absolute right-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-96 overflow-hidden">
-                <div class="overflow-y-auto no-scrollbar flex-1 pb-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer">
+            <div id="filterCategoryDropdownPopupBox" class="absolute right-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
+                <div class="overflow-y-auto no-scrollbar flex-1 max-h-64 pb-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer">
                     </div>
                 <div class="sticky bottom-0 bg-slate-900 pt-2 border-t border-slate-800 shrink-0 space-y-2 text-center" id="stickyDropdownFreezePanel">
                     <div id="hideCompletedTargetRowContainer"></div>
@@ -166,7 +165,7 @@
                 <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">📍 InstaCompass</h1>
                 <div class="flex items-center gap-2 mt-0.5">
                     <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    <span id="syncText" class="text-[9px] font-mono text-slate-500">Cache Loaded</span>
+                    <span id="syncText" class="text-[9px] font-mono text-slate-500">Cache Loading...</span>
                 </div>
             </div>
             <div class="flex items-center gap-2">
@@ -254,7 +253,7 @@
             <div class="space-y-2 max-w-xs">
                 <div class="text-4xl">🛠️</div>
                 <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Module</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Work in progress matrix engine.</p>
+                <p class="text-xs text-slate-500 leading-relaxed">Work in progress workspace matrix engine.</p>
             </div>
         </div>
     </div>
@@ -315,7 +314,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.3.6";
+        const APP_VERSION = "v1.3.7";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -360,7 +359,15 @@
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
-            document.addEventListener('click', () => { closeAllActiveHUDDropdownOverlays(); });
+            // CRITICAL OVERLAY DISMISSAL HOOK: Verified and isolated
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('#cityHUDDropdownPopupBox') && 
+                    !event.target.closest('#filterCategoryDropdownPopupBox') && 
+                    !event.target.closest('#cityFilterHUDTriggerBtn') && 
+                    !event.target.closest('#filterMenuTriggerBtn')) {
+                    closeAllActiveHUDDropdownOverlays();
+                }
+            });
         };
 
         function initLeafletMapEngineCanvas() {
@@ -368,6 +375,10 @@
             leafletMapInstance = L.map('map-render-element', { zoomControl: false, attributionControl: false }).setView([userLat, userLon], 13);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 20 }).addTo(leafletMapInstance);
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
+            
+            leafletMapInstance.on('zoomend', () => {
+                if (travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
+            });
         }
 
         function parseReadableDeviceHardware() {
@@ -477,7 +488,7 @@
             const backdrop = document.getElementById('dropdownBlurBackdrop');
             document.getElementById('filterCategoryDropdownPopupBox').classList.add('hidden');
             if (!box.classList.contains('hidden')) { box.classList.add('hidden'); backdrop.classList.add('hidden'); } 
-            else { box.classList.remove('hidden'); backdrop.classList.remove('hidden'); }
+            else { box.classList.remove('hidden'); backdrop.classList.remove('hidden'); calculateSmartCityDefaultFilters(); }
         }
 
         function toggleFilterDropdownOverlayMenu(event) {
@@ -641,7 +652,6 @@
             return processed;
         }
 
-        // HIGH-PRECISION SEAMLESS CLUSTERING & OFFSET DISTRIBUTION CORE MOTOR ROUTINES
         function plotDynamicMarkersOnCanvasMap() {
             if(!mapMarkersLayerGroup || !leafletMapInstance) return;
             mapMarkersLayerGroup.clearLayers();
@@ -651,11 +661,9 @@
             const CLUSTER_ZOOM_THRESHOLD = 12;
 
             if (currentZoom < CLUSTER_ZOOM_THRESHOLD) {
-                // Group points into a geometric grid context
                 let gridClusters = {};
                 dataset.forEach(spot => {
                     if(!spot.latitude || !spot.longitude) return;
-                    // Standardize coordinate buckets down to a single decimal plane
                     let key = parseFloat(spot.latitude).toFixed(2) + "_" + parseFloat(spot.longitude).toFixed(2);
                     if(!gridClusters[key]) gridClusters[key] = [];
                     gridClusters[key].push(spot);
@@ -669,23 +677,20 @@
                     if (clusterSize === 1) {
                         renderSingleMarkerElement(targetLeadSpot, 0, 0);
                     } else {
-                        // Render aggregated numerical cube token matching Airbnb specification behaviors
                         const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
                         const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
                         const clusterMarker = L.marker([parseFloat(targetLeadSpot.latitude), parseFloat(targetLeadSpot.longitude)], { icon: clusterIcon });
                         
                         clusterMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
-                            // Smoothly zoom down to clear detailed mapping layout vectors
                             leafletMapInstance.setView([parseFloat(targetLeadSpot.latitude), parseFloat(targetLeadSpot.longitude)], CLUSTER_ZOOM_THRESHOLD + 1, { animate: true });
                         });
                         mapMarkersLayerGroup.addLayer(clusterMarker);
                     }
                 }
             } else {
-                // Expanded Dispersion: Distribute items using slight spiral spacing calculations to isolate coordinate pairs
                 let coordinationPresenceRegistry = {};
-                dataset.forEach((spot, index) => {
+                dataset.forEach((spot) => {
                     if(!spot.latitude || !spot.longitude) return;
                     let coordKey = parseFloat(spot.latitude).toFixed(5) + "_" + parseFloat(spot.longitude).toFixed(5);
                     
@@ -694,7 +699,6 @@
                     if (coordinationPresenceRegistry[coordKey] !== undefined) {
                         coordinationPresenceRegistry[coordKey]++;
                         let count = coordinationPresenceRegistry[coordKey];
-                        // Apply spiral mathematical logic coordinates tracking vectors
                         let angle = count * 0.7;
                         let radius = 0.00015 * count; 
                         latOffset = Math.sin(angle) * radius;
@@ -732,7 +736,6 @@
             mapMarkersLayerGroup.addLayer(leafMarker);
         }
 
-        // CRITICAL SYSTEM RE-BINDING: Standardizes mutable pathways cleanly without clipping wrappers
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
@@ -746,7 +749,6 @@
             notesWidget.innerText = spotObj.notes || "No custom notes assigned.";
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
 
-            // Apply specific structural desaturation mappings matches Vault styling signatures
             if (isDone) {
                 titleWidget.className = "text-base font-bold text-slate-500 line-through mt-1.5 truncate max-w-[190px]";
                 notesWidget.className = "text-xs text-slate-500 bg-slate-950/20 p-2.5 rounded-xl border border-slate-900/30 line-through leading-relaxed max-h-16 overflow-y-auto no-scrollbar";
@@ -756,7 +758,7 @@
             }
             
             document.getElementById('trayDistanceBadge').innerText = spotObj.distStr;
-            document.getElementById('openReelBtn' || 'trayOpenReelBtn').href = spotObj.instagram_url || "#";
+            document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
             document.getElementById('trayActionBtn').href = spotObj.latitude ? `https://www.google.com/maps/search/?api=1&query=${spotObj.latitude},${spotObj.longitude}` : "#";
 
             const starredBadge = document.getElementById('trayStarredBadge');
@@ -765,7 +767,6 @@
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
-            // Expose active event listeners
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
             doneBtn.onclick = () => {
                 updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
@@ -833,16 +834,124 @@
             } catch(err) {}
         }
 
-        function calculateAllSelectedCityCheckboxes() {}
-        function clearAllSelectedCityCheckboxes() { checkedCitiesStateArray = []; localStorage.setItem('compass_active_cities', JSON.stringify([])); renderList(); plotDynamicMarkersOnCanvasMap(); }
+        function calculateSmartCityDefaultFilters() {
+            const container = document.getElementById('cityHUDChecklistContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            let citySet = new Set();
+            travelSpots.forEach(spot => {
+                if (spot.city && String(spot.city).trim() !== "") {
+                    citySet.add(spot.city.trim());
+                }
+            });
+
+            if (citySet.size === 0) {
+                container.innerHTML = `<div class="text-slate-500 text-[11px] p-2">No cities recorded</div>`;
+                return;
+            }
+
+            citySet.forEach(city => {
+                const label = document.createElement('label');
+                label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer";
+                const isChecked = checkedCitiesStateArray.includes(city);
+                label.innerHTML = `
+                    <span class="truncate pr-2">${city}</span>
+                    <input type="checkbox" value="${city}" ${isChecked ? 'checked' : ''} onchange="handleCityHUDCheckboxEventToggle(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">
+                `;
+                container.appendChild(label);
+            });
+            updateCityHUDTriggerButtonLabelText();
+        }
+
+        function handleCityHUDCheckboxEventToggle(checkboxElement) {
+            const val = checkboxElement.value;
+            if (checkboxElement.checked) { if(!checkedCitiesStateArray.includes(val)) checkedCitiesStateArray.push(val); } 
+            else { checkedCitiesStateArray = checkedCitiesStateArray.filter(c => c !== val); }
+            localStorage.setItem('compass_active_cities', JSON.stringify(checkedCitiesStateArray));
+            updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        function clearAllSelectedCityCheckboxes() {
+            checkedCitiesStateArray = []; localStorage.setItem('compass_active_cities', JSON.stringify([]));
+            updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        function updateCityHUDTriggerButtonLabelText() {
+            const textNode = document.getElementById('cityHUDTriggerText');
+            const btn = document.getElementById('cityFilterHUDTriggerBtn');
+            const count = checkedCitiesStateArray.length;
+            if (count === 0) {
+                textNode.innerText = "All Cities";
+                btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 truncate shadow-inner";
+            } else {
+                textNode.innerText = count === 1 ? checkedCitiesStateArray[0] : `Cities (${count})`;
+                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-pink-400 flex items-center justify-center gap-1 truncate shadow-inner";
+            }
+        }
+
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
+        
         function toggleQuickAddModal(show) { document.getElementById('quickAddModal').classList.toggle('hidden', !show); }
-        function toggleFormPriorityState() {}
-        function submitNewSpotToCloud() {}
+        
+        let formPriorityState = "Normal";
+        function toggleFormPriorityState() {
+            const btn = document.getElementById('form-priority-btn');
+            if(formPriorityState === "Normal") {
+                formPriorityState = "Starred"; btn.innerText = "★ Starred";
+                btn.className = "px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500 text-amber-400 font-extrabold";
+            } else {
+                formPriorityState = "Normal"; btn.innerText = "Normal";
+                btn.className = "px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold";
+            }
+        }
+
+        async function submitNewSpotToCloud() {
+            const url = document.getElementById('new-url').value;
+            const city = document.getElementById('new-city').value;
+            const cat = document.getElementById('new-category').value;
+            const keyword = document.getElementById('new-keyword').value;
+            const notes = document.getElementById('new-notes').value;
+            const submitBtn = document.getElementById('form-submit-btn');
+
+            if(!keyword || !url) { alert("Provide a keyword title and source link."); return; }
+            submitBtn.innerText = "Injecting into Sheet Database..."; submitBtn.disabled = true;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'append_new_spot', user: currentUser, city: city || 'Global', spot_name: keyword, category: cat, instagram_url: url, notes: notes, priority: formPriorityState, deviceMeta: cachedHardwareString })
+                });
+                document.getElementById('new-url').value = ''; document.getElementById('new-keyword').value = ''; document.getElementById('new-notes').value = '';
+                toggleQuickAddModal(false); setTimeout(() => syncData(true), 1000);
+            } catch(err) { alert("Submission timed out."); } 
+            finally { submitBtn.innerText = "💾 Sync to Shared Google Sheet"; submitBtn.disabled = false; }
+        }
+
+        async function syncData(isManualForce) {
+            const syncText = document.getElementById('syncText');
+            syncText.innerText = "Checking cloud...";
+            try {
+                const response = await fetch(API_URL);
+                const cloudData = await response.json();
+                if(Array.isArray(cloudData)) {
+                    travelSpots = cloudData;
+                    localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
+                    calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
+                    syncText.innerText = "Synced Live Data";
+                }
+            } catch (e) { syncText.innerText = "Offline Mode"; }
+        }
+        
+        async function triggerSecureServerHistoryPurgeVault() {}
+        function clearDeviceSessionAndLogout() {}
+        function commitProfileRename() {}
+        function switchUserSessionViaSettings() {}
+        function setupNetworkListeners() {}
     </script>
 </body>
 </html>
