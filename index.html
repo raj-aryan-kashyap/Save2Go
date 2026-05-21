@@ -12,6 +12,17 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; }
+        
+        /* Shimmer keyframes for the Instagram-style skeleton loader */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer-bg {
+            background: linear-gradient(90deg, #0f172a 25%, #1e293b 50%, #0f172a 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-pink-500/30 select-none">
@@ -51,7 +62,7 @@
         <div class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl">
             <div class="space-y-6">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-800">
-                    <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">🛠️ Control Settings</h3>
+                    <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">⚙️ Control Settings</h3>
                     <button onclick="toggleSettingsMenu(false)" class="text-slate-500 font-bold text-xs">✕</button>
                 </div>
                 
@@ -103,8 +114,8 @@
                 <button onclick="forceReRequestGPSHardware()" id="gpsBadgeButton" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all active:scale-95 flex items-center gap-1 bg-emerald-500/10 border-emerald-500/30 text-emerald-400">
                     <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="gpsBadgeText">GPS Active</span>
                 </button>
-                <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-xs active:scale-95 transition-transform">🛠️</button>
-                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs active:rotate-180 transition-transform duration-500">🔄</button>
+                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs active:rotate-180 transition-transform duration-500" title="Sync Data">🔄</button>
+                <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-xs active:scale-95 transition-transform" title="Open Settings">⚙️</button>
             </div>
         </div>
         
@@ -114,10 +125,8 @@
             <div id="autocomplete-results" class="absolute w-full bg-slate-900 rounded-xl mt-1 shadow-2xl border border-slate-800 max-h-60 overflow-y-auto hidden z-50"></div>
         </div>
 
-        <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 text-xs font-bold">
+        <div id="categoriesFilterBar" class="flex gap-2 overflow-x-auto no-scrollbar pb-1 text-xs font-bold">
             <button onclick="setCategory('all')" id="cat-all" class="px-3 py-2 rounded-xl bg-pink-600 text-white whitespace-nowrap">🌟 All Spots</button>
-            <button onclick="setCategory('Food Spot')" id="cat-food" class="px-3 py-2 rounded-xl bg-slate-950 text-slate-400 whitespace-nowrap">🍔 Food</button>
-            <button onclick="setCategory('Photo Spot')" id="cat-photo" class="px-3 py-2 rounded-xl bg-slate-950 text-slate-400 whitespace-nowrap">📸 Photos</button>
             <button onclick="toggleStarredFilter()" id="star-toggle" class="px-3 py-2 rounded-xl bg-slate-950 text-amber-500 border border-amber-500/20 whitespace-nowrap">⭐ Starred Only</button>
         </div>
     </div>
@@ -125,13 +134,12 @@
     <div class="px-4 mt-3">
         <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-900 flex justify-between items-center text-[11px] text-slate-400">
             <div>Target sorting: <span id="current-target-name" class="text-pink-400 font-bold">Your Live GPS</span></div>
-            <button onclick="resetToGPS()" class="text-violet-400 underline font-bold">Reset</button>
+            <button onclick="resetToGPS()" class="text-violet-400 underline font-bold active:text-violet-300 transition-colors">Reset</button>
         </div>
     </div>
 
     <div id="spots-list" class="p-4 space-y-3 flex-1 overflow-y-auto">
-        <div class="text-center text-slate-600 py-12 text-sm animate-pulse">Initializing navigation...</div>
-    </div>
+        </div>
 
     <button onclick="toggleQuickAddModal(true)" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-2xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-50 border border-white/10">
         ➕
@@ -155,11 +163,7 @@
                     </div>
                     <div>
                         <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Category Type</label>
-                        <select id="new-category" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
-                            <option value="Food Spot">🍔 Food Spot</option>
-                            <option value="Photo Spot">📸 Photo Spot</option>
-                            <option value="Must Go">🌟 Must Go Landmark</option>
-                        </select>
+                        <input type="text" id="new-category" placeholder="e.g., Food Spot, Picnic" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                     </div>
                 </div>
                 <div>
@@ -210,36 +214,28 @@
             }
             setupNetworkListeners();
             setupSearchAutocomplete();
+            monitorNativeGpsPermissions();
         };
 
-        // Combines Client Hints and display metrics to estimate phone models
         function parseReadableDeviceHardware() {
             const ua = navigator.userAgent;
             let os = "Unknown OS";
             if (/Android/i.test(ua)) os = "Android";
             else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
-            else if (/Macintosh/i.test(ua)) os = "macOS";
-            else if (/Windows/i.test(ua)) os = "Windows";
 
-            // Safe logical fallback inference parsing based on common modern viewport dimensions
             const width = window.screen.width;
             const height = window.screen.height;
             let modelEstimate = "";
 
             if (os === "Android") {
-                if ((width === 360 && height === 800) || (width === 412 && height === 915)) {
-                    modelEstimate = " (Likely Samsung Galaxy S-Series)";
-                } else if (width === 412 && height === 892) {
-                    modelEstimate = " (Likely Google Pixel)";
-                } else {
-                    modelEstimate = " Mobile";
-                }
+                if ((width === 360 && height === 800) || (width === 412 && height === 915)) modelEstimate = " (Likely Samsung S-Series)";
+                else if (width === 412 && height === 892) modelEstimate = " (Likely Pixel)";
+                else modelEstimate = " Mobile";
             } else if (os === "iOS") {
-                if (width === 393 && height === 852) modelEstimate = " (iPhone 15/16 Pro)";
-                else if (width === 430 && height === 932) modelEstimate = " (iPhone 15/16 Pro Max)";
+                if (width === 393 && height === 852) modelEstimate = " (iPhone Pro)";
+                else if (width === 430 && height === 932) modelEstimate = " (iPhone Pro Max)";
                 else modelEstimate = " Phone";
             }
-
             return `${os}${modelEstimate}`;
         }
 
@@ -247,6 +243,20 @@
             const newId = "DEV-" + Math.random().toString(36).substring(2, 7).toUpperCase();
             localStorage.setItem('compass_device_id', newId);
             return newId;
+        }
+
+        // Listens to hardware changes (if user turns off location tracking via settings panel tray)
+        function monitorNativeGpsPermissions() {
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'geolocation' }).then(status => {
+                    const checkState = () => {
+                        if (status.state === 'denied') updateGpsHudStatus(false, "GPS Off");
+                        else if (status.state === 'granted') updateGpsHudStatus(true, "GPS Active");
+                    };
+                    status.onchange = checkState;
+                    checkState();
+                });
+            }
         }
 
         async function populateUserDropdowns() {
@@ -299,54 +309,43 @@
             const text = document.getElementById('gpsBadgeText');
             
             if (isActive) {
-                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all active:scale-95 flex items-center gap-1 bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
                 dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
                 text.innerText = message || "GPS Active";
             } else {
-                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all active:scale-95 flex items-center gap-1 bg-amber-500/10 border-amber-500/40 text-amber-400 animate-bounce";
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all flex items-center gap-1 bg-amber-500/10 border-amber-500/40 text-amber-400";
                 dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
-                text.innerText = message || "⚠️ GPS Blocked";
+                text.innerText = message || "⚠️ GPS Off";
             }
         }
 
         function forceReRequestGPSHardware() {
-            if (navigator.geolocation) {
-                updateGpsHudStatus(true, "Pinging GPS...");
-                navigator.geolocation.getCurrentPosition(pos => {
-                    userLat = pos.coords.latitude;
-                    userLon = pos.coords.longitude;
-                    updateGpsHudStatus(true, "GPS Linked");
-                    syncData(false);
-                }, err => {
-                    updateGpsHudStatus(false, "Perm Denied");
-                    alert("Location access is restricted. Please enable site permissions inside your browser's site settings toggle menu.");
-                }, { enableHighAccuracy: true, timeout: 6000 });
-            } else {
-                updateGpsHudStatus(false, "Not Supported");
-            }
+            updateGpsHudStatus(true, "Pinging GPS...");
+            navigator.geolocation.getCurrentPosition(pos => {
+                userLat = pos.coords.latitude;
+                userLon = pos.coords.longitude;
+                updateGpsHudStatus(true, "GPS Linked");
+                syncData(false);
+            }, err => {
+                updateGpsHudStatus(false, "⚠️ GPS Off");
+            }, { enableHighAccuracy: true, timeout: 5000 });
         }
 
         async function resolveGeocodeAndLogSession() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (pos) => {
-                    updateGpsHudStatus(true, "GPS Active");
-                    const lat = pos.coords.latitude;
-                    const lon = pos.coords.longitude;
-                    try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=12`);
-                        const geo = await res.json();
-                        areaContextStr = geo.address.suburb || geo.address.city_district || geo.address.city || "Unknown Area";
-                    } catch(e) {
-                        areaContextStr = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-                    }
-                    dispatchSessionPost();
-                }, () => { 
-                    updateGpsHudStatus(false, "GPS Off");
-                    dispatchSessionPost(); 
-                });
-            } else {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                updateGpsHudStatus(true, "GPS Active");
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=12`);
+                    const geo = await res.json();
+                    areaContextStr = geo.address.suburb || geo.address.city_district || geo.address.city || "Unknown Area";
+                } catch(e) { areaContextStr = `${lat.toFixed(2)}, ${lon.toFixed(2)}`; }
                 dispatchSessionPost();
-            }
+            }, () => { 
+                updateGpsHudStatus(false, "⚠️ GPS Off");
+                dispatchSessionPost(); 
+            });
         }
 
         async function dispatchSessionPost() {
@@ -356,14 +355,10 @@
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        action: 'log_session', 
-                        user: currentUser, 
-                        deviceId: deviceId, 
-                        deviceMeta: cachedHardwareString,
-                        locationContext: areaContextStr 
+                        action: 'log_session', user: currentUser, deviceId: deviceId, deviceMeta: cachedHardwareString, locationContext: areaContextStr 
                     })
                 });
-            } catch(e) { console.error(e); }
+            } catch(e) {}
         }
 
         function toggleSettingsMenu(show) {
@@ -373,13 +368,11 @@
         async function commitProfileRename() {
             const newName = document.getElementById('settingsRenameField').value.trim();
             if(!newName || newName === currentUser) return;
-
             const oldName = currentUser;
             localStorage.setItem('compass_user', newName);
             currentUser = newName;
             document.getElementById('userBadge').innerText = `👤 ${newName}`;
             toggleSettingsMenu(false);
-
             try {
                 await fetch(API_URL, {
                     method: 'POST',
@@ -387,66 +380,78 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'log_name_change', user: newName, oldName: oldName, deviceMeta: cachedHardwareString })
                 });
-            } catch(e) { console.error(e); }
+            } catch(e) {}
         }
 
-        async function switchUserSessionViaSettings() {
+        function switchUserSessionViaSettings() {
             const selectedSwapName = document.getElementById('settingsSwitchUserDropdown').value;
             if(!selectedSwapName) return;
-            
             localStorage.setItem('compass_user', selectedSwapName);
             currentUser = selectedSwapName;
             initializeSessionDashboard();
             toggleSettingsMenu(false);
-            await resolveGeocodeAndLogSession();
+            resolveGeocodeAndLogSession();
         }
 
         function clearDeviceSessionAndLogout() {
             localStorage.removeItem('compass_user');
             currentUser = null;
             toggleSettingsMenu(false);
-            
-            document.getElementById('spots-list').innerHTML = `<div class="text-center text-slate-600 py-12 text-sm animate-pulse">Initializing navigation...</div>`;
             document.getElementById('customUsernameInput').value = '';
-            
             populateUserDropdowns();
             document.getElementById('userModal').classList.remove('hidden');
         }
 
         function setupNetworkListeners() {
-            const updateStatus = () => {
-                const indicator = document.getElementById('networkIndicator');
-                const text = document.getElementById('syncText');
-                if (navigator.onLine) {
-                    indicator.className = "w-2 h-2 rounded-full bg-emerald-500";
-                    text.innerText = "Connected";
-                } else {
-                    indicator.className = "w-2 h-2 rounded-full bg-amber-500";
-                    text.innerText = "Offline Mode (Cache Active)";
-                }
-            };
-            window.addEventListener('online', updateStatus);
-            window.addEventListener('offline', updateStatus);
-            updateStatus();
+            window.addEventListener('online', () => document.getElementById('networkIndicator').className = "w-2 h-2 rounded-full bg-emerald-500");
+            window.addEventListener('offline', () => document.getElementById('networkIndicator').className = "w-2 h-2 rounded-full bg-amber-500");
         }
 
         function initLocationAndSync() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    updateGpsHudStatus(true, "GPS Active");
-                    userLat = pos.coords.latitude;
-                    userLon = pos.coords.longitude;
-                    syncData(false);
-                }, err => {
-                    updateGpsHudStatus(false, "GPS Off");
-                    syncData(false); 
-                }, { enableHighAccuracy: true });
-            } else {
+            navigator.geolocation.getCurrentPosition(pos => {
+                updateGpsHudStatus(true, "GPS Active");
+                userLat = pos.coords.latitude;
+                userLon = pos.coords.longitude;
                 syncData(false);
+            }, err => {
+                updateGpsHudStatus(false, "⚠️ GPS Off");
+                syncData(false); 
+            });
+        }
+
+        // Generates an interactive animated placeholder skeleton profile
+        function injectSkeletonLoaderView() {
+            const container = document.getElementById('spots-list');
+            container.innerHTML = '';
+            
+            // Render 4 fake card trees inside the viewport layout
+            for(let i = 0; i < 4; i++) {
+                const skeletonCard = document.createElement('div');
+                skeletonCard.className = "p-4 rounded-2xl border border-slate-900 bg-slate-900/40 space-y-3 animate-pulse";
+                skeletonCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="w-1/2 h-3.5 bg-slate-800 rounded-lg"></div>
+                        <div class="w-12 h-5 bg-slate-800 rounded-lg"></div>
+                    </div>
+                    <div class="w-3/4 h-4 bg-slate-800 rounded-xl mt-2"></div>
+                    <div class="w-full h-8 bg-slate-950/60 rounded-xl border border-slate-900/40"></div>
+                    <div class="flex gap-2 pt-1">
+                        <div class="flex-1 h-10 bg-slate-800 rounded-xl"></div>
+                        <div class="w-12 h-10 bg-slate-800 rounded-xl"></div>
+                    </div>
+                `;
+                container.appendChild(skeletonCard);
             }
+            
+            // Appends bottom text anchor line element
+            const loadingTextNode = document.createElement('div');
+            loadingTextNode.className = "text-center text-[11px] text-slate-600 font-medium py-6 animate-bounce";
+            loadingTextNode.innerText = "Hold on tight, the space satellites are working hard to find your data... 🛰️";
+            container.appendChild(loadingTextNode);
         }
 
         async function syncData(isManualForce) {
+            injectSkeletonLoaderView();
             if (!navigator.onLine) {
                 if(isManualForce) alert("You are currently offline. Displaying standard device cache.");
                 renderList();
@@ -460,13 +465,44 @@
                 if(Array.isArray(cloudData)) {
                     travelSpots = cloudData;
                     localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
+                    buildDynamicCategoryFilterPills();
                 }
                 syncText.innerText = "Synced Just Now";
             } catch (e) {
-                console.error(e);
                 syncText.innerText = "Sync Error (Using Cache)";
             }
             renderList();
+        }
+
+        // Dynamically scans rows to find all distinct categories separated by commas
+        function buildDynamicCategoryFilterPills() {
+            const bar = document.getElementById('categoriesFilterBar');
+            // Remove previous dynamic pill records, preserving the base configuration items
+            bar.innerHTML = `
+                <button onclick="setCategory('all')" id="cat-all" class="px-3 py-2 rounded-xl bg-pink-600 text-white whitespace-nowrap">🌟 All Spots</button>
+                <button onclick="toggleStarredFilter()" id="star-toggle" class="px-3 py-2 rounded-xl bg-slate-950 text-amber-500 border border-amber-500/20 whitespace-nowrap">⭐ Starred Only</button>
+            `;
+            
+            let allCategories = new Set();
+            travelSpots.forEach(spot => {
+                if (spot.category) {
+                    spot.category.split(',').forEach(c => {
+                        let clean = c.trim();
+                        if(clean !== "") allCategories.add(clean);
+                    });
+                }
+            });
+
+            allCategories.forEach(cat => {
+                const pill = document.createElement('button');
+                pill.className = "px-3 py-2 rounded-xl bg-slate-950 text-slate-400 whitespace-nowrap border border-slate-900";
+                pill.innerText = cat;
+                // Standardized element ID layout targeting strings cleanly
+                const normalizedId = "cat-" + cat.toLowerCase().replace(/\s+/g, '-');
+                pill.id = normalizedId;
+                pill.onclick = () => setCategory(cat);
+                bar.appendChild(pill);
+            });
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -480,7 +516,12 @@
 
         function renderList() {
             const container = document.getElementById('spots-list');
-            container.innerHTML = '';
+            
+            // Clean out the skeleton nodes securely
+            const textNodes = container.querySelectorAll('.animate-bounce');
+            textNodes.forEach(n => n.remove());
+            const skeletonCards = container.querySelectorAll('.animate-pulse');
+            skeletonCards.forEach(c => c.remove());
 
             let processed = travelSpots.map(spot => {
                 const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude || 0), parseFloat(spot.longitude || 0));
@@ -488,7 +529,14 @@
             }).sort((a, b) => a.distRaw - b.distRaw);
 
             if (showStarredOnly) processed = processed.filter(s => s.priority === 'High' || s.priority === '🔥');
-            if (activeCategory !== 'all') processed = processed.filter(s => s.category === activeCategory);
+            
+            // Upgraded comma-separated multi-category parsing filter array layer logic matrix
+            if (activeCategory !== 'all') {
+                processed = processed.filter(s => {
+                    if(!s.category) return false;
+                    return s.category.split(',').map(item => item.trim().toLowerCase()).includes(activeCategory.toLowerCase());
+                });
+            }
 
             if(processed.length === 0) {
                 container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded in this view context.</div>`;
@@ -520,7 +568,7 @@
                     
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
-                            <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white active:scale-95 transition-transform block">Open Reel 📸</a>
+                            <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
                             ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95">🗺️ Map</a>` : ''}
                         </div>
                         
@@ -553,9 +601,7 @@
                     body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName, deviceMeta: cachedHardwareString })
                 });
                 setTimeout(() => syncData(false), 800);
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) {}
         }
 
         function setupSearchAutocomplete() {
@@ -620,7 +666,6 @@
             const submitBtn = document.getElementById('form-submit-btn');
 
             if(!keyword || !url) { alert("Provide a keyword title and an Instagram link."); return; }
-
             submitBtn.innerText = "Injecting into Sheet Database...";
             submitBtn.disabled = true;
 
@@ -630,22 +675,14 @@
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'append_new_spot',
-                        user: currentUser,
-                        city: city || 'Global',
-                        spot_name: keyword,
-                        category: cat,
-                        instagram_url: url,
-                        notes: notes,
-                        priority: formPriorityState === "High" ? "🔥" : "Normal",
-                        deviceMeta: cachedHardwareString
+                        action: 'append_new_spot', user: currentUser, city: city || 'Global', spot_name: keyword, category: cat, instagram_url: url, notes: notes, priority: formPriorityState === "High" ? "🔥" : "Normal", deviceMeta: cachedHardwareString
                     })
                 });
-
                 document.getElementById('new-url').value = '';
                 document.getElementById('new-keyword').value = '';
                 document.getElementById('new-notes').value = '';
                 document.getElementById('new-city').value = '';
+                document.getElementById('new-category').value = '';
                 
                 toggleQuickAddModal(false);
                 setTimeout(() => syncData(false), 1000);
@@ -665,12 +702,22 @@
         
         function setCategory(cat) {
             activeCategory = cat;
-            ['all', 'food', 'photo'].forEach(id => document.getElementById(`cat-${id}`)?.classList.replace('bg-pink-600', 'bg-slate-950'));
-            ['all', 'food', 'photo'].forEach(id => document.getElementById(`cat-${id}`)?.classList.replace('text-white', 'text-slate-400'));
             
-            const actId = cat === 'all' ? 'all' : (cat === 'Food Spot' ? 'food' : 'photo');
-            document.getElementById(`cat-${actId}`).classList.replace('bg-slate-950', 'bg-pink-600');
-            document.getElementById(`cat-${actId}`).classList.replace('text-slate-400', 'text-white');
+            // Select all current category buttons inside the bar layout container matching IDs dynamically
+            const filterBar = document.getElementById('categoriesFilterBar');
+            const buttons = filterBar.getElementsByTagName('button');
+            
+            for (let btn of buttons) {
+                btn.classList.replace('bg-pink-600', 'bg-slate-950');
+                btn.classList.replace('text-white', 'text-slate-400');
+            }
+            
+            const targetId = cat === 'all' ? 'cat-all' : "cat-" + cat.toLowerCase().replace(/\s+/g, '-');
+            const targetBtn = document.getElementById(targetId);
+            if(targetBtn) {
+                targetBtn.classList.replace('bg-slate-950', 'bg-pink-600');
+                targetBtn.classList.replace('text-slate-400', 'text-white');
+            }
             renderList();
         }
 
