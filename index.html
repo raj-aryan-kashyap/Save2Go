@@ -205,7 +205,7 @@
                 <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="absolute bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden space-y-3">
+            <div id="mapDetailTrayHUD" class="fixed bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden space-y-3 pointer-events-auto">
                 <div class="flex justify-between items-start gap-2">
                     <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -229,7 +229,7 @@
                         <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold">🗺️ Get Direction</a>
                     </div>
                     <div id="trayTicketRow" class="hidden">
-                        <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket</a>
+                        <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
                     </div>
                     
                     <div class="flex gap-2 justify-end pt-2 border-t border-slate-800/60 mt-1">
@@ -243,7 +243,7 @@
         <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
             <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
-                    <span class="animate-pulse">⬇️ Pull to check database streams...</span>
+                    <span class="animate-pulse">⬇| Pull to check database streams...</span>
                 </div>
                 <div id="spots-list" class="p-4 space-y-3 pb-32"></div>
             </div>
@@ -253,7 +253,7 @@
             <div class="space-y-2 max-w-xs">
                 <div class="text-4xl">🛠️</div>
                 <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Module</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Work in progress workspace matrix engine.</p>
+                <p class="text-xs text-slate-500 leading-relaxed">Work in progress matrix engine.</p>
             </div>
         </div>
     </div>
@@ -314,7 +314,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.3.7";
+        const APP_VERSION = "v1.3.8";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -359,7 +359,6 @@
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
-            // CRITICAL OVERLAY DISMISSAL HOOK: Verified and isolated
             document.addEventListener('click', (event) => {
                 if (!event.target.closest('#cityHUDDropdownPopupBox') && 
                     !event.target.closest('#filterCategoryDropdownPopupBox') && 
@@ -608,6 +607,7 @@
             renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
+        // Programmatically updates dynamic active popup containers if open during filters updates
         function clearAllFilterCheckboxes() {
             checkedFilterStateArray = []; localStorage.setItem('compass_active_filters', JSON.stringify([]));
             updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
@@ -624,6 +624,12 @@
                 badge.classList.add('hidden');
                 btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner";
             }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
         function getFilteredDatasetRows() {
@@ -736,10 +742,13 @@
             mapMarkersLayerGroup.addLayer(leafMarker);
         }
 
+        // CRITICAL RE-FIX: Completely binds variable logic and functions to the Map View Preview Card Tray
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
             const isDone = (spotObj.status || "").toLowerCase().trim() === 'done';
+            const ticketLink = spotObj.ticket_url || "";
+            
             if (plusBtn) plusBtn.classList.add('hidden');
 
             const titleWidget = document.getElementById('traySpotTitle');
@@ -759,7 +768,17 @@
             
             document.getElementById('trayDistanceBadge').innerText = spotObj.distStr;
             document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
-            document.getElementById('trayActionBtn').href = spotObj.latitude ? `https://www.google.com/maps/search/?api=1&query=${spotObj.latitude},${spotObj.longitude}` : "#";
+            document.getElementById('trayActionBtn').href = spotObj.latitude ? `http://googleusercontent.com/maps.google.com/?q=${spotObj.latitude},${spotObj.longitude}` : "#";
+
+            // Restores Visibility Checks on Ticket Routing Rows
+            const ticketRow = document.getElementById('trayTicketRow');
+            const ticketBtn = document.getElementById('trayTicketBtn');
+            if (ticketLink.trim() !== "") {
+                ticketRow.classList.remove('hidden');
+                ticketBtn.href = ticketLink;
+            } else {
+                ticketRow.classList.add('hidden');
+            }
 
             const starredBadge = document.getElementById('trayStarredBadge');
             if (isStarredBool) starredBadge.classList.remove('hidden'); else starredBadge.classList.add('hidden');
@@ -767,14 +786,15 @@
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
+            // Explicitly map interactive mutations safely onto the DOM instance nodes
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
-            doneBtn.onclick = () => {
+            doneBtn.onclick = function() {
                 updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
                 dismissMapDetailTrayHUDCard();
             };
 
             starBtn.innerText = isStarredBool ? 'Unstar' : '★ Star';
-            starBtn.onclick = () => {
+            starBtn.onclick = function() {
                 updateCloudAction(spotObj.rowid, 'toggle_priority', isStarredBool ? 'Normal' : 'Starred', spotObj.spot_name);
                 dismissMapDetailTrayHUDCard();
             };
@@ -788,30 +808,48 @@
             if (plusBtn) plusBtn.classList.remove('hidden');
         }
 
+        // CRITICAL RE-FIX: Fully reinstates links, action buttons, and visual state modifications inside Vault List Cards
         function renderList() {
             const container = document.getElementById('spots-list');
-            if(!container) return; container.innerHTML = '';
+            if(!container) return; 
+            container.innerHTML = '';
+            
             const processed = getFilteredDatasetRows();
             if(processed.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these selection profiles.</div>`; return;
+                container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these selection profiles.</div>`; 
+                return;
             }
 
             processed.forEach(spot => {
                 const isDone = (spot.status || "").toLowerCase().trim() === 'done';
                 const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
+                const ticketLink = spot.ticket_url || "";
+                
                 const card = document.createElement('div');
                 card.className = `p-4 rounded-2xl border bg-slate-900 border-slate-800 ${isDone ? 'opacity-40' : ''}`;
+                
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-2">
-                        <div>
+                        <div class="max-w-[70%]">
                             <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
                             <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
                         </div>
-                        <span class="text-xs font-mono font-bold bg-pink-500/10 text-pink-400 px-2 py-1 rounded-lg">${spot.distStr}</span>
+                        <span class="text-xs font-mono font-bold bg-pink-500/10 text-pink-400 px-2 py-1 rounded-lg shrink-0 h-fit">${spot.distStr}</span>
                     </div>
-                    <div class="flex gap-2 mt-4">
-                        <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
-                        <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
+                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} mt-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-20 overflow-y-auto no-scrollbar">${spot.notes || 'No custom notes.'}</p>
+                    
+                    <div class="flex flex-col gap-2 mt-4">
+                        <div class="flex gap-2">
+                            <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
+                            ${spot.latitude ? `<a href="http://googleusercontent.com/maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap">🗺️ Get Direction</a>` : ''}
+                        </div>
+                        ${ticketLink.trim() !== "" ? `
+                            <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
+                        ` : ''}
+                        <div class="flex gap-2 mt-1 justify-end">
+                            <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
+                            <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
@@ -836,7 +874,7 @@
 
         function calculateSmartCityDefaultFilters() {
             const container = document.getElementById('cityHUDChecklistContainer');
-            if (!container) return;
+            if (!container) return; 
             container.innerHTML = '';
             
             let citySet = new Set();
