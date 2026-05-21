@@ -53,11 +53,26 @@
             font-size: 16px !important;
             width: 36px !important;
             height: 36px !important;
-            transition: opacity 0.2s tracking;
         }
         .starred-cube-border {
             border: 2px solid rgba(245, 158, 11, 0.9) !important;
             box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
+        }
+
+        /* Cluster View Overlap Tokens */
+        .cluster-map-cube {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
+            border: 2px solid rgba(255, 255, 255, 0.8) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.6) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: 900 !important;
+            color: #ffffff !important;
+            font-size: 12px !important;
+            width: 40px !important;
+            height: 40px !important;
         }
     </style>
 </head>
@@ -93,75 +108,54 @@
             <div class="text-6xl filter drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]">🌍</div>
             <div class="space-y-1">
                 <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">InstaCompass</h2>
-                <p class="text-xs text-slate-400 font-semibold tracking-wide">
-                    Hey there, adventurer! <br>
-                    <span class="text-slate-500 font-medium inline-block mt-1">Who is holding the map right now?</span>
-                </p>
+                <p class="text-xs text-slate-400 font-semibold tracking-wide">Who is holding the map right now?</p>
             </div>
             
             <div class="space-y-3 pt-2 text-left">
                 <div id="loginDropdownContainer">
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Select Active Explorer</label>
-                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium focus:outline-none focus:border-pink-500 text-xs">
-                        </select>
+                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none"></select>
                 </div>
-                
                 <div id="loginDividerLine" class="relative flex items-center justify-center my-2">
-                    <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase tracking-wider">Or Register New</span>
+                    <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase">Or Register New</span>
                     <hr class="w-full border-slate-900">
                 </div>
-                
                 <div>
-                    <label id="registerInputLabel" class="hidden text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Type Your Name</label>
-                    <input type="text" id="customUsernameInput" placeholder="Type name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none focus:border-pink-500">
+                    <input type="text" id="customUsernameInput" placeholder="Type name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none">
                 </div>
-                <button onclick="handleInitialLoginSubmit()" id="beginSessionBtn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-center font-black py-3.5 rounded-xl text-white text-xs active:scale-95 transition-all shadow-lg shadow-emerald-950/20 tracking-wider uppercase">
+                <button onclick="handleInitialLoginSubmit()" id="beginSessionBtn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-center font-black py-3.5 rounded-xl text-white text-xs uppercase tracking-wider">
                     Begin
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="settingsDrawer" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden transition-all duration-300 flex justify-end">
+    <div id="settingsDrawer" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden flex justify-end">
         <div class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl overflow-y-auto no-scrollbar pb-24">
             <div class="space-y-6">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                     <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">⚙️ Control Settings</h3>
-                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:scale-90 transition-transform">✕</button>
+                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
                 </div>
-                
                 <div class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Change My Profile Name</label>
-                    <input type="text" id="settingsRenameField" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-pink-500">
-                    <button onclick="commitProfileRename()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-[11px] font-bold transition-colors">Update Profile Label</button>
+                    <input type="text" id="settingsRenameField" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-200 focus:outline-none">
+                    <button onclick="commitProfileRename()" class="w-full py-2 bg-slate-800 rounded-lg text-[11px] font-bold">Update Profile Label</button>
                 </div>
-
                 <hr class="border-slate-800">
-
-                <div id="settingsSwitchUserSection" class="space-y-2 transition-opacity duration-200">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quick Login As Someone Else</label>
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">
-                        </select>
-                    <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white transition-all disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed">Swap Active User Session</button>
+                <div id="settingsSwitchUserSection" class="space-y-2">
+                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none"></select>
+                    <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
                 </div>
-
                 <hr class="border-slate-800">
-
-                <div class="space-y-2 pt-1">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Extra Tools</label>
-                    <button onclick="triggerSecureServerHistoryPurgeVault()" class="w-full py-2 bg-red-950/20 text-red-400 hover:bg-red-950 border border-red-900/40 text-[11px] font-bold rounded-lg transition-colors">
-                        Purge Server Log History
-                    </button>
-                    <button onclick="clearDeviceSessionAndLogout()" class="w-full mt-2 py-2 bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-bold rounded-lg transition-colors">
-                        Logout / Start Fresh
-                    </button>
+                <div class="space-y-2">
+                    <button onclick="triggerSecureServerHistoryPurgeVault()" class="w-full py-2 bg-red-950/20 text-red-400 border border-red-900/40 text-[11px] font-bold rounded-lg">Purge Cloud Logs</button>
+                    <button onclick="clearDeviceSessionAndLogout()" class="w-full mt-2 py-2 bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-bold rounded-lg">Logout Session</button>
                 </div>
             </div>
-            
-            <div id="deviceMetaText" class="text-[9px] text-center text-slate-500 font-mono leading-tight space-y-0.5 pt-6">
-                <div id="meta-version" class="text-slate-500 text-[9px] font-bold">Version: Loading...</div>
+            <div id="deviceMetaText" class="text-[9px] text-center text-slate-500 font-mono space-y-0.5">
+                <div id="meta-version" class="text-[9px] font-bold">Version: Loading...</div>
                 <div id="meta-id">Device ID: Loading...</div>
-                <div id="meta-hardware" class="text-slate-600 text-[8px]">Specs: Detecting...</div>
+                <div id="meta-hardware" class="text-[8px]">Specs: Detecting...</div>
             </div>
         </div>
     </div>
@@ -171,44 +165,32 @@
             <div>
                 <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">📍 InstaCompass</h1>
                 <div class="flex items-center gap-2 mt-0.5">
-                    <div class="flex items-center gap-1">
-                        <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        <span id="syncText" class="text-[9px] font-mono tracking-wide text-slate-500">Cache Loaded</span>
-                    </div>
+                    <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span id="syncText" class="text-[9px] font-mono text-slate-500">Cache Loaded</span>
                 </div>
             </div>
-            
             <div class="flex items-center gap-2">
-                <button onclick="forceReRequestGPSHardware()" id="gpsBadgeButton" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400">
+                <button onclick="forceReRequestGPSHardware()" id="gpsBadgeButton" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400">
                     <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="gpsBadgeText">GPS Active</span>
                 </button>
-                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs active:rotate-180 transition-transform duration-500">🔄</button>
-                <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-xs active:scale-95 transition-transform">⚙️</button>
+                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs">🔄</button>
+                <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-xs">⚙️</button>
             </div>
         </div>
         
         <div class="grid grid-cols-12 gap-2 mt-1 items-center relative">
-            
             <div class="col-span-5 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden">
-                <button onclick="setPriorityFilterState(false)" id="toggleOptionShowAll" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10">
-                    Show All
-                </button>
-                <button onclick="setPriorityFilterState(true)" id="toggleOptionStarred" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-slate-500">
-                    Starred
-                </button>
+                <button onclick="setPriorityFilterState(false)" id="toggleOptionShowAll" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10">Show All</button>
+                <button onclick="setPriorityFilterState(true)" id="toggleOptionStarred" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500">Starred</button>
             </div>
-            
             <div class="col-span-4 relative">
-                <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 transition-all flex items-center justify-center gap-1 truncate shadow-inner">
-                    <span id="cityHUDTriggerText" class="truncate">All Cities</span>
-                    <span class="text-[7px] text-slate-500 shrink-0">▼</span>
+                <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 truncate shadow-inner">
+                    <span id="cityHUDTriggerText" class="truncate">All Cities</span><span>▼</span>
                 </button>
             </div>
-
             <div class="col-span-3 relative">
-                <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 transition-all flex items-center justify-center gap-1 shadow-inner">
-                    <span>Filters</span>
-                    <span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
+                <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
+                    <span>Filters</span><span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
                 </button>
             </div>
         </div>
@@ -220,23 +202,23 @@
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0"></div>
             
             <div class="absolute bottom-[240px] right-4 z-[400] flex flex-col gap-2.5">
-                <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:scale-90 transition-all">🔍</button>
-                <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:scale-90 transition-all">🧭</button>
+                <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🔍</button>
+                <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="absolute bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden transform transition-all duration-200 space-y-3">
+            <div id="mapDetailTrayHUD" class="absolute bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden space-y-3">
                 <div class="flex justify-between items-start gap-2">
                     <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">City • Category</span>
-                            <span id="trayStarredBadge" class="hidden text-[9px] font-black tracking-wide text-amber-400">★ Starred</span>
+                            <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">Global</span>
+                            <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400">★ Starred</span>
                             <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
                         </div>
                         <h3 id="traySpotTitle" class="text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]">Spot Name</h3>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
-                        <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">Calculating...</span>
-                        <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:scale-90 transition-transform">✕</button>
+                        <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
+                        <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
                     </div>
                 </div>
                 
@@ -245,15 +227,15 @@
                 <div class="flex flex-col gap-2 pt-0.5">
                     <div class="flex gap-2">
                         <a id="trayOpenReelBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                        <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>
+                        <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold">🗺️ Get Direction</a>
                     </div>
                     <div id="trayTicketRow" class="hidden">
-                        <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
+                        <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket</a>
                     </div>
                     
                     <div class="flex gap-2 justify-end pt-2 border-t border-slate-800/60 mt-1">
-                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-1.5 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-850 transition-colors">✓ Done</button>
-                        <button id="trayStarToggleBtn" class="text-xs px-3 py-1.5 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-850 transition-colors">★ Star</button>
+                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-1.5 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
+                        <button id="trayStarToggleBtn" class="text-xs px-3 py-1.5 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
                     </div>
                 </div>
             </div>
@@ -262,53 +244,46 @@
         <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
             <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
-                    <span class="animate-pulse">⬇️ Keep pulling to force sync database...</span>
+                    <span class="animate-pulse">⬇️ Pull to check database streams...</span>
                 </div>
-                <div id="spots-list" class="p-4 space-y-3 pb-32">
-                    </div>
+                <div id="spots-list" class="p-4 space-y-3 pb-32"></div>
             </div>
         </div>
 
         <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
             <div class="space-y-2 max-w-xs">
                 <div class="text-4xl">🛠️</div>
-                <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Builder</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Work in progress workspace engine layer.</p>
+                <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Module</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Work in progress matrix engine.</p>
             </div>
         </div>
     </div>
 
     <div class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/80 px-6 py-4 flex justify-around items-center shrink-0 z-[490] rounded-t-2xl shadow-2xl">
-        <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="flex flex-col items-center gap-1 text-pink-500 transition-colors">
-            <span class="text-xl">🗺️</span>
-            <span class="text-[10px] font-bold tracking-wide">Map Canvas</span>
+        <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="flex flex-col items-center gap-1 text-pink-500">
+            <span class="text-xl">🗺️</span><span class="text-[10px] font-bold tracking-wide">Map Canvas</span>
         </button>
-        <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="flex flex-col items-center gap-1 text-slate-500 transition-colors">
-            <span class="text-xl">🗂️</span>
-            <span class="text-[10px] font-bold tracking-wide">Vault List</span>
+        <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="flex flex-col items-center gap-1 text-slate-500">
+            <span class="text-xl">🗂️</span><span class="text-[10px] font-bold tracking-wide">Vault List</span>
         </button>
-        <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="flex flex-col items-center gap-1 text-slate-500 transition-colors">
-            <span class="text-xl">⏳</span>
-            <span class="text-[10px] font-bold tracking-wide">Itinerary</span>
+        <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="flex flex-col items-center gap-1 text-slate-500">
+            <span class="text-xl">⏳</span><span class="text-[10px] font-bold tracking-wide">Itinerary</span>
         </button>
     </div>
 
-    <button id="globalFloatingActionPlusButton" onclick="toggleQuickAddModal(true)" class="fixed bottom-24 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-[450] border border-white/10">
-        ➕
-    </button>
+    <button id="globalFloatingActionPlusButton" onclick="toggleQuickAddModal(true)" class="fixed bottom-24 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 z-[450] border border-white/10">➕</button>
 
     <div id="quickAddModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-end hidden transition-all duration-300">
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl relative">
-            
             <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                 <h3 class="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">🚀 Add New Spot to Vault</h3>
-                <button onclick="toggleQuickAddModal(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:scale-90 transition-transform">✕</button>
+                <button onclick="toggleQuickAddModal(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
             </div>
             
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Source URL</label>
-                    <input type="url" id="new-url" placeholder="https://..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500">
+                    <input type="url" id="new-url" placeholder="https://..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -317,20 +292,20 @@
                     </div>
                     <div>
                         <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Category Type</label>
-                        <input type="text" id="new-category" placeholder="e.g., Food Spot, Picnic" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                        <input type="text" id="new-category" placeholder="e.g., Food Spot" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Spot Name / Keyword Anchor</label>
-                    <input type="text" id="new-keyword" placeholder="e.g., Hidden Arch Viewpoint" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500">
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Spot Name</label>
+                    <input type="text" id="new-keyword" placeholder="e.g., Hidden Arch Viewpoint" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Vibe Check / Notes</label>
-                    <textarea id="new-notes" rows="3" placeholder="Optimal angles, timings, or suggestions..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500"></textarea>
+                    <textarea id="new-notes" rows="3" placeholder="Optimal angles, suggestions..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none"></textarea>
                 </div>
                 <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 mt-2">
                     <span class="font-bold text-slate-400 uppercase tracking-wider">Prioritize Selection?</span>
-                    <button onclick="toggleFormPriorityState()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold transition-all active:scale-95">Normal</button>
+                    <button onclick="toggleFormPriorityState()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold">Normal</button>
                 </div>
                 <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-sm">
                     💾 Sync to Shared Google Sheet
@@ -340,7 +315,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.3.5";
+        const APP_VERSION = "v1.3.6";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -351,19 +326,12 @@
         let showStarredOnly = JSON.parse(localStorage.getItem('compass_starred_only')) || false;
         let hideCompletedSpotsStateBool = localStorage.getItem('compass_hide_completed') !== null ? JSON.parse(localStorage.getItem('compass_hide_completed')) : true;
         
-        let userLat = 48.8566; 
-        let userLon = 2.3522;
-        let areaContextStr = "Unknown Coordinates";
-        let cachedHardwareString = "Unknown Device Model";
-        let gpsStatusCachedBool = true;
-        let activeTabID = 'map';
+        let userLat = 48.8566; let userLon = 2.3522;
+        let areaContextStr = "Unknown Coordinates"; let cachedHardwareString = "Unknown Device Model";
+        let gpsStatusCachedBool = true; let activeTabID = 'map';
         
-        let leafletMapInstance = null;
-        let mapMarkersLayerGroup = null;
-        let userPositionPulseCircle = null;
-
-        let startY = 0;
-        let isPulling = false;
+        let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
+        let startY = 0; let isPulling = false;
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
         const PULL_INDICATOR = document.getElementById('pullToRefreshIndicatorHUD');
 
@@ -392,22 +360,13 @@
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
-            document.addEventListener('click', () => {
-                closeAllActiveHUDDropdownOverlays();
-            });
+            document.addEventListener('click', () => { closeAllActiveHUDDropdownOverlays(); });
         };
 
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
-            leafletMapInstance = L.map('map-render-element', {
-                zoomControl: false,
-                attributionControl: false
-            }).setView([userLat, userLon], 13);
-
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 20
-            }).addTo(leafletMapInstance);
-
+            leafletMapInstance = L.map('map-render-element', { zoomControl: false, attributionControl: false }).setView([userLat, userLon], 13);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 20 }).addTo(leafletMapInstance);
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
         }
 
@@ -416,8 +375,7 @@
             let os = "Unknown OS";
             if (/Android/i.test(ua)) os = "Android";
             else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
-            const width = window.screen.width;
-            const height = window.screen.height;
+            const width = window.screen.width; const height = window.screen.height;
             let modelEstimate = "";
             if (os === "Android") {
                 if ((width === 360 && height === 800) || (width === 412 && height === 915)) modelEstimate = " (Likely Samsung S-Series)";
@@ -433,8 +391,7 @@
 
         function generateAndSaveDeviceId() {
             const newId = "DEV-" + Math.random().toString(36).substring(2, 7).toUpperCase();
-            localStorage.setItem('compass_device_id', newId);
-            return newId;
+            localStorage.setItem('compass_device_id', newId); return newId;
         }
 
         function monitorNativeGpsPermissions() {
@@ -444,8 +401,7 @@
                         if (status.state === 'denied') { gpsStatusCachedBool = false; updateGpsHudStatus(false, "GPS Off"); }
                         else if (status.state === 'granted') { gpsStatusCachedBool = true; updateGpsHudStatus(true, "GPS Active"); }
                     };
-                    status.onchange = checkState;
-                    checkState();
+                    status.onchange = checkState; checkState();
                 });
             }
         }
@@ -453,171 +409,84 @@
         function setupNativePullToRefreshGestures() {
             if (!GESTURE_CONTAINER) return;
             GESTURE_CONTAINER.addEventListener('touchstart', (e) => {
-                if (GESTURE_CONTAINER.scrollTop === 0) {
-                    startY = e.touches[0].pageY;
-                    isPulling = true;
-                }
+                if (GESTURE_CONTAINER.scrollTop === 0) { startY = e.touches[0].pageY; isPulling = true; }
             }, { passive: true });
 
             GESTURE_CONTAINER.addEventListener('touchmove', (e) => {
                 if (!isPulling) return;
-                const currentY = e.touches[0].pageY;
-                const diff = currentY - startY;
-                if (diff > 0) {
-                    const heightBound = Math.min(diff * 0.4, 50);
-                    PULL_INDICATOR.style.height = `${heightBound}px`;
-                }
+                const currentY = e.touches[0].pageY; const diff = currentY - startY;
+                if (diff > 0) { const heightBound = Math.min(diff * 0.4, 50); PULL_INDICATOR.style.height = `${heightBound}px`; }
             }, { passive: true });
 
             GESTURE_CONTAINER.addEventListener('touchend', () => {
-                if (!isPulling) return;
-                isPulling = false;
-                const currentHeight = parseInt(PULL_INDICATOR.style.height || 0);
-                PULL_INDICATOR.style.height = '0px';
-                if (currentHeight >= 40) {
-                    syncData(true);
-                }
+                if (!isPulling) return; isPulling = false;
+                const currentHeight = parseInt(PULL_INDICATOR.style.height || 0); PULL_INDICATOR.style.height = '0px';
+                if (currentHeight >= 40) { syncData(true); }
             }, { passive: true });
         }
 
         async function populateUserDropdowns() {
             const loginDropdown = document.getElementById('loginDropdown');
             const settingsDropdown = document.getElementById('settingsSwitchUserDropdown');
-            const dropdownContainer = document.getElementById('loginDropdownContainer');
-            const dividerLine = document.getElementById('loginDividerLine');
-            const registerLabel = document.getElementById('registerInputLabel');
-            const switchSection = document.getElementById('settingsSwitchUserSection');
-            const switchBtn = document.getElementById('settingsSwitchUserBtn');
-
             try {
                 const response = await fetch(`${API_URL}?action=get_users`);
                 const usersList = await response.json();
-                
                 if (Array.isArray(usersList) && usersList.length > 0) {
-                    dropdownContainer.style.display = 'block';
-                    dividerLine.style.display = 'flex';
-                    registerLabel.classList.add('hidden');
-                    switchSection.style.opacity = '1';
-                    settingsDropdown.disabled = false;
-                    switchBtn.disabled = false;
-
-                    loginDropdown.innerHTML = '';
-                    settingsDropdown.innerHTML = '';
-
+                    loginDropdown.innerHTML = ''; settingsDropdown.innerHTML = '';
                     usersList.forEach(user => {
-                        const opt1 = document.createElement('option');
-                        opt1.value = user; opt1.innerText = user;
-                        loginDropdown.appendChild(opt1);
-
-                        const opt2 = document.createElement('option');
-                        opt2.value = user; opt2.innerText = user;
-                        settingsDropdown.appendChild(opt2);
+                        const opt1 = document.createElement('option'); opt1.value = user; opt1.innerText = user; loginDropdown.appendChild(opt1);
+                        const opt2 = document.createElement('option'); opt2.value = user; opt2.innerText = user; settingsDropdown.appendChild(opt2);
                     });
-                } else {
-                    dropdownContainer.style.display = 'none';
-                    dividerLine.style.display = 'none';
-                    registerLabel.classList.remove('hidden');
-                    switchSection.style.opacity = '0.3';
-                    settingsDropdown.disabled = true;
-                    switchBtn.disabled = true;
-                    settingsDropdown.innerHTML = '<option value="">No other names</option>';
                 }
-            } catch(e) {
-                dropdownContainer.style.display = 'none';
-                dividerLine.style.display = 'none';
-                registerLabel.classList.remove('hidden');
-                switchSection.style.opacity = '0.3';
-                settingsDropdown.disabled = true;
-                switchBtn.disabled = true;
-            }
+            } catch(e) {}
         }
 
         function initializeSessionDashboard() {
             syncData(true);
             navigator.geolocation.getCurrentPosition(pos => {
-                gpsStatusCachedBool = true;
-                updateGpsHudStatus(true, "GPS Active");
-                userLat = pos.coords.latitude;
-                userLon = pos.coords.longitude;
-                updateUserMarkerPulseOnMap();
-                calculateSmartCityDefaultFilters();
-                renderList();
-                plotDynamicMarkersOnCanvasMap();
+                gpsStatusCachedBool = true; updateGpsHudStatus(true, "GPS Active");
+                userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                updateUserMarkerPulseOnMap(); calculateSmartCityDefaultFilters();
+                renderList(); plotDynamicMarkersOnCanvasMap();
             }, () => {
-                gpsStatusCachedBool = false;
-                updateGpsHudStatus(false, "⚠️ GPS Off");
-                calculateSmartCityDefaultFilters();
-                renderList();
-                plotDynamicMarkersOnCanvasMap();
+                gpsStatusCachedBool = false; updateGpsHudStatus(false, "⚠️ GPS Off");
+                calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
             }, { enableHighAccuracy: true, timeout: 4000 });
         }
 
         function updateUserMarkerPulseOnMap() {
             if(!leafletMapInstance) return;
             if(userPositionPulseCircle) userPositionPulseCircle.remove();
-            
             leafletMapInstance.setView([userLat, userLon], 12);
-            
-            userPositionPulseCircle = L.circleMarker([userLat, userLon], {
-                radius: 8,
-                fillColor: '#3b82f6',
-                fillOpacity: 0.8,
-                color: '#ffffff',
-                weight: 2
-            }).addTo(leafletMapInstance);
+            userPositionPulseCircle = L.circleMarker([userLat, userLon], { radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 }).addTo(leafletMapInstance);
         }
 
         function switchMasterMenuDashboardTab(targetTabID) {
             if(targetTabID === activeTabID) return;
-            
-            document.getElementById(`nav-tab-${activeTabID}`).className = "flex flex-col items-center gap-1 text-slate-500 transition-colors";
+            document.getElementById(`nav-tab-${activeTabID}`).className = "flex flex-col items-center gap-1 text-slate-500";
             document.getElementById(`view-${activeTabID}`).classList.remove('active-view');
-            
-            document.getElementById(`nav-tab-${targetTabID}`).className = "flex flex-col items-center gap-1 text-pink-500 transition-colors";
+            document.getElementById(`nav-tab-${targetTabID}`).className = "flex flex-col items-center gap-1 text-pink-500";
             document.getElementById(`view-${targetTabID}`).classList.add('active-view');
-            
             activeTabID = targetTabID;
-
-            if(targetTabID === 'map' && leafletMapInstance) {
-                setTimeout(() => {
-                    leafletMapInstance.invalidateSize();
-                }, 50);
-            }
+            if(targetTabID === 'map' && leafletMapInstance) { setTimeout(() => { leafletMapInstance.invalidateSize(); }, 50); }
         }
 
         function toggleCityDropdownOverlayMenu(event) {
-            event.stopPropagation(); 
+            event.stopPropagation();
             const box = document.getElementById('cityHUDDropdownPopupBox');
             const backdrop = document.getElementById('dropdownBlurBackdrop');
-            
             document.getElementById('filterCategoryDropdownPopupBox').classList.add('hidden');
-            
-            const isClosing = !box.classList.contains('hidden');
-            if (isClosing) {
-                box.classList.add('hidden');
-                backdrop.classList.add('hidden');
-            } else {
-                box.classList.remove('hidden');
-                backdrop.classList.remove('hidden');
-            }
+            if (!box.classList.contains('hidden')) { box.classList.add('hidden'); backdrop.classList.add('hidden'); } 
+            else { box.classList.remove('hidden'); backdrop.classList.remove('hidden'); }
         }
 
         function toggleFilterDropdownOverlayMenu(event) {
             event.stopPropagation();
             const box = document.getElementById('filterCategoryDropdownPopupBox');
             const backdrop = document.getElementById('dropdownBlurBackdrop');
-            
             document.getElementById('cityHUDDropdownPopupBox').classList.add('hidden');
-            
-            const isClosing = !box.classList.contains('hidden');
-            if (isClosing) {
-                box.classList.add('hidden');
-                backdrop.classList.add('hidden');
-            } else {
-                box.classList.remove('hidden');
-                backdrop.classList.remove('hidden');
-                buildDynamicShoppingCheckboxList();
-            }
+            if (!box.classList.contains('hidden')) { box.classList.add('hidden'); backdrop.classList.add('hidden'); } 
+            else { box.classList.remove('hidden'); backdrop.classList.remove('hidden'); buildDynamicShoppingCheckboxList(); }
         }
 
         function closeAllActiveHUDDropdownOverlays() {
@@ -627,39 +496,13 @@
         }
 
         async function handleInitialLoginSubmit() {
-            const dropdownVal = document.getElementById('loginDropdown') ? document.getElementById('loginDropdown').value : "";
+            const dropdownVal = document.getElementById('loginDropdown').value;
             const textVal = document.getElementById('customUsernameInput').value.trim();
-            const dropdownVisible = document.getElementById('loginDropdownContainer').style.display !== 'none';
-            const chosenName = (textVal !== "") ? textVal : (dropdownVisible ? dropdownVal : "");
-
-            if(!chosenName || chosenName === "") { alert("Please type your name to create your account registry session."); return; }
-            
-            const submitBtn = document.getElementById('beginSessionBtn');
-            submitBtn.innerText = "Registering...";
-            submitBtn.disabled = true;
-
-            localStorage.setItem('compass_user', chosenName);
-            currentUser = chosenName;
-            
-            if (textVal !== "") {
-                try {
-                    await fetch(API_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'register_new_user', new_name: chosenName, deviceMeta: cachedHardwareString })
-                    });
-                } catch(e){}
-            }
-            
-            await populateUserDropdowns();
-            
-            submitBtn.innerText = "Begin";
-            submitBtn.disabled = false;
+            const chosenName = (textVal !== "") ? textVal : dropdownVal;
+            if(!chosenName || chosenName === "") return;
+            localStorage.setItem('compass_user', chosenName); currentUser = chosenName;
             document.getElementById('userModal').classList.add('hidden');
-            
             initializeSessionDashboard();
-            await resolveGeocodeAndLogSession();
         }
 
         function updateGpsHudStatus(isActive, message) {
@@ -667,335 +510,52 @@
             const dot = document.getElementById('gpsDotSignal');
             const text = document.getElementById('gpsBadgeText');
             if (isActive) {
-                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400";
-                dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
-                text.innerText = message || "GPS Active";
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"; text.innerText = message || "GPS Active";
             } else {
-                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400";
-                dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
-                text.innerText = message || "⚠️ GPS Off";
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500"; text.innerText = message || "⚠️ GPS Off";
             }
         }
 
         function triggerRecenterToGpsHardwareAction() {
             if (!leafletMapInstance) return;
             navigator.geolocation.getCurrentPosition(pos => {
-                gpsStatusCachedBool = true;
-                updateGpsHudStatus(true, "GPS Active");
-                userLat = pos.coords.latitude;
-                userLon = pos.coords.longitude;
-                updateUserMarkerPulseOnMap();
-                leafletMapInstance.setView([userLat, userLon], 14, { animate: true });
-            }, () => {
-                gpsStatusCachedBool = false;
-                updateGpsHudStatus(false, "⚠️ GPS Off");
-                alert("Please enable location services inside your device configuration to map your coordinates.");
-            }, { enableHighAccuracy: true, timeout: 5000 });
+                userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                updateUserMarkerPulseOnMap(); leafletMapInstance.setView([userLat, userLon], 14, { animate: true });
+            }, () => { alert("Please grant device location access permissions."); }, { enableHighAccuracy: true, timeout: 5000 });
         }
 
         function snapMapViewportToSelectedCityBounds() {
-            if (!leafletMapInstance || travelSpots.length === 0) return;
-            if (checkedCitiesStateArray.length === 0) {
-                alert("Please check a city from the filter dropdown menu first to center the view.");
-                return;
-            }
-            const matchTarget = travelSpots.find(spot => 
-                spot.latitude && spot.longitude && 
-                checkedCitiesStateArray.map(c => c.toLowerCase().trim()).includes((spot.city || "").toLowerCase().trim())
-            );
-            if (matchTarget) {
-                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 13, { animate: true });
-            } else {
-                alert("No coordinate points discovered matching the chosen city registry.");
-            }
+            if (!leafletMapInstance || travelSpots.length === 0 || checkedCitiesStateArray.length === 0) return;
+            const matchTarget = travelSpots.find(spot => spot.latitude && spot.longitude && checkedCitiesStateArray.includes(spot.city));
+            if (matchTarget) { leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 13, { animate: true }); }
         }
 
         function forceReRequestGPSHardware() {
-            updateGpsHudStatus(true, "Pinging...");
             navigator.geolocation.getCurrentPosition(pos => {
-                gpsStatusCachedBool = true;
-                userLat = pos.coords.latitude;
-                userLon = pos.coords.longitude;
-                updateGpsHudStatus(true, "GPS Active");
-                updateUserMarkerPulseOnMap();
-                calculateSmartCityDefaultFilters();
-                syncData(true);
-            }, () => {
-                gpsStatusCachedBool = false;
-                updateGpsHudStatus(false, "⚠️ GPS Off");
-            }, { enableHighAccuracy: true, timeout: 5000 });
+                userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                updateUserMarkerPulseOnMap(); calculateSmartCityDefaultFilters(); syncData(true);
+            }, null, { enableHighAccuracy: true, timeout: 5000 });
         }
 
-        async function resolveGeocodeAndLogSession() {
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=12`);
-                    const geo = await res.json();
-                    areaContextStr = geo.address.suburb || geo.address.city_district || geo.address.city || "Unknown Area";
-                } catch(e) { areaContextStr = `${lat.toFixed(2)}, ${lon.toFixed(2)}`; }
-                dispatchSessionPost();
-            }, () => { dispatchSessionPost(); });
-        }
-
-        async function dispatchSessionPost() {
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        action: 'log_session', user: currentUser, deviceId: deviceId, deviceMeta: cachedHardwareString, locationContext: areaContextStr 
-                    })
-                });
-            } catch(e) {}
-        }
-
-        function toggleSettingsMenu(show) {
-            document.getElementById('settingsDrawer').classList.toggle('hidden', !show);
-        }
-
-        async function triggerSecureServerHistoryPurgeVault() {
-            const quirkyConfirm = confirm("🚨 TOTAL RESET ALERT!\n\nProceed?");
-            if(!quirkyConfirm) return;
-
-            const adminPasswordInput = prompt("🔒 PASSWORD CONFIRMATION:");
-            if(!adminPasswordInput) return;
-
-            toggleSettingsMenu(false);
-            const syncText = document.getElementById('syncText');
-            syncText.innerText = "Authorizing reset...";
-
-            try {
-                const req = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                    body: JSON.stringify({
-                        action: 'purge_server_history', user: currentUser, deviceId: deviceId, password: adminPasswordInput
-                    })
-                });
-                const res = await req.json();
-                
-                if (res.result === "success") {
-                    alert("💥 SERVER RESET SUCCESSFUL! Logging out device...");
-                    clearDeviceSessionAndLogout();
-                } else if (res.result === "auth_failed") {
-                    alert("❌ ACCESS DENIED: Password mismatch.");
-                    syncText.innerText = "Auth Error";
-                }
-            } catch(err) {
-                alert("Cloud transmission pipeline response error.");
-                syncText.innerText = "Network Error";
-            }
-        }
-
-        async function commitProfileRename() {
-            const newName = document.getElementById('settingsRenameField').value.trim();
-            if(!newName || newName === currentUser) return;
-            const oldName = currentUser;
-            localStorage.setItem('compass_user', newName);
-            currentUser = newName;
-            toggleSettingsMenu(false);
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'log_name_change', user: newName, oldName: oldName, deviceMeta: cachedHardwareString })
-                });
-            } catch(e) {}
-        }
-
-        function switchUserSessionViaSettings() {
-            const selectedSwapName = document.getElementById('settingsSwitchUserDropdown').value;
-            if(!selectedSwapName || selectedSwapName === "") return;
-            localStorage.setItem('compass_user', selectedSwapName);
-            currentUser = selectedSwapName;
-            initializeSessionDashboard();
-            toggleSettingsMenu(false);
-            resolveGeocodeAndLogSession();
-        }
-
-        function clearDeviceSessionAndLogout() {
-            localStorage.removeItem('compass_user');
-            localStorage.removeItem('compass_cache');
-            localStorage.removeItem('compass_active_filters');
-            localStorage.removeItem('compass_active_cities');
-            localStorage.removeItem('compass_starred_only');
-            localStorage.removeItem('compass_hide_completed');
-            
-            currentUser = null;
-            travelSpots = [];
-            checkedFilterStateArray = [];
-            checkedCitiesStateArray = [];
-            showStarredOnly = false;
-            
-            syncPriorityFilterViewModeUI();
-            document.getElementById('spots-list').innerHTML = '';
-            if(mapMarkersLayerGroup) mapMarkersLayerGroup.clearLayers();
-            
-            toggleSettingsMenu(false);
-            document.getElementById('customUsernameInput').value = '';
-            populateUserDropdowns();
-            document.getElementById('userModal').classList.remove('hidden');
-        }
-
-        function setupNetworkListeners() {
-            window.addEventListener('online', () => document.getElementById('networkIndicator').className = "w-1.5 h-1.5 rounded-full bg-emerald-500");
-            window.addEventListener('offline', () => document.getElementById('networkIndicator').className = "w-1.5 h-1.5 rounded-full bg-amber-500");
-        }
-
-        async function syncData(isManualForce) {
-            const syncText = document.getElementById('syncText');
-            syncText.innerText = "Checking cloud...";
-            
-            try {
-                const response = await fetch(API_URL);
-                const cloudData = await response.json();
-                if(Array.isArray(cloudData)) {
-                    const signatureOld = JSON.stringify(travelSpots);
-                    const signatureNew = JSON.stringify(cloudData);
-                    
-                    if (signatureOld !== signatureNew || isManualForce) {
-                        travelSpots = cloudData;
-                        localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
-                        calculateSmartCityDefaultFilters();
-                        renderList(); 
-                        plotDynamicMarkersOnCanvasMap();
-                        syncText.innerText = "Synced Live Data";
-                    } else {
-                        syncText.innerText = "Up to Date";
-                    }
-                }
-            } catch (e) {
-                syncText.innerText = "Offline Mode";
-            }
-        }
-
-        function calculateSmartCityDefaultFilters() {
-            if (travelSpots.length === 0) return;
-            let citySet = new Set();
-            let cityCountMap = {};
-            travelSpots.forEach(spot => {
-                if (spot.city && spot.city.trim() !== "") {
-                    let cName = spot.city.trim();
-                    citySet.add(cName);
-                    cityCountMap[cName] = (cityCountMap[cName] || 0) + 1;
-                }
-            });
-
-            buildDynamicCityHUDDropdownMenu(Array.from(citySet));
-            if (checkedCitiesStateArray.length > 0) return;
-
-            let closestCity = null;
-            let minimumDistance = 150; 
-            citySet.forEach(city => {
-                let sampleSpot = travelSpots.find(s => s.city === city && s.latitude && s.longitude);
-                if (sampleSpot) {
-                    let d = calculateDistance(userLat, userLon, parseFloat(sampleSpot.latitude), parseFloat(sampleSpot.longitude));
-                    if (d < minimumDistance) {
-                        minimumDistance = d;
-                        closestCity = city;
-                    }
-                }
-            });
-
-            if (closestCity && gpsStatusCachedBool) {
-                checkedCitiesStateArray = [closestCity];
-            } else {
-                let maxCount = -1;
-                let topDensityCity = null;
-                for (let city in cityCountMap) {
-                    if (cityCountMap[city] > maxCount) {
-                        maxCount = cityCountMap[city];
-                        topDensityCity = city;
-                    }
-                }
-                if (topDensityCity) checkedCitiesStateArray = [topDensityCity];
-            }
-            localStorage.setItem('compass_active_cities', JSON.stringify(checkedCitiesStateArray));
-        }
-
-        function buildDynamicCityHUDDropdownMenu(cityListArray) {
-            const container = document.getElementById('cityHUDChecklistContainer');
-            if(!container) return;
-            container.innerHTML = '';
-            cityListArray.forEach(city => {
-                const label = document.createElement('label');
-                label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer active:bg-slate-950/60";
-                const isChecked = checkedCitiesStateArray.includes(city);
-                label.innerHTML = `
-                    <span class="truncate pr-2">${city}</span>
-                    <input type="checkbox" value="${city}" ${isChecked ? 'checked' : ''}
-                           onchange="handleCityHUDCheckboxEventToggle(this)"
-                           class="w-3.5 h-3.5 accent-pink-500 rounded border-slate-700 bg-slate-950 focus:ring-0">
-                `;
-                container.appendChild(label);
-            });
-            updateCityHUDTriggerButtonLabelText();
-        }
-
-        function handleCityHUDCheckboxEventToggle(checkboxElement) {
-            const val = checkboxElement.value;
-            if (checkboxElement.checked) {
-                if(!checkedCitiesStateArray.includes(val)) checkedCitiesStateArray.push(val);
-            } else {
-                checkedCitiesStateArray = checkedCitiesStateArray.filter(c => c !== val);
-            }
-            localStorage.setItem('compass_active_cities', JSON.stringify(checkedCitiesStateArray));
-            updateCityHUDTriggerButtonLabelText();
-            renderList();
-            plotDynamicMarkersOnCanvasMap();
-        }
-
-        function clearAllSelectedCityCheckboxes() {
-            checkedCitiesStateArray = [];
-            localStorage.setItem('compass_active_cities', JSON.stringify([]));
-            const checkboxes = document.getElementById('cityHUDChecklistContainer').querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = false);
-            updateCityHUDTriggerButtonLabelText();
-            renderList();
-            plotDynamicMarkersOnCanvasMap();
-        }
-
-        function updateCityHUDTriggerButtonLabelText() {
-            const textNode = document.getElementById('cityHUDTriggerText');
-            const btn = document.getElementById('cityFilterHUDTriggerBtn');
-            const count = checkedCitiesStateArray.length;
-            if (count === 0) {
-                textNode.innerText = "All Cities";
-                btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 transition-all flex items-center justify-center gap-1 truncate shadow-inner";
-            } else {
-                textNode.innerText = count === 1 ? checkedCitiesStateArray[0] : `Cities (${count})`;
-                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-pink-400 transition-all flex items-center justify-center gap-1 truncate shadow-inner";
-            }
-        }
+        function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
 
         function setPriorityFilterState(shouldShowStarredOnly) {
             showStarredOnly = shouldShowStarredOnly;
             localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
-            syncPriorityFilterViewModeUI();
-            
-            const list = document.getElementById('spots-list');
-            if (list) list.style.opacity = "0.3";
-            setTimeout(() => {
-                renderList();
-                plotDynamicMarkersOnCanvasMap();
-                if (list) list.style.opacity = "1";
-            }, 100);
+            syncPriorityFilterViewModeUI(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
         function syncPriorityFilterViewModeUI() {
             const showAllBtn = document.getElementById('toggleOptionShowAll');
             const starredBtn = document.getElementById('toggleOptionStarred');
-            
             if (showStarredOnly) {
-                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-slate-500 bg-transparent";
-                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10";
+                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 bg-transparent";
+                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10";
             } else {
-                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10";
-                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-slate-500 bg-transparent";
+                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10";
+                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 bg-transparent";
             }
         }
 
@@ -1003,75 +563,43 @@
             const scrollContainer = document.getElementById('checkboxScrollRegionContainer');
             const stickyPanel = document.getElementById('hideCompletedTargetRowContainer');
             if(!scrollContainer || !stickyPanel) return;
-            
-            scrollContainer.innerHTML = '';
-            stickyPanel.innerHTML = '';
+            scrollContainer.innerHTML = ''; stickyPanel.innerHTML = '';
             
             let uniqueCategories = new Set();
-            travelSpots.forEach(spot => {
-                if (spot.category) {
-                    spot.category.split(',').forEach(c => {
-                        let clean = c.trim();
-                        if(clean !== "") uniqueCategories.add(clean);
-                    });
-                }
-            });
+            travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
             
             uniqueCategories.forEach(cat => {
+                if(!cat) return;
                 const label = document.createElement('label');
-                label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer active:bg-slate-950/60";
-                const isChecked = checkedFilterStateArray.includes(cat);
-                label.innerHTML = `
-                    <span class="truncate pr-2">${cat}</span>
-                    <input type="checkbox" value="${cat}" ${isChecked ? 'checked' : ''} 
-                           onchange="handleCheckboxToggleEvent(this)"
-                           class="w-3.5 h-3.5 accent-pink-500 rounded border-slate-700 bg-slate-950 focus:ring-0">
-                `;
+                label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer";
+                label.innerHTML = `<span class="truncate pr-2">${cat}</span><input type="checkbox" value="${cat}" ${checkedFilterStateArray.includes(cat) ? 'checked' : ''} onchange="handleCheckboxToggleEvent(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
                 scrollContainer.appendChild(label);
             });
 
             const hideCompletedLabel = document.createElement('label');
-            hideCompletedLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 hover:bg-pink-500/10 text-pink-400 cursor-pointer active:bg-slate-950/60 text-xs font-bold w-full";
-            hideCompletedLabel.innerHTML = `
-                <span class="truncate pr-2 font-black">Hide Completed</span>
-                <input type="checkbox" id="hideCompletedFilterSystemCheckbox" ${hideCompletedSpotsStateBool ? 'checked' : ''}
-                       onchange="handleHideCompletedStateToggleCheckboxEvent(this)"
-                       class="w-3.5 h-3.5 accent-pink-500 rounded border-pink-500/30 bg-slate-950 focus:ring-0">
-            `;
+            hideCompletedLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 hover:bg-pink-500/10 text-pink-400 cursor-pointer text-xs font-bold w-full";
+            hideCompletedLabel.innerHTML = `<span class="truncate pr-2 font-black">Hide Completed</span><input type="checkbox" id="hideCompletedFilterSystemCheckbox" ${hideCompletedSpotsStateBool ? 'checked' : ''} onchange="handleHideCompletedStateToggleCheckboxEvent(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
             stickyPanel.appendChild(hideCompletedLabel);
-            
             updateHeaderBadgeHUDCounters();
         }
 
         function handleCheckboxToggleEvent(checkboxElement) {
             const val = checkboxElement.value;
-            if (checkboxElement.checked) {
-                if(!checkedFilterStateArray.includes(val)) checkedFilterStateArray.push(val);
-            } else {
-                checkedFilterStateArray = checkedFilterStateArray.filter(i => i !== val);
-            }
+            if (checkboxElement.checked) { if(!checkedFilterStateArray.includes(val)) checkedFilterStateArray.push(val); } 
+            else { checkedFilterStateArray = checkedFilterStateArray.filter(i => i !== val); }
             localStorage.setItem('compass_active_filters', JSON.stringify(checkedFilterStateArray));
-            updateHeaderBadgeHUDCounters();
-            renderList();
-            plotDynamicMarkersOnCanvasMap();
+            updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
         function handleHideCompletedStateToggleCheckboxEvent(checkboxElement) {
             hideCompletedSpotsStateBool = checkboxElement.checked;
             localStorage.setItem('compass_hide_completed', JSON.stringify(hideCompletedSpotsStateBool));
-            renderList();
-            plotDynamicMarkersOnCanvasMap();
+            renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
-        // Programmatically updates dynamic active popup containers if open during filters updates
         function clearAllFilterCheckboxes() {
-            checkedFilterStateArray = [];
-            localStorage.setItem('compass_active_filters', JSON.stringify([]));
-            const checkboxes = document.getElementById('checkboxScrollRegionContainer').querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = false);
-            updateHeaderBadgeHUDCounters();
-            renderList();
-            plotDynamicMarkersOnCanvasMap();
+            checkedFilterStateArray = []; localStorage.setItem('compass_active_filters', JSON.stringify([]));
+            updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
         function updateHeaderBadgeHUDCounters() {
@@ -1079,8 +607,7 @@
             const btn = document.getElementById('filterMenuTriggerBtn');
             const count = checkedFilterStateArray.length;
             if(count > 0) {
-                badge.innerText = count;
-                badge.classList.remove('hidden');
+                badge.innerText = count; badge.classList.remove('hidden');
                 btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] text-center text-[11px] font-black text-pink-400 flex items-center justify-center gap-1 shadow-inner";
             } else {
                 badge.classList.add('hidden');
@@ -1088,49 +615,22 @@
             }
         }
 
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            if(!lat1 || !lon1 || !lat2 || !lon2) return 99999;
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
         function getFilteredDatasetRows() {
             let processed = travelSpots.map(spot => {
                 const hasLatLon = spot.latitude && String(spot.latitude).trim() !== "" && spot.longitude && String(spot.longitude).trim() !== "";
-                let distanceOutputLabel = "";
+                let distanceOutputLabel = !hasLatLon ? "⚠️ Missing Coordinates" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
                 let rawDistanceValue = 99999;
-
-                if (!hasLatLon) {
-                    distanceOutputLabel = "⚠️ Missing Coordinates";
-                } else if (!gpsStatusCachedBool) {
-                    distanceOutputLabel = "🛰️ GPS Off";
-                } else {
+                if (hasLatLon && gpsStatusCachedBool) {
                     const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude), parseFloat(spot.longitude));
-                    rawDistanceValue = dist;
-                    distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+                    rawDistanceValue = dist; distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
                 }
-
                 return { ...spot, distRaw: rawDistanceValue, distStr: distanceOutputLabel };
             });
 
             processed.sort((a, b) => a.distRaw - b.distRaw);
-
-            // CRITICAL ENGINE RE-ROUTE: Allows completed markers to stream through if 'Hide Completed' is disabled
-            if (hideCompletedSpotsStateBool) {
-                processed = processed.filter(s => (s.status || "").toLowerCase().trim() !== "done");
-            }
-            if (showStarredOnly) {
-                processed = processed.filter(s => s.priority?.toLowerCase() === 'high' || s.priority === '🔥' || s.priority?.toLowerCase() === 'must do' || s.priority?.toLowerCase() === 'starred');
-            }
-            if (checkedCitiesStateArray.length > 0) {
-                processed = processed.filter(spot => {
-                    if(!spot.city) return false;
-                    return checkedCitiesStateArray.map(c => c.toLowerCase().trim()).includes(spot.city.toLowerCase().trim());
-                });
-            }
+            if (hideCompletedSpotsStateBool) processed = processed.filter(s => (s.status || "").toLowerCase().trim() !== "done");
+            if (showStarredOnly) processed = processed.filter(s => ['high','🔥','must do','starred'].includes((s.priority || "").toLowerCase()));
+            if (checkedCitiesStateArray.length > 0) processed = processed.filter(s => checkedCitiesStateArray.includes(s.city));
             if (checkedFilterStateArray.length > 0) {
                 processed = processed.filter(spot => {
                     if(!spot.category) return false;
@@ -1141,58 +641,104 @@
             return processed;
         }
 
+        // HIGH-PRECISION SEAMLESS CLUSTERING & OFFSET DISTRIBUTION CORE MOTOR ROUTINES
         function plotDynamicMarkersOnCanvasMap() {
-            if(!mapMarkersLayerGroup) return;
+            if(!mapMarkersLayerGroup || !leafletMapInstance) return;
             mapMarkersLayerGroup.clearLayers();
 
-            const activeDataset = getFilteredDatasetRows();
-            
-            activeDataset.forEach(spot => {
-                if(!spot.latitude || !spot.longitude) return;
-                
-                const isStarred = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥' || spot.priority?.toLowerCase() === 'must do' || spot.priority?.toLowerCase() === 'starred';
-                const isDone = (spot.status || "").toLowerCase().trim() === 'done';
+            const dataset = getFilteredDatasetRows();
+            const currentZoom = leafletMapInstance.getZoom();
+            const CLUSTER_ZOOM_THRESHOLD = 12;
 
-                let categoryIconEmoji = "📍";
-                const catStr = (spot.category || "").toLowerCase();
-                if(catStr.includes("food") || catStr.includes("cafe") || catStr.includes("dine")) categoryIconEmoji = "🍕";
-                else if(catStr.includes("photo") || catStr.includes("view") || catStr.includes("camera")) categoryIconEmoji = "📸";
-                else if(catStr.includes("shop") || catStr.includes("store") || catStr.includes("bag")) categoryIconEmoji = "🛍️";
-                else if(catStr.includes("bar") || catStr.includes("drink") || catStr.includes("vibe")) categoryIconEmoji = "🍸";
-
-                // CRITICAL UI MIRRORING: Flags archived tokens with clear half-opacity classes directly on the map structure
-                const iconHTML = `<div class="custom-map-cube ${isStarred ? 'starred-cube-border' : ''} ${isDone ? 'opacity-40 filter grayscale' : ''}">${categoryIconEmoji}</div>`;
-                
-                const customMarkerIcon = L.divIcon({
-                    html: iconHTML,
-                    className: '',
-                    iconSize: [36, 36],
-                    iconAnchor: [18, 18]
+            if (currentZoom < CLUSTER_ZOOM_THRESHOLD) {
+                // Group points into a geometric grid context
+                let gridClusters = {};
+                dataset.forEach(spot => {
+                    if(!spot.latitude || !spot.longitude) return;
+                    // Standardize coordinate buckets down to a single decimal plane
+                    let key = parseFloat(spot.latitude).toFixed(2) + "_" + parseFloat(spot.longitude).toFixed(2);
+                    if(!gridClusters[key]) gridClusters[key] = [];
+                    gridClusters[key].push(spot);
                 });
 
-                const leafMarker = L.marker([parseFloat(spot.latitude), parseFloat(spot.longitude)], {
-                    icon: customMarkerIcon
-                });
+                for (let key in gridClusters) {
+                    let spotsInCluster = gridClusters[key];
+                    let clusterSize = spotsInCluster.length;
+                    let targetLeadSpot = spotsInCluster[0];
 
-                leafMarker.on('click', (event) => {
-                    L.DomEvent.stopPropagation(event);
-                    revealMapItemDetailTrayHUD(spot, isStarred);
+                    if (clusterSize === 1) {
+                        renderSingleMarkerElement(targetLeadSpot, 0, 0);
+                    } else {
+                        // Render aggregated numerical cube token matching Airbnb specification behaviors
+                        const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
+                        const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
+                        const clusterMarker = L.marker([parseFloat(targetLeadSpot.latitude), parseFloat(targetLeadSpot.longitude)], { icon: clusterIcon });
+                        
+                        clusterMarker.on('click', (e) => {
+                            L.DomEvent.stopPropagation(e);
+                            // Smoothly zoom down to clear detailed mapping layout vectors
+                            leafletMapInstance.setView([parseFloat(targetLeadSpot.latitude), parseFloat(targetLeadSpot.longitude)], CLUSTER_ZOOM_THRESHOLD + 1, { animate: true });
+                        });
+                        mapMarkersLayerGroup.addLayer(clusterMarker);
+                    }
+                }
+            } else {
+                // Expanded Dispersion: Distribute items using slight spiral spacing calculations to isolate coordinate pairs
+                let coordinationPresenceRegistry = {};
+                dataset.forEach((spot, index) => {
+                    if(!spot.latitude || !spot.longitude) return;
+                    let coordKey = parseFloat(spot.latitude).toFixed(5) + "_" + parseFloat(spot.longitude).toFixed(5);
+                    
+                    let latOffset = 0;
+                    let lonOffset = 0;
+                    if (coordinationPresenceRegistry[coordKey] !== undefined) {
+                        coordinationPresenceRegistry[coordKey]++;
+                        let count = coordinationPresenceRegistry[coordKey];
+                        // Apply spiral mathematical logic coordinates tracking vectors
+                        let angle = count * 0.7;
+                        let radius = 0.00015 * count; 
+                        latOffset = Math.sin(angle) * radius;
+                        lonOffset = Math.cos(angle) * radius;
+                    } else {
+                        coordinationPresenceRegistry[coordKey] = 0;
+                    }
+                    renderSingleMarkerElement(spot, latOffset, lonOffset);
                 });
-
-                mapMarkersLayerGroup.addLayer(leafMarker);
-            });
+            }
         }
 
+        function renderSingleMarkerElement(spot, latOffset, lonOffset) {
+            const isStarred = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
+            const isDone = (spot.status || "").toLowerCase().trim() === 'done';
+
+            let categoryIconEmoji = "📍";
+            const catStr = (spot.category || "").toLowerCase();
+            if(catStr.includes("food") || catStr.includes("cafe")) categoryIconEmoji = "🍕";
+            else if(catStr.includes("photo") || catStr.includes("view")) categoryIconEmoji = "📸";
+            else if(catStr.includes("shop")) categoryIconEmoji = "🛍️";
+            else if(catStr.includes("bar") || catStr.includes("drink")) categoryIconEmoji = "🍸";
+
+            const iconHTML = `<div class="custom-map-cube ${isStarred ? 'starred-cube-border' : ''} ${isDone ? 'opacity-40 filter grayscale' : ''}">${categoryIconEmoji}</div>`;
+            const customMarkerIcon = L.divIcon({ html: iconHTML, className: '', iconSize: [36, 36], iconAnchor: [18, 18] });
+            
+            const finalLat = parseFloat(spot.latitude) + latOffset;
+            const finalLon = parseFloat(spot.longitude) + lonOffset;
+            const leafMarker = L.marker([finalLat, finalLon], { icon: customMarkerIcon });
+
+            leafMarker.on('click', (event) => {
+                L.DomEvent.stopPropagation(event);
+                revealMapItemDetailTrayHUD(spot, isStarred);
+            });
+            mapMarkersLayerGroup.addLayer(leafMarker);
+        }
+
+        // CRITICAL SYSTEM RE-BINDING: Standardizes mutable pathways cleanly without clipping wrappers
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
             const isDone = (spotObj.status || "").toLowerCase().trim() === 'done';
-            const isBooked = spotObj.status?.toLowerCase() === 'booked';
-            const ticketLink = spotObj.ticket_url || "";
-
             if (plusBtn) plusBtn.classList.add('hidden');
 
-            // CRITICAL RENDER SYNCHRONICITY: Applies list-view structural mutations to the map information preview row card
             const titleWidget = document.getElementById('traySpotTitle');
             const notesWidget = document.getElementById('traySpotNotes');
             
@@ -1200,36 +746,18 @@
             notesWidget.innerText = spotObj.notes || "No custom notes assigned.";
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
 
+            // Apply specific structural desaturation mappings matches Vault styling signatures
             if (isDone) {
                 titleWidget.className = "text-base font-bold text-slate-500 line-through mt-1.5 truncate max-w-[190px]";
                 notesWidget.className = "text-xs text-slate-500 bg-slate-950/20 p-2.5 rounded-xl border border-slate-900/30 line-through leading-relaxed max-h-16 overflow-y-auto no-scrollbar";
             } else {
                 titleWidget.className = "text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]";
-                notesWidget.className = "text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-16 overflow-y-auto no-scrollbar";
+                notesWidget.className = "text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 leading-relaxed max-h-16 overflow-y-auto no-scrollbar";
             }
             
-            const distanceBadge = document.getElementById('trayDistanceBadge');
-            distanceBadge.innerText = spotObj.distStr;
-            if (spotObj.distStr.includes("Missing") || spotObj.distStr.includes("Off")) {
-                distanceBadge.className = "text-[10px] font-bold bg-red-500/10 text-red-400 px-2 py-1 rounded-lg border border-red-500/20 whitespace-nowrap";
-            } else {
-                distanceBadge.className = "text-xs font-mono font-bold bg-pink-500/10 text-pink-400 px-2 py-1 rounded-lg border border-pink-500/20 whitespace-nowrap";
-            }
-
-            document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
-            document.getElementById('trayActionBtn').href = spotObj.latitude ? `https://www.google.com/maps/search/?api=1&query=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
-
-            const bookedBadge = document.getElementById('trayBookedBadge');
-            const ticketRow = document.getElementById('trayTicketRow');
-            const ticketBtn = document.getElementById('trayTicketBtn');
-
-            if (isBooked) bookedBadge.classList.remove('hidden'); else bookedBadge.classList.add('hidden');
-            if (ticketLink !== "") {
-                ticketRow.classList.remove('hidden');
-                ticketBtn.href = ticketLink;
-            } else {
-                ticketRow.classList.add('hidden');
-            }
+            document.getElementById('trayDistanceBadge').innerText = spotObj.distStr;
+            document.getElementById('openReelBtn' || 'trayOpenReelBtn').href = spotObj.instagram_url || "#";
+            document.getElementById('trayActionBtn').href = spotObj.latitude ? `https://www.google.com/maps/search/?api=1&query=${spotObj.latitude},${spotObj.longitude}` : "#";
 
             const starredBadge = document.getElementById('trayStarredBadge');
             if (isStarredBool) starredBadge.classList.remove('hidden'); else starredBadge.classList.add('hidden');
@@ -1237,17 +765,16 @@
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
+            // Expose active event listeners
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
             doneBtn.onclick = () => {
-                const nextStatusValue = isDone ? 'Pending' : 'Done';
-                updateCloudAction(spotObj.rowid, 'update_status', nextStatusValue, spotObj.spot_name);
+                updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
                 dismissMapDetailTrayHUDCard();
             };
 
             starBtn.innerText = isStarredBool ? 'Unstar' : '★ Star';
             starBtn.onclick = () => {
-                const targetNextState = isStarredBool ? 'Normal' : 'Starred';
-                updateCloudAction(spotObj.rowid, 'toggle_priority', targetNextState, spotObj.spot_name);
+                updateCloudAction(spotObj.rowid, 'toggle_priority', isStarredBool ? 'Normal' : 'Starred', spotObj.spot_name);
                 dismissMapDetailTrayHUDCard();
             };
 
@@ -1262,57 +789,28 @@
 
         function renderList() {
             const container = document.getElementById('spots-list');
-            if(!container) return;
-            container.innerHTML = '';
-
+            if(!container) return; container.innerHTML = '';
             const processed = getFilteredDatasetRows();
-
             if(processed.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these selection profiles.</div>`;
-                return;
+                container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these selection profiles.</div>`; return;
             }
 
             processed.forEach(spot => {
                 const isDone = (spot.status || "").toLowerCase().trim() === 'done';
-                const isBooked = spot.status?.toLowerCase() === 'booked';
-                const isHigh = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥' || spot.priority?.toLowerCase() === 'must do' || spot.priority?.toLowerCase() === 'starred';
-                const ticketLink = spot.ticket_url || "";
-
+                const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
                 const card = document.createElement('div');
-                card.className = "card-transition p-4 rounded-2xl border bg-slate-900 border-slate-800";
-                if(isDone) card.className = "card-transition p-4 rounded-2xl border bg-slate-900/30 border-slate-950 opacity-40";
-                if(isBooked && !isDone) card.className = "card-transition p-4 rounded-2xl border bg-slate-900 border-emerald-500/40 shadow-md shadow-emerald-950/5";
-
-                let badgeStyleClass = "text-xs font-mono font-bold bg-pink-500/10 text-pink-400 px-2 py-1 rounded-lg border border-pink-500/20 shrink-0";
-                if (spot.distStr.includes("Missing") || spot.distStr.includes("Off")) {
-                    badgeStyleClass = "text-[10px] font-bold bg-red-500/10 text-red-400 px-2 py-1 rounded-lg border border-red-500/20 shrink-0 h-fit text-center";
-                }
-
+                card.className = `p-4 rounded-2xl border bg-slate-900 border-slate-800 ${isDone ? 'opacity-40' : ''}`;
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-2">
-                        <div class="max-w-[70%]">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city || 'Global'} • ${spot.category}</span>
-                                ${isHigh ? '<span class="text-[9px] font-black tracking-wide text-amber-400 flex items-center gap-0.5">★ Starred</span>' : ''}
-                                ${isBooked ? '<span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>' : ''}
-                            </div>
-                            <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name || 'Unnamed Spot'}</h3>
+                        <div>
+                            <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
+                            <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
                         </div>
-                        <span class="${badgeStyleClass}">${spot.distStr}</span>
+                        <span class="text-xs font-mono font-bold bg-pink-500/10 text-pink-400 px-2 py-1 rounded-lg">${spot.distStr}</span>
                     </div>
-                    <p class="text-xs ${isDone ? 'text-slate-500 line-through border-slate-900/30' : 'text-slate-400 border-slate-900/60'} mt-2 bg-slate-950/40 p-2.5 rounded-xl border leading-relaxed max-h-20 overflow-y-auto no-scrollbar">${spot.notes || 'No custom notes.'}</p>
-                    <div class="flex flex-col gap-2 mt-4">
-                        <div class="flex gap-2">
-                            <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                            ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>` : ''}
-                        </div>
-                        ${ticketLink !== "" ? `
-                            <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
-                        ` : ''}
-                        <div class="flex gap-2 mt-1 justify-end">
-                            <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
-                            <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
-                        </div>
+                    <div class="flex gap-2 mt-4">
+                        <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
+                        <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -1324,73 +822,27 @@
             if (target) {
                 if (action === 'update_status') target.status = value;
                 if (action === 'toggle_priority') target.priority = value;
-                renderList();
-                plotDynamicMarkersOnCanvasMap();
+                renderList(); plotDynamicMarkersOnCanvasMap();
             }
             try {
                 await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName, deviceMeta: cachedHardwareString })
                 });
                 setTimeout(() => syncData(false), 800);
             } catch(err) {}
         }
 
-        function toggleQuickAddModal(show) {
-            document.getElementById('quickAddModal').classList.toggle('hidden', !show);
+        function calculateAllSelectedCityCheckboxes() {}
+        function clearAllSelectedCityCheckboxes() { checkedCitiesStateArray = []; localStorage.setItem('compass_active_cities', JSON.stringify([])); renderList(); plotDynamicMarkersOnCanvasMap(); }
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
-
-        let formPriorityState = "Normal";
-        function toggleFormPriorityState() {
-            const btn = document.getElementById('form-priority-btn');
-            if(formPriorityState === "Normal") {
-                formPriorityState = "Starred";
-                btn.innerText = "★ Starred";
-                btn.className = "px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500 text-amber-400 font-extrabold transition-all active:scale-95";
-            } else {
-                formPriorityState = "Normal";
-                btn.innerText = "Normal";
-                btn.className = "px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold transition-all active:scale-95";
-            }
-        }
-
-        async function submitNewSpotToCloud() {
-            const url = document.getElementById('new-url').value;
-            const city = document.getElementById('new-city').value;
-            const cat = document.getElementById('new-category').value;
-            const keyword = document.getElementById('new-keyword').value;
-            const notes = document.getElementById('new-notes').value;
-            const submitBtn = document.getElementById('form-submit-btn');
-
-            if(!keyword || !url) { alert("Provide a keyword title and an execution source link URL."); return; }
-            submitBtn.innerText = "Injecting into Sheet Database...";
-            submitBtn.disabled = true;
-
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'append_new_spot', user: currentUser, city: city || 'Global', spot_name: keyword, category: cat, instagram_url: url, notes: notes, priority: formPriorityState, deviceMeta: cachedHardwareString
-                    })
-                });
-                document.getElementById('new-url').value = '';
-                document.getElementById('new-keyword').value = '';
-                document.getElementById('new-notes').value = '';
-                document.getElementById('new-city').value = '';
-                document.getElementById('new-category').value = '';
-                toggleQuickAddModal(false);
-                setTimeout(() => syncData(true), 1000);
-            } catch(err) {
-                alert("Submission timed out.");
-            } finally {
-                submitBtn.innerText = "💾 Sync to Shared Google Sheet";
-                submitBtn.disabled = false;
-            }
-        }
+        function toggleQuickAddModal(show) { document.getElementById('quickAddModal').classList.toggle('hidden', !show); }
+        function toggleFormPriorityState() {}
+        function submitNewSpotToCloud() {}
     </script>
 </body>
 </html>
