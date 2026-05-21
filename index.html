@@ -18,6 +18,11 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
+        
+        /* Smooth micro-interaction transitions for item rendering filters */
+        .card-transition {
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-pink-500/30 select-none">
@@ -79,12 +84,12 @@
                 <hr class="border-slate-800">
 
                 <div class="space-y-2 pt-1">
-                    <label class="block text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1.5">Administrative Server Tools</label>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Extra Tools</label>
                     <button onclick="triggerSecureServerHistoryPurgeVault()" class="w-full py-2 bg-red-950/20 text-red-400 hover:bg-red-950 border border-red-900/40 text-[11px] font-bold rounded-lg transition-colors">
-                        💥 Purge Server Log History
+                        Purge Server Log History
                     </button>
                     <button onclick="clearDeviceSessionAndLogout()" class="w-full mt-2 py-2 bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-bold rounded-lg transition-colors">
-                        🚪 Logout / Start Fresh
+                        Logout / Start Fresh
                     </button>
                 </div>
             </div>
@@ -97,9 +102,12 @@
     </div>
 
     <div id="filterMenuDrawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[70] hidden items-end transition-all duration-300">
-        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[75vh] flex flex-col shadow-2xl">
+        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[75vh] flex flex-col shadow-2xl relative">
+            
+            <button onclick="toggleFilterDrawerMenu(false)" class="absolute top-5 right-5 w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:scale-90 transition-transform">✕</button>
+
             <div class="pb-2 border-b border-slate-800">
-                <h3 class="text-sm font-black uppercase tracking-wider text-slate-200">🔍 Filter Preferences</h3>
+                <h3 class="text-sm font-black uppercase tracking-wider text-slate-200">Filter Preferences</h3>
                 <p class="text-[10px] text-slate-500">Select tags to narrow your itinerary search context</p>
             </div>
             
@@ -139,27 +147,55 @@
         </div>
         
         <div class="flex gap-2 items-center mb-2">
-            <div class="relative flex-1">
+            <div class="relative flex-1 flex items-center bg-slate-950 rounded-xl border border-slate-800/80 focus-within:border-pink-500/60 transition-colors">
+                <span class="pl-3.5 text-slate-500 text-sm pointer-events-none">🔍</span>
                 <input type="text" id="searchInput" placeholder="Search locations or pick a city..." 
-                       class="w-full bg-slate-950/80 text-sm rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 border border-slate-800/80 focus:outline-none focus:ring-1 focus:ring-pink-500">
-                <div id="autocomplete-results" class="absolute w-full bg-slate-900 rounded-xl mt-1 shadow-2xl border border-slate-800 max-h-60 overflow-y-auto hidden z-50"></div>
+                       class="w-full bg-transparent text-sm px-2.5 py-3 text-slate-200 placeholder-slate-600 focus:outline-none">
+                <button onclick="triggerExplicitSearchInputConfirmation()" class="mr-2 px-3 py-1.5 bg-slate-900 border border-slate-800 text-[10px] font-black text-pink-400 uppercase tracking-wider rounded-lg active:scale-95 transition-transform">Go</button>
+                <div id="autocomplete-results" class="absolute w-full top-full left-0 bg-slate-900 rounded-xl mt-1.5 shadow-2xl border border-slate-800 max-h-60 overflow-y-auto hidden z-[60] no-scrollbar"></div>
             </div>
             
             <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="p-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/40 rounded-xl font-extrabold text-xs text-pink-400 flex items-center gap-1.5 shrink-0 active:scale-95 transition-all shadow-lg shadow-pink-950/10">
-                <span>🎛️ Filters</span>
-                <span id="activeFilterBadgeCount" class="hidden w-4 h-4 bg-pink-600 text-white font-black text-[9px] rounded-full flex items-center justify-center animate-pulse">0</span>
+                <span>Filters</span>
+                <span id="activeFilterBadgeCount" class="hidden w-4 h-4 bg-pink-600 text-white font-black text-[9px] rounded-full flex items-center justify-center">0</span>
             </button>
         </div>
 
         <div class="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/50 flex justify-between items-center text-[10px] text-slate-400 mt-2">
             <div>Target sorting: <span id="current-target-name" class="text-pink-400 font-bold">Your Live GPS</span></div>
-            <button onclick="resetToGPS()" class="text-violet-400 underline font-bold">Reset</button>
+            <button id="targetResetBtn" onclick="resetToGPS()" class="text-violet-400 underline font-bold hidden active:text-violet-300 transition-colors">Reset</button>
+        </div>
+        
+        <div id="crossCountryNoticeRow" class="hidden text-center text-[9px] font-bold tracking-wide text-amber-500 bg-amber-500/5 border border-amber-500/10 py-1.5 rounded-lg mt-1.5 animate-pulse">
+            All saved locations are in a different country! ✈️
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 mt-2 pt-1">
+            <button onclick="togglePriorityFilterViewMode()" id="priorityToggleHUDButton" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-between">
+                <span id="priorityToggleHUDText">Show All</span>
+                <span id="priorityToggleHUDIndicator" class="text-slate-600 text-[10px]">○</span>
+            </button>
+            
+            <div class="relative">
+                <button onclick="toggleCityDropdownOverlayMenu(event)" id="cityFilterHUDTriggerBtn" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-between truncate">
+                    <span id="cityHUDTriggerText" class="truncate">Select City</span>
+                    <span class="text-[9px] text-slate-600">▼</span>
+                </button>
+                
+                <div id="cityHUDDropdownPopupBox" class="absolute right-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden z-50 flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
+                    <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold max-h-44 overflow-y-auto no-scrollbar">
+                        </div>
+                    <div class="pt-1.5 mt-1.5 border-t border-slate-800/80 text-center">
+                        <button onclick="clearAllSelectedCityCheckboxes()" class="text-[10px] font-bold text-pink-400 active:text-pink-300 transition-colors">Clear Filter</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative z-10">
         <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
-            <span class="animate-pulse">⬇️ Keep pulling to force sync database...</span>
+            <span class="animate-pulse">⬇| Keep pulling to force sync database...</span>
         </div>
         
         <div id="spots-list" class="p-4 space-y-3 pb-32">
@@ -178,8 +214,8 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Source URL (Instagram Link)</label>
-                    <input type="url" id="new-url" placeholder="https://instagram.com/p/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500">
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Source URL</label>
+                    <input type="url" id="new-url" placeholder="https://..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -201,7 +237,7 @@
                 </div>
                 <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 mt-2">
                     <span class="font-bold text-slate-400 uppercase tracking-wider">Prioritize Selection?</span>
-                    <button onclick="toggleFormPriority()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold">⭐ Normal</button>
+                    <button onclick="toggleFormPriorityState()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold transition-all active:scale-95">Normal</button>
                 </div>
                 <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-sm">
                     💾 Sync to Shared Google Sheet
@@ -218,11 +254,15 @@
         let travelSpots = JSON.parse(localStorage.getItem('compass_cache')) || [];
         let checkedFilterStateArray = JSON.parse(localStorage.getItem('compass_active_filters')) || [];
         
+        // NEW ARRAY: Holds checked city labels persistently via storage keys
+        let checkedCitiesStateArray = JSON.parse(localStorage.getItem('compass_active_cities')) || [];
+        
         let userLat = 48.8566; 
         let userLon = 2.3522;
         let searchTimeout;
         let areaContextStr = "Unknown Coordinates";
         let cachedHardwareString = "Unknown Device Model";
+        let gpsStatusCachedBool = true;
         
         let startY = 0;
         let isPulling = false;
@@ -236,7 +276,9 @@
             
             populateUserDropdowns();
             
+            // Render cached items instantly to solve blank screen flashes
             if (travelSpots.length > 0) {
+                calculateSmartCityDefaultFilters();
                 renderList();
             }
             
@@ -249,6 +291,11 @@
             setupSearchAutocomplete();
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
+            
+            // Closes global open context boxes natively on outside touch event registers
+            document.addEventListener('click', () => {
+                document.getElementById('cityHUDDropdownPopupBox').classList.add('hidden');
+            });
         };
 
         function parseReadableDeviceHardware() {
@@ -281,8 +328,8 @@
             if (navigator.permissions && navigator.permissions.query) {
                 navigator.permissions.query({ name: 'geolocation' }).then(status => {
                     const checkState = () => {
-                        if (status.state === 'denied') updateGpsHudStatus(false, "GPS Off");
-                        else if (status.state === 'granted') updateGpsHudStatus(true, "GPS Active");
+                        if (status.state === 'denied') { gpsStatusCachedBool = false; updateGpsHudStatus(false, "GPS Off"); }
+                        else if (status.state === 'granted') { gpsStatusCachedBool = true; updateGpsHudStatus(true, "GPS Active"); }
                     };
                     status.onchange = checkState;
                     checkState();
@@ -322,7 +369,6 @@
         async function populateUserDropdowns() {
             const dropdowns = [document.getElementById('loginDropdown'), document.getElementById('settingsSwitchUserDropdown')];
             try {
-                // FIXED: Wiped hardcoded array strings. Reads explicitly from clean registry tab.
                 const response = await fetch(`${API_URL}?action=get_users`);
                 const usersList = await response.json();
                 
@@ -337,7 +383,6 @@
                             dd.appendChild(opt);
                         });
                     } else {
-                        // Empty fallback state
                         dd.innerHTML = '<option value="">No users registered yet</option>';
                     }
                 });
@@ -350,16 +395,20 @@
             document.getElementById('userBadge').innerText = `👤 ${currentUser}`;
             document.getElementById('settingsRenameField').value = currentUser;
             
-            // FIXED AUTOMATION BLOCK: Instantly triggers background engine sync pulls on initialization pass
+            // Trigger high precision geo checks natively on boot
             navigator.geolocation.getCurrentPosition(pos => {
+                gpsStatusCachedBool = true;
                 updateGpsHudStatus(true, "GPS Active");
                 userLat = pos.coords.latitude;
                 userLon = pos.coords.longitude;
-                syncData(true); 
+                calculateSmartCityDefaultFilters();
+                syncData(true); // Automatically runs delta verification sync routines
             }, () => {
+                gpsStatusCachedBool = false;
                 updateGpsHudStatus(false, "⚠️ GPS Off");
+                calculateSmartCityDefaultFilters();
                 syncData(true);
-            });
+            }, { enableHighAccuracy: true, timeout: 4000 });
         }
 
         async function handleInitialLoginSubmit() {
@@ -367,7 +416,7 @@
             const textVal = document.getElementById('customUsernameInput').value.trim();
             const chosenName = textVal !== "" ? textVal : dropdownVal;
 
-            if(!chosenName || chosenName.startsWith("No users")) { alert("Please type a registration profile name."); return; }
+            if(!chosenName || chosenName.startsWith("No users")) { alert("Please input or select an explorer identity profile."); return; }
             localStorage.setItem('compass_user', chosenName);
             currentUser = chosenName;
             document.getElementById('userModal').classList.add('hidden');
@@ -405,18 +454,20 @@
         function forceReRequestGPSHardware() {
             updateGpsHudStatus(true, "Pinging...");
             navigator.geolocation.getCurrentPosition(pos => {
+                gpsStatusCachedBool = true;
                 userLat = pos.coords.latitude;
                 userLon = pos.coords.longitude;
                 updateGpsHudStatus(true, "GPS Active");
+                calculateSmartCityDefaultFilters();
                 syncData(true);
             }, () => {
+                gpsStatusCachedBool = false;
                 updateGpsHudStatus(false, "⚠️ GPS Off");
             }, { enableHighAccuracy: true, timeout: 5000 });
         }
 
         async function resolveGeocodeAndLogSession() {
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                updateGpsHudStatus(true, "GPS Active");
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
                 try {
@@ -425,10 +476,7 @@
                     areaContextStr = geo.address.suburb || geo.address.city_district || geo.address.city || "Unknown Area";
                 } catch(e) { areaContextStr = `${lat.toFixed(2)}, ${lon.toFixed(2)}`; }
                 dispatchSessionPost();
-            }, () => { 
-                updateGpsHudStatus(false, "⚠️ GPS Off");
-                dispatchSessionPost(); 
-            });
+            }, () => { dispatchSessionPost(); });
         }
 
         async function dispatchSessionPost() {
@@ -454,10 +502,10 @@
         }
 
         async function triggerSecureServerHistoryPurgeVault() {
-            const quirkyConfirm = confirm("🚨 TOTAL RESET ALERT! You are about to initiate an absolute database scrub. \n\nThis completely clears all Registered Users, Geolocation logs, and Profile entries from the cloud down to zero.\n\nThis cannot be undone. Proceed?");
+            const quirkyConfirm = confirm("🚨 TOTAL RESET DEPLOYED!\n\nYou are about to scrub your entire tracking database.\n\nThis wipes all Registered Users, Geolocation logs, and Profile history records down to a blank slate.\n\nThis cannot be undone. Proceed?");
             if(!quirkyConfirm) return;
 
-            const adminPasswordInput = prompt("🔒 PASSWORD CONFIRMATION:");
+            const adminPasswordInput = prompt("🔒 SECURITY KEY ACCESS:");
             if(!adminPasswordInput) return;
 
             toggleSettingsMenu(false);
@@ -475,14 +523,14 @@
                 const res = await req.json();
                 
                 if (res.result === "success") {
-                    alert("💥 SERVER RESET COMPLETE!\n\nAll logs and users have been cleared. Tapping OK will reset your device.");
+                    alert("💥 SERVER RESET METRIC SUCCEEDED!\n\nAll tracking logs and user profiles have been wiped. Tapping OK will clear local caches.");
                     clearDeviceSessionAndLogout();
                 } else if (res.result === "auth_failed") {
-                    alert("❌ ACCESS DENIED: Password mismatch.");
+                    alert("❌ DEPLOYMENT REJECTED: Password mismatch error.");
                     syncText.innerText = "Auth Error";
                 }
             } catch(err) {
-                alert("Cloud execution timeout.");
+                alert("Cloud execution timeout connectivity gateway block.");
                 syncText.innerText = "Network Error";
             }
         }
@@ -518,8 +566,16 @@
         function clearDeviceSessionAndLogout() {
             localStorage.removeItem('compass_user');
             localStorage.removeItem('compass_active_filters');
+            localStorage.removeItem('compass_active_cities');
             currentUser = null;
             checkedFilterStateArray = [];
+            checkedCitiesStateArray = [];
+            showStarredOnly = false;
+            
+            // Revert HUD toggles back to base positions
+            document.getElementById('priorityToggleHUDText').innerText = "Show All";
+            document.getElementById('priorityToggleHUDIndicator').innerText = "○";
+            
             toggleSettingsMenu(false);
             document.getElementById('customUsernameInput').value = '';
             populateUserDropdowns();
@@ -535,14 +591,6 @@
             const syncText = document.getElementById('syncText');
             syncText.innerText = "Checking cloud...";
             
-            if (travelSpots.length === 0) {
-                document.getElementById('spots-list').innerHTML = `
-                    <div class="p-4 rounded-2xl bg-slate-900/40 border border-slate-900 animate-pulse space-y-2">
-                        <div class="h-4 bg-slate-800 rounded w-1/3"></div><div class="h-3 bg-slate-800 rounded w-full"></div>
-                    </div>
-                `;
-            }
-
             try {
                 const response = await fetch(API_URL);
                 const cloudData = await response.json();
@@ -553,6 +601,7 @@
                     if (signatureOld !== signatureNew || isManualForce) {
                         travelSpots = cloudData;
                         localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
+                        calculateSmartCityDefaultFilters();
                         renderList(); 
                         syncText.innerText = "Synced Live Data";
                     } else {
@@ -562,6 +611,151 @@
             } catch (e) {
                 syncText.innerText = "Offline Mode";
             }
+        }
+
+        // SMART CITY EVALUATION: Calculates default focus maps based on user geolocated parameters
+        function calculateSmartCityDefaultFilters() {
+            if (travelSpots.length === 0) return;
+            
+            // Extract unique city names from spreadsheet columns array list array parameters
+            let citySet = new Set();
+            let cityCountMap = {};
+            
+            travelSpots.forEach(spot => {
+                if (spot.city && spot.city.trim() !== "") {
+                    let cName = spot.city.trim();
+                    citySet.add(cName);
+                    cityCountMap[cName] = (cityCountMap[cName] || 0) + 1;
+                }
+            });
+
+            // Rebuild dropdown checklist popup nodes inside the sub header container layout bar
+            buildDynamicCityHUDDropdownMenu(Array.from(citySet));
+
+            // Skip default parsing calculations if user has already explicitly ticked matching city markers
+            if (checkedCitiesStateArray.length > 0) return;
+
+            let closestCity = null;
+            let minimumDistance = 150; // Distance radius barrier parameter constraint threshold checklist limit (150 kilometers)
+
+            citySet.forEach(city => {
+                let sampleSpot = travelSpots.find(s => s.city === city && s.latitude && s.longitude);
+                if (sampleSpot) {
+                    let d = calculateDistance(userLat, userLon, parseFloat(sampleSpot.latitude), parseFloat(sampleSpot.longitude));
+                    if (d < minimumDistance) {
+                        minimumDistance = d;
+                        closestCity = city;
+                    }
+                }
+            });
+
+            if (closestCity && gpsStatusCachedBool) {
+                // Snape views target directly to matching nearest destination points
+                checkedCitiesStateArray = [closestCity];
+            } else {
+                // Find target density hub configuration arrays holding maximum database load items
+                let maxCount = -1;
+                let topDensityCity = null;
+                for (let city in cityCountMap) {
+                    if (cityCountMap[city] > maxCount) {
+                        maxCount = cityCountMap[city];
+                        topDensityCity = city;
+                    }
+                }
+                if (topDensityCity) checkedCitiesStateArray = [topDensityCity];
+            }
+            
+            localStorage.setItem('compass_active_cities', JSON.stringify(checkedCitiesStateArray));
+        }
+
+        function buildDynamicCityHUDDropdownMenu(cityListArray) {
+            const container = document.getElementById('cityHUDChecklistContainer');
+            container.innerHTML = '';
+            
+            cityListArray.forEach(city => {
+                const label = document.createElement('label');
+                label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer active:bg-slate-950/60";
+                
+                const isChecked = checkedCitiesStateArray.includes(city);
+                label.innerHTML = `
+                    <span class="truncate pr-2">${city}</span>
+                    <input type="checkbox" value="${city}" ${isChecked ? 'checked' : ''}
+                           onchange="handleCityHUDCheckboxEventToggle(this)"
+                           class="w-3.5 h-3.5 accent-pink-500 rounded border-slate-700 bg-slate-950 focus:ring-0">
+                `;
+                container.appendChild(label);
+            });
+            updateCityHUDTriggerButtonLabelText();
+        }
+
+        function toggleCityDropdownOverlayMenu(event) {
+            event.stopPropagation(); // Avoid event cascading loops triggering parent window bounds click blocks
+            document.getElementById('cityHUDDropdownPopupBox').classList.toggle('hidden');
+        }
+
+        function handleCityHUDCheckboxEventToggle(checkboxElement) {
+            const val = checkboxElement.value;
+            if (checkboxElement.checked) {
+                if(!checkedCitiesStateArray.includes(val)) checkedCitiesStateArray.push(val);
+            } else {
+                checkedCitiesStateArray = checkedCitiesStateArray.filter(c => c !== val);
+            }
+            localStorage.setItem('compass_active_cities', JSON.stringify(checkedCitiesStateArray));
+            updateCityHUDTriggerButtonLabelText();
+            renderList();
+        }
+
+        function clearAllSelectedCityCheckboxes() {
+            checkedCitiesStateArray = [];
+            localStorage.setItem('compass_active_cities', JSON.stringify([]));
+            const checkboxes = document.getElementById('cityHUDChecklistContainer').querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateCityHUDTriggerButtonLabelText();
+            renderList();
+        }
+
+        function updateCityHUDTriggerButtonLabelText() {
+            const textNode = document.getElementById('cityHUDTriggerText');
+            const btn = document.getElementById('cityFilterHUDTriggerBtn');
+            const count = checkedCitiesStateArray.length;
+            
+            if (count === 0) {
+                textNode.innerText = "All Cities";
+                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-between";
+            } else if (count === 1) {
+                textNode.innerText = checkedCitiesStateArray[0];
+                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl p-2.5 text-left text-xs font-black text-pink-400 flex items-center justify-between";
+            } else {
+                textNode.innerText = `Filtered (${count})`;
+                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl p-2.5 text-left text-xs font-black text-pink-400 flex items-center justify-between";
+            }
+        }
+
+        // TRIGGER PRIORITY FILTER VIEWS: Seamless cross fading list switches
+        let showStarredOnly = false;
+        function togglePriorityFilterViewMode() {
+            showStarredOnly = !showStarredOnly;
+            const text = document.getElementById('priorityToggleHUDText');
+            const indicator = document.getElementById('priorityToggleHUDIndicator');
+            const btn = document.getElementById('priorityToggleHUDButton');
+            
+            if (showStarredOnly) {
+                text.innerText = "Must Do Only";
+                indicator.innerText = "★";
+                btn.className = "w-full bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-left text-xs font-black text-amber-400 flex items-center justify-between";
+            } else {
+                text.innerText = "Show All";
+                indicator.innerText = "○";
+                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-between";
+            }
+            
+            // Re-render list with subtle transitional opacity adjustments
+            const list = document.getElementById('spots-list');
+            list.style.opacity = "0.3";
+            setTimeout(() => {
+                renderList();
+                list.style.opacity = "1";
+            }, 120);
         }
 
         function buildDynamicShoppingCheckboxList() {
@@ -614,15 +808,12 @@
 
         function updateHeaderBadgeHUDCounters() {
             const badge = document.getElementById('activeFilterBadgeCount');
-            const triggerBtn = document.getElementById('filterMenuTriggerBtn');
             const count = checkedFilterStateArray.length;
             if(count > 0) {
                 badge.innerText = count;
                 badge.classList.remove('hidden');
-                triggerBtn.className = "p-3 bg-gradient-to-r from-pink-500/30 to-purple-500/30 border border-pink-500 rounded-xl font-extrabold text-xs text-pink-400 flex items-center gap-1.5 shrink-0 active:scale-95 transition-all";
             } else {
                 badge.classList.add('hidden');
-                triggerBtn.className = "p-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/40 rounded-xl font-extrabold text-xs text-pink-400 flex items-center gap-1.5 shrink-0 active:scale-95 transition-all";
             }
         }
 
@@ -644,12 +835,35 @@
                 return { ...spot, distRaw: dist, distStr: dist > 1000 ? 'No Location' : (dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`) };
             }).sort((a, b) => a.distRaw - b.distRaw);
 
+            // Conditional Priority Filter logic matrices
+            if (showStarredOnly) {
+                processed = processed.filter(s => s.priority === 'High' || s.priority === '🔥' || s.priority === 'Must Do');
+            }
+            
+            // Sub Header dynamic target city filter logic pipeline matching conditions
+            if (checkedCitiesStateArray.length > 0) {
+                processed = processed.filter(spot => {
+                    if(!spot.city) return false;
+                    return checkedCitiesStateArray.map(c => c.toLowerCase().trim()).includes(spot.city.toLowerCase().trim());
+                });
+            }
+
+            // Category tag intersection selection mapping loop filter criteria checks
             if (checkedFilterStateArray.length > 0) {
                 processed = processed.filter(spot => {
                     if(!spot.category) return false;
                     const spotCats = spot.category.split(',').map(item => item.trim().toLowerCase());
                     return checkedFilterStateArray.some(checkedCat => spotCats.includes(checkedCat.toLowerCase()));
                 });
+            }
+
+            // CROSS-COUNTRY ALERT: Detects if loaded items reside outside your master spatial bubble zone limits
+            const noticeRow = document.getElementById('crossCountryNoticeRow');
+            let distantItemCount = processed.filter(s => s.distRaw > 1200 && s.distRaw !== 99999).length;
+            if (distantItemCount > 0 && processed.length === distantItemCount && gpsStatusCachedBool) {
+                noticeRow.classList.remove('hidden');
+            } else {
+                noticeRow.classList.add('hidden');
             }
 
             if(processed.length === 0) {
@@ -660,18 +874,20 @@
             processed.forEach(spot => {
                 const isDone = spot.status?.toLowerCase() === 'done';
                 const isBooked = spot.status?.toLowerCase() === 'booked';
-                const isHigh = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥';
+                const isHigh = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥' || spot.priority?.toLowerCase() === 'must do';
                 const ticketLink = spot.ticket_url || "";
 
                 const card = document.createElement('div');
-                card.className = `p-4 rounded-2xl border transition-all ${isDone ? 'bg-slate-900/30 border-slate-950 opacity-40' : isBooked ? 'bg-slate-900 border-emerald-500/40 shadow-md' : 'bg-slate-900 border-slate-800'}`;
-                
+                card.className = "card-transition p-4 rounded-2xl border bg-slate-900 border-slate-800";
+                if(isDone) card.className = "card-transition p-4 rounded-2xl border bg-slate-900/30 border-slate-950 opacity-40";
+                if(isBooked && !isDone) card.className = "card-transition p-4 rounded-2xl border bg-slate-900 border-emerald-500/40 shadow-md shadow-emerald-950/5";
+
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-2">
                         <div>
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city || 'Global'} • ${spot.category}</span>
-                                ${isHigh ? '<span class="text-[10px]">🔥 Must Do</span>' : ''}
+                                ${isHigh ? '<span class="text-[9px] font-black tracking-wide text-amber-400 flex items-center gap-0.5">★ Must Do</span>' : ''}
                                 ${isBooked ? '<span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>' : ''}
                             </div>
                             <h3 class="text-base font-bold text-slate-200 mt-1.5">${spot.spot_name || 'Unnamed Spot'}</h3>
@@ -691,7 +907,7 @@
                         ` : ''}
                         <div class="flex gap-2 mt-1 justify-end">
                             <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
-                            <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : '🔥'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? '★ Unstar' : '⭐ Star'}</button>
+                            <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Must Do'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
                         </div>
                     </div>
                 `;
@@ -718,53 +934,73 @@
             } catch (err) {}
         }
 
+        // FULLY OPTIMIZED RESPONSIVE AUTOCOMPLETE SEARCH SYSTEM
         function setupSearchAutocomplete() {
             const input = document.getElementById('searchInput');
             const box = document.getElementById('autocomplete-results');
+            
             input.addEventListener('input', (e) => {
                 clearTimeout(searchTimeout);
-                const query = e.target.value;
+                const query = e.target.value.trim();
                 if (query.length < 3) { box.classList.add('hidden'); return; }
+                
                 searchTimeout = setTimeout(() => {
                     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
                         .then(res => res.json())
                         .then(data => {
                             box.innerHTML = '';
-                            if(data.length === 0) { box.classList.add('hidden'); return; }
+                            if(!data || data.length === 0) { box.classList.add('hidden'); return; }
                             box.classList.remove('hidden');
+                            
                             data.forEach(place => {
                                 const d = document.createElement('div');
-                                d.className = "p-3 text-xs border-b border-slate-700/50 hover:bg-slate-800 cursor-pointer text-slate-300 text-left";
+                                d.className = "p-3 text-xs border-b border-slate-800 hover:bg-slate-800 cursor-pointer text-slate-300 text-left truncate";
                                 d.innerText = place.display_name;
-                                d.onclick = () => {
-                                    userLat = parseFloat(place.lat);
-                                    userLon = parseFloat(place.lon);
-                                    document.getElementById('current-target-name').innerText = place.name || "Custom Anchor Context";
-                                    box.classList.add('hidden');
-                                    input.value = place.name;
-                                    renderList();
+                                d.onclick = (event) => {
+                                    event.stopPropagation();
+                                    executeSpatialAnchorShift(parseFloat(place.lat), parseFloat(place.lon), place.name || "Custom Search Location");
                                 };
                                 box.appendChild(d);
                             });
-                        });
-                }, 400);
+                        }).catch(() => {});
+                }, 300);
             });
         }
 
-        function toggleQuickAddModal(show) {
-            document.getElementById('quickAddModal').classList.toggle('hidden', !show);
+        function triggerExplicitSearchInputConfirmation() {
+            const rawVal = document.getElementById('searchInput').value.trim();
+            if(rawVal.length === 0) return;
+            document.getElementById('syncText').innerText = "Querying anchor...";
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(rawVal)}&limit=1`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data && data.length > 0) {
+                        executeSpatialAnchorShift(parseFloat(data[0].lat), parseFloat(data[0].lon), data[0].name);
+                    }
+                });
         }
 
-        function toggleFormPriority() {
+        function executeSpatialAnchorShift(lat, lon, displayName) {
+            userLat = lat;
+            userLon = lon;
+            document.getElementById('current-target-name').innerText = displayName;
+            document.getElementById('autocomplete-results').classList.add('hidden');
+            document.getElementById('targetResetBtn').classList.remove('hidden'); // Show reset button only when using manual search location targets
+            renderList();
+        }
+
+        // FIXED: Click prioritization state configuration switch loop values
+        let formPriorityState = "Normal";
+        function toggleFormPriorityState() {
             const btn = document.getElementById('form-priority-btn');
             if(formPriorityState === "Normal") {
-                formPriorityState = "High";
-                btn.innerText = "🔥 High Priority";
-                btn.className = "px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500 text-amber-400 font-bold";
+                formPriorityState = "Must Do";
+                btn.innerText = "★ Must Do";
+                btn.className = "px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500 text-amber-400 font-extrabold transition-all active:scale-95";
             } else {
                 formPriorityState = "Normal";
-                btn.innerText = "⭐ Normal";
-                btn.className = "px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold";
+                btn.innerText = "Normal";
+                btn.className = "px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold transition-all active:scale-95";
             }
         }
 
@@ -776,7 +1012,7 @@
             const notes = document.getElementById('new-notes').value;
             const submitBtn = document.getElementById('form-submit-btn');
 
-            if(!keyword || !url) { alert("Provide a keyword title and an Instagram link."); return; }
+            if(!keyword || !url) { alert("Provide a keyword title and an execution source link URL."); return; }
             submitBtn.innerText = "Injecting into Sheet Database...";
             submitBtn.disabled = true;
 
@@ -786,7 +1022,7 @@
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        action: 'append_new_spot', user: currentUser, city: city || 'Global', spot_name: keyword, category: cat, instagram_url: url, notes: notes, priority: formPriorityState === "High" ? "🔥" : "Normal", deviceMeta: cachedHardwareString
+                        action: 'append_new_spot', user: currentUser, city: city || 'Global', spot_name: keyword, category: cat, instagram_url: url, notes: notes, priority: formPriorityState, deviceMeta: cachedHardwareString
                     })
                 });
                 document.getElementById('new-url').value = '';
@@ -795,13 +1031,22 @@
                 document.getElementById('new-city').value = '';
                 document.getElementById('new-category').value = '';
                 toggleQuickAddModal(false);
-                setTimeout(() => syncData(false), 1000);
+                setTimeout(() => syncData(true), 1000);
             } catch(err) {
                 alert("Submission timed out.");
             } finally {
                 submitBtn.innerText = "💾 Sync to Shared Google Sheet";
                 submitBtn.disabled = false;
             }
+        }
+
+        function resetToGPS() {
+            document.getElementById('current-target-name').innerText = "Your Live GPS";
+            document.getElementById('searchInput').value = "";
+            document.getElementById('targetResetBtn').classList.add('hidden'); // Hide reset button once returned to master default GPS
+            
+            // Simulates background check execution routines smoothly without moving visual element tags
+            forceReRequestGPSHardware();
         }
     </script>
 </body>
