@@ -77,12 +77,12 @@
                     <button onclick="clearDeviceSessionAndLogout()" class="w-full py-2.5 bg-red-950/40 hover:bg-red-900 border border-red-900/60 text-red-200 text-xs font-bold rounded-xl transition-all active:scale-95">
                         🚪 Logout / Start Fresh
                     </button>
-                    <p class="text-[9px] text-slate-500 leading-tight">This clears all app states on this phone browser and drops you back to the onboarding login panel. Your Google Sheet records remain completely safe.</p>
                 </div>
             </div>
             
-            <div id="deviceMetaText" class="text-[9px] text-center text-slate-600 font-mono">
-                Device ID: Loading...
+            <div id="deviceMetaText" class="text-[9px] text-center text-slate-500 font-mono leading-tight space-y-0.5">
+                <div id="meta-id">Device ID: Loading...</div>
+                <div id="meta-hardware" class="text-slate-600 text-[8px]">Specs: Detecting...</div>
             </div>
         </div>
     </div>
@@ -91,14 +91,18 @@
         <div class="flex justify-between items-center mb-3">
             <div>
                 <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">📍 InstaCompass</h1>
-                <div class="flex items-center gap-1.5 mt-0.5">
-                    <span id="networkIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span id="syncText" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Connected</span>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <div class="flex items-center gap-1">
+                        <span id="networkIndicator" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="syncText" class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Connected</span>
+                    </div>
                 </div>
             </div>
             
             <div class="flex items-center gap-2">
-                <span id="userBadge" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300">👤 Loading...</span>
+                <button onclick="forceReRequestGPSHardware()" id="gpsBadgeButton" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all active:scale-95 flex items-center gap-1 bg-emerald-500/10 border-emerald-500/30 text-emerald-400">
+                    <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="gpsBadgeText">GPS Active</span>
+                </button>
                 <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-xs active:scale-95 transition-transform">🛠️</button>
                 <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs active:rotate-180 transition-transform duration-500">🔄</button>
             </div>
@@ -191,9 +195,13 @@
         let formPriorityState = "Normal";
         let searchTimeout;
         let areaContextStr = "Unknown Coordinates";
+        let cachedHardwareString = "Unknown Device Model";
 
         window.onload = function() {
-            document.getElementById('deviceMetaText').innerText = `Device ID: ${deviceId}`;
+            cachedHardwareString = parseReadableDeviceHardware();
+            document.getElementById('meta-id').innerText = `Device ID: ${deviceId}`;
+            document.getElementById('meta-hardware').innerText = `Model: ${cachedHardwareString}`;
+            
             populateUserDropdowns();
             if (!currentUser) {
                 document.getElementById('userModal').classList.remove('hidden');
@@ -203,6 +211,37 @@
             setupNetworkListeners();
             setupSearchAutocomplete();
         };
+
+        // Combines Client Hints and display metrics to estimate phone models
+        function parseReadableDeviceHardware() {
+            const ua = navigator.userAgent;
+            let os = "Unknown OS";
+            if (/Android/i.test(ua)) os = "Android";
+            else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
+            else if (/Macintosh/i.test(ua)) os = "macOS";
+            else if (/Windows/i.test(ua)) os = "Windows";
+
+            // Safe logical fallback inference parsing based on common modern viewport dimensions
+            const width = window.screen.width;
+            const height = window.screen.height;
+            let modelEstimate = "";
+
+            if (os === "Android") {
+                if ((width === 360 && height === 800) || (width === 412 && height === 915)) {
+                    modelEstimate = " (Likely Samsung Galaxy S-Series)";
+                } else if (width === 412 && height === 892) {
+                    modelEstimate = " (Likely Google Pixel)";
+                } else {
+                    modelEstimate = " Mobile";
+                }
+            } else if (os === "iOS") {
+                if (width === 393 && height === 852) modelEstimate = " (iPhone 15/16 Pro)";
+                else if (width === 430 && height === 932) modelEstimate = " (iPhone 15/16 Pro Max)";
+                else modelEstimate = " Phone";
+            }
+
+            return `${os}${modelEstimate}`;
+        }
 
         function generateAndSaveDeviceId() {
             const newId = "DEV-" + Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -251,14 +290,46 @@
             document.getElementById('userModal').classList.add('hidden');
             
             initializeSessionDashboard();
-            
-            // Log this session startup occurrence back to your Google spreadsheet
             await resolveGeocodeAndLogSession();
+        }
+
+        function updateGpsHudStatus(isActive, message) {
+            const btn = document.getElementById('gpsBadgeButton');
+            const dot = document.getElementById('gpsDotSignal');
+            const text = document.getElementById('gpsBadgeText');
+            
+            if (isActive) {
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all active:scale-95 flex items-center gap-1 bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+                text.innerText = message || "GPS Active";
+            } else {
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all active:scale-95 flex items-center gap-1 bg-amber-500/10 border-amber-500/40 text-amber-400 animate-bounce";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
+                text.innerText = message || "⚠️ GPS Blocked";
+            }
+        }
+
+        function forceReRequestGPSHardware() {
+            if (navigator.geolocation) {
+                updateGpsHudStatus(true, "Pinging GPS...");
+                navigator.geolocation.getCurrentPosition(pos => {
+                    userLat = pos.coords.latitude;
+                    userLon = pos.coords.longitude;
+                    updateGpsHudStatus(true, "GPS Linked");
+                    syncData(false);
+                }, err => {
+                    updateGpsHudStatus(false, "Perm Denied");
+                    alert("Location access is restricted. Please enable site permissions inside your browser's site settings toggle menu.");
+                }, { enableHighAccuracy: true, timeout: 6000 });
+            } else {
+                updateGpsHudStatus(false, "Not Supported");
+            }
         }
 
         async function resolveGeocodeAndLogSession() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(async (pos) => {
+                    updateGpsHudStatus(true, "GPS Active");
                     const lat = pos.coords.latitude;
                     const lon = pos.coords.longitude;
                     try {
@@ -269,7 +340,10 @@
                         areaContextStr = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
                     }
                     dispatchSessionPost();
-                }, () => { dispatchSessionPost(); });
+                }, () => { 
+                    updateGpsHudStatus(false, "GPS Off");
+                    dispatchSessionPost(); 
+                });
             } else {
                 dispatchSessionPost();
             }
@@ -285,6 +359,7 @@
                         action: 'log_session', 
                         user: currentUser, 
                         deviceId: deviceId, 
+                        deviceMeta: cachedHardwareString,
                         locationContext: areaContextStr 
                     })
                 });
@@ -310,7 +385,7 @@
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'log_name_change', user: newName, oldName: oldName })
+                    body: JSON.stringify({ action: 'log_name_change', user: newName, oldName: oldName, deviceMeta: cachedHardwareString })
                 });
             } catch(e) { console.error(e); }
         }
@@ -331,7 +406,6 @@
             currentUser = null;
             toggleSettingsMenu(false);
             
-            // Wipe out local visual card trees and drop back down to initialization state layout
             document.getElementById('spots-list').innerHTML = `<div class="text-center text-slate-600 py-12 text-sm animate-pulse">Initializing navigation...</div>`;
             document.getElementById('customUsernameInput').value = '';
             
@@ -359,10 +433,12 @@
         function initLocationAndSync() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
+                    updateGpsHudStatus(true, "GPS Active");
                     userLat = pos.coords.latitude;
                     userLon = pos.coords.longitude;
                     syncData(false);
                 }, err => {
+                    updateGpsHudStatus(false, "GPS Off");
                     syncData(false); 
                 }, { enableHighAccuracy: true });
             } else {
@@ -474,7 +550,7 @@
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName })
+                    body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName, deviceMeta: cachedHardwareString })
                 });
                 setTimeout(() => syncData(false), 800);
             } catch (err) {
@@ -561,7 +637,8 @@
                         category: cat,
                         instagram_url: url,
                         notes: notes,
-                        priority: formPriorityState === "High" ? "🔥" : "Normal"
+                        priority: formPriorityState === "High" ? "🔥" : "Normal",
+                        deviceMeta: cachedHardwareString
                     })
                 });
 
