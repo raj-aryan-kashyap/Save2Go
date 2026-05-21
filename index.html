@@ -271,8 +271,6 @@
             cachedHardwareString = parseReadableDeviceHardware();
             document.getElementById('meta-id').innerText = `Device ID: ${deviceId}`;
             document.getElementById('meta-hardware').innerText = `Model: ${cachedHardwareString}`;
-            
-            // Set version text to settings drawer node cleanly
             document.getElementById('meta-version').innerText = `Version: ${APP_VERSION}`;
             
             populateUserDropdowns();
@@ -382,7 +380,6 @@
                             dd.appendChild(opt);
                         });
                     } else {
-                        // Dynamic clean fallback text with absolutely no hardcoded placeholder usernames
                         dd.innerHTML = '<option value="">Register name below...</option>';
                     }
                 });
@@ -415,7 +412,7 @@
             const textVal = document.getElementById('customUsernameInput').value.trim();
             const chosenName = textVal !== "" ? textVal : dropdownVal;
 
-            if(!chosenName || chosenName.startsWith("Register name")) { alert("Please type your name to begin."); return; }
+            if(!chosenName || chosenName.startsWith("Register name") || chosenName.startsWith("No explorers")) { alert("Please type your name to begin."); return; }
             localStorage.setItem('compass_user', chosenName);
             currentUser = chosenName;
             document.getElementById('userModal').classList.add('hidden');
@@ -512,7 +509,6 @@
             syncText.innerText = "Authorizing reset...";
 
             try {
-                // FIXED DATA ROUTING CHANNEL: Pass text plain parameters format to solve domain security block parameters
                 const req = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
@@ -523,14 +519,14 @@
                 const res = await req.json();
                 
                 if (res.result === "success") {
-                    alert("💥 SERVER RESET METRIC SUCCEEDED!\n\nAll tracking history logs and names have been wiped. Logging out device...");
+                    alert("💥 SERVER SCALED SCRUB SUCCESSFUL!\n\nAll tracking history logs and names have been wiped. Logging out device...");
                     clearDeviceSessionAndLogout();
                 } else if (res.result === "auth_failed") {
                     alert("❌ ACCESS DENIED: Password mismatch.");
                     syncText.innerText = "Auth Error";
                 }
             } catch(err) {
-                alert("Cloud transmission pipeline response error. Check script execution metrics logs.");
+                alert("Cloud transmission pipeline response error.");
                 syncText.innerText = "Network Error";
             }
         }
@@ -565,15 +561,19 @@
 
         function clearDeviceSessionAndLogout() {
             localStorage.removeItem('compass_user');
+            localStorage.removeItem('compass_cache');
             localStorage.removeItem('compass_active_filters');
             localStorage.removeItem('compass_active_cities');
+            
             currentUser = null;
+            travelSpots = [];
             checkedFilterStateArray = [];
             checkedCitiesStateArray = [];
             showStarredOnly = false;
             
             document.getElementById('priorityToggleHUDText').innerText = "Show All";
             document.getElementById('priorityToggleHUDIndicator').innerText = "○";
+            document.getElementById('spots-list').innerHTML = '';
             
             toggleSettingsMenu(false);
             document.getElementById('customUsernameInput').value = '';
@@ -790,12 +790,8 @@
         function updateHeaderBadgeHUDCounters() {
             const badge = document.getElementById('activeFilterBadgeCount');
             const count = checkedFilterStateArray.length;
-            if(count > 0) {
-                badge.innerText = count;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
+            if(count > 0) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -960,7 +956,6 @@
             document.getElementById('quickAddModal').classList.toggle('hidden', !show);
         }
 
-        // FIXED PRIORITY INDICATOR TOGGLE STATE
         let formPriorityState = "Normal";
         function toggleFormPriorityState() {
             const btn = document.getElementById('form-priority-btn');
