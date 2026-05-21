@@ -64,7 +64,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col overflow-hidden selection:bg-pink-500/30 select-none">
 
-    <div id="dropdownBlurBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[550] hidden transition-all duration-300"></div>
+    <div id="dropdownBlurBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[500] hidden transition-all duration-300"></div>
 
     <div id="userModal" class="fixed inset-0 bg-slate-950 z-[9999] flex flex-col justify-center items-center p-6 hidden">
         <div class="text-center w-full max-w-xs space-y-6">
@@ -182,7 +182,7 @@
                     <span class="text-[7px] text-slate-500 shrink-0">▼</span>
                 </button>
                 
-                <div id="cityHUDDropdownPopupBox" class="absolute left-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
+                <div id="cityHUDDropdownPopupBox" class="absolute left-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden flex flex-col max-h-56 overflow-y-auto no-scrollbar z-[600]" onclick="event.stopPropagation()">
                     <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold max-h-44 overflow-y-auto no-scrollbar">
                         </div>
                     <div class="pt-1.5 mt-1.5 border-t border-slate-800/80 text-center">
@@ -197,7 +197,7 @@
                     <span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
                 </button>
 
-                <div id="filterCategoryDropdownPopupBox" class="absolute right-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
+                <div id="filterCategoryDropdownPopupBox" class="absolute right-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden flex flex-col max-h-56 overflow-y-auto no-scrollbar z-[600]" onclick="event.stopPropagation()">
                     <div id="checkboxContainer" class="space-y-1 text-xs text-slate-300 font-semibold max-h-44 overflow-y-auto no-scrollbar">
                         </div>
                     <div class="pt-1.5 mt-1.5 border-t border-slate-800/80 text-center">
@@ -206,10 +206,6 @@
                 </div>
             </div>
         </div>
-        
-        <div id="crossCountryNoticeRow" class="hidden text-center text-[9px] font-bold tracking-wide text-amber-500 bg-amber-500/5 border border-amber-500/10 py-1.5 rounded-lg mt-2 animate-pulse">
-            All saved locations are in a different country! ✈️
-        </div>
     </div>
 
     <div class="flex-1 relative w-full h-full overflow-hidden z-10">
@@ -217,9 +213,9 @@
         <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0"></div>
             
-            <div class="absolute top-4 right-4 z-[480] flex flex-col gap-2.5">
-                <button onclick="snapMapViewportToSelectedCityBounds()" class="w-11 h-11 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-base active:scale-90 transition-transform">🔍</button>
-                <button onclick="triggerRecenterToGpsHardwareAction()" class="w-11 h-11 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-lg active:scale-90 transition-transform">🎯</button>
+            <div class="absolute bottom-40 right-4 z-[480] flex flex-col gap-2.5">
+                <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:scale-90 transition-all">🔍</button>
+                <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:scale-90 transition-all">🧭</button>
             </div>
             
             <div id="mapDetailTrayHUD" class="absolute bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[450] hidden transform transition-all duration-200 space-y-3">
@@ -337,7 +333,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.5.0";
+        const APP_VERSION = "v1.3.1";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -388,7 +384,6 @@
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
-            // Unified Global Click Handler to close any dropdown card smoothly
             document.addEventListener('click', () => {
                 closeAllActiveHUDDropdownOverlays();
             });
@@ -582,7 +577,6 @@
             }
         }
 
-        // COHESIVE SYSTEM BACKDROP FOCUS TRIGGERS
         function toggleCityDropdownOverlayMenu(event) {
             event.stopPropagation(); 
             const box = document.getElementById('cityHUDDropdownPopupBox');
@@ -755,7 +749,7 @@
         }
 
         function toggleFilterDrawerMenu(show) {
-            // Deprecated full drawer system hooks safely kept for error tolerance
+            // Deprecated full drawer elements layout parameters safely cleared
         }
 
         async function triggerSecureServerHistoryPurgeVault() {
@@ -1000,7 +994,6 @@
             }
         }
 
-        // ADAPTED DROPDOWN LIST ENGINE MODELLING THE EXACT UX OF THE CITIES PICKER
         function buildDynamicShoppingCheckboxList() {
             const container = document.getElementById('checkboxContainer');
             if(!container) return;
@@ -1194,6 +1187,7 @@
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
+            // CRITICAL BINDING: Map view state change mutators fully operational
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
             doneBtn.onclick = () => {
                 updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
@@ -1216,14 +1210,6 @@
             container.innerHTML = '';
 
             const processed = getFilteredDatasetRows();
-
-            const noticeRow = document.getElementById('crossCountryNoticeRow');
-            let distantItemCount = processed.filter(s => s.distRaw > 1200 && s.distRaw !== 99999).length;
-            if (distantItemCount > 0 && processed.length === distantItemCount && gpsStatusCachedBool) {
-                if (noticeRow) noticeRow.classList.remove('hidden');
-            } else {
-                if (noticeRow) noticeRow.classList.add('hidden');
-            }
 
             if(processed.length === 0) {
                 container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these selection profiles.</div>`;
