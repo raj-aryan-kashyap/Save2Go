@@ -193,12 +193,12 @@
             </button>
             
             <div class="relative">
-                <button id="cityFilterHUDTriggerBtn" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate">
+                <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate">
                     <span id="cityHUDTriggerText" class="truncate">All Cities</span>
                     <span class="text-[8px] text-slate-600">▼</span>
                 </button>
                 
-                <div id="cityHUDDropdownPopupBox" class="absolute right-0 left-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden z-50 flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
+                <div id="cityHUDDropdownPopupBox" class="absolute right-0 left-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden z-[600] flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
                     <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold max-h-44 overflow-y-auto no-scrollbar">
                         </div>
                     <div class="pt-1.5 mt-1.5 border-t border-slate-800/80 text-center">
@@ -320,7 +320,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.1.8";
+        const APP_VERSION = "v1.2.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -562,6 +562,12 @@
                     leafletMapInstance.invalidateSize();
                 }, 50);
             }
+        }
+
+        function toggleCityDropdownOverlayMenu(event) {
+            event.stopPropagation(); 
+            const box = document.getElementById('cityHUDDropdownPopupBox');
+            box.classList.toggle('hidden');
         }
 
         async function handleInitialLoginSubmit() {
@@ -828,6 +834,7 @@
 
         function buildDynamicCityHUDDropdownMenu(cityListArray) {
             const container = document.getElementById('cityHUDChecklistContainer');
+            if(!container) return;
             container.innerHTML = '';
             cityListArray.forEach(city => {
                 const label = document.createElement('label');
@@ -843,11 +850,6 @@
             });
             updateCityHUDTriggerButtonLabelText();
         }
-
-        document.getElementById('cityFilterHUDTriggerBtn').onclick = function(event) {
-            event.stopPropagation();
-            document.getElementById('cityHUDDropdownPopupBox').classList.toggle('hidden');
-        };
 
         function handleCityHUDCheckboxEventToggle(checkboxElement) {
             const val = checkboxElement.value;
@@ -878,10 +880,10 @@
             const count = checkedCitiesStateArray.length;
             if (count === 0) {
                 textNode.innerText = "All Cities";
-                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-between";
+                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 flex items-center justify-center gap-1 truncate";
             } else {
                 textNode.innerText = count === 1 ? checkedCitiesStateArray[0] : `Cities (${count})`;
-                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl p-2.5 text-left text-xs font-black text-pink-400 flex items-center justify-between";
+                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl p-2.5 text-center text-xs font-black text-pink-400 flex items-center justify-center gap-1 truncate";
             }
         }
 
@@ -1027,7 +1029,6 @@
                 else if(catStr.includes("shop") || catStr.includes("store") || catStr.includes("bag")) categoryIconEmoji = "🛍️";
                 else if(catStr.includes("bar") || catStr.includes("drink") || catStr.includes("vibe")) categoryIconEmoji = "🍸";
 
-                // Injected CSS formatting fixes natively inside Leaflet marker configurations
                 const iconHTML = `<div class="custom-map-cube ${isStarred ? 'starred-cube-border' : ''}">${categoryIconEmoji}</div>`;
                 
                 const customMarkerIcon = L.divIcon({
@@ -1055,8 +1056,11 @@
             document.getElementById('traySpotTitle').innerText = spotObj.spot_name || "Unnamed Destination";
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
             document.getElementById('traySpotNotes').innerText = spotObj.notes || "No custom vibe parameters assigned.";
-            document.getElementById('trayActionBtn').href = spotObj.instagram_url || "#";
             
+            // FIXED REDIRECT ROUTE FOR TRAY ACTION CARD
+            document.getElementById('trayActionBtn').href = spotObj.latitude ? `https://www.google.com/maps/search/?api=1&query=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
+            document.getElementById('trayActionBtn').innerText = spotObj.latitude ? "Get Direction" : "Open Reel";
+
             const starredBadge = document.getElementById('trayStarredBadge');
             if(isStarredBool) starredBadge.classList.remove('hidden');
             else starredBadge.classList.add('hidden');
@@ -1111,7 +1115,8 @@
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                            ${spot.latitude ? `<a href="http://googleusercontent.com/maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95">🗺️ Map</a>` : ''}
+                            
+                            ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap">🗺️ Get Direction</a>` : ''}
                         </div>
                         ${ticketLink !== "" ? `
                             <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
