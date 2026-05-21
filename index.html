@@ -333,7 +333,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.3.1";
+        const APP_VERSION = "v1.3.2";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -342,6 +342,9 @@
         let checkedFilterStateArray = JSON.parse(localStorage.getItem('compass_active_filters')) || [];
         let checkedCitiesStateArray = JSON.parse(localStorage.getItem('compass_active_cities')) || [];
         let showStarredOnly = JSON.parse(localStorage.getItem('compass_starred_only')) || false;
+        
+        // State retention switch tracker (defaults to checked: true)
+        let hideCompletedSpotsStateBool = localStorage.getItem('compass_hide_completed') !== null ? JSON.parse(localStorage.getItem('compass_hide_completed')) : true;
         
         let userLat = 48.8566; 
         let userLon = 2.3522;
@@ -748,9 +751,7 @@
             document.getElementById('settingsDrawer').classList.toggle('hidden', !show);
         }
 
-        function toggleFilterDrawerMenu(show) {
-            // Deprecated full drawer elements layout parameters safely cleared
-        }
+        function toggleFilterDrawerMenu(show) {}
 
         async function triggerSecureServerHistoryPurgeVault() {
             const quirkyConfirm = confirm("🚨 TOTAL RESET ALERT!\n\nYou are about to execute a deep clear script operation.\n\nThis completely deletes all history entries AND registered profile rows from the cloud sheets instantly.\n\nThis cannot be undone. Proceed?");
@@ -819,12 +820,14 @@
             localStorage.removeItem('compass_active_filters');
             localStorage.removeItem('compass_active_cities');
             localStorage.removeItem('compass_starred_only');
+            localStorage.removeItem('compass_hide_completed');
             
             currentUser = null;
             travelSpots = [];
             checkedFilterStateArray = [];
             checkedCitiesStateArray = [];
             showStarredOnly = false;
+            hideCompletedSpotsStateBool = true;
             
             syncPriorityFilterViewModeUI();
             document.getElementById('spots-list').innerHTML = '';
@@ -960,10 +963,10 @@
             const count = checkedCitiesStateArray.length;
             if (count === 0) {
                 textNode.innerText = "All Cities";
-                btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate shadow-inner";
+                btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 transition-all flex items-center justify-center gap-1 truncate shadow-inner";
             } else {
                 textNode.innerText = count === 1 ? checkedCitiesStateArray[0] : `Cities (${count})`;
-                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-pink-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate shadow-inner";
+                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-pink-400 transition-all flex items-center justify-center gap-1 truncate shadow-inner";
             }
         }
 
@@ -994,10 +997,12 @@
             }
         }
 
+        // UPGRADED CATEGORIES MATRIX DROP DOWN LIST LOADING CORE ROUTINES
         function buildDynamicShoppingCheckboxList() {
             const container = document.getElementById('checkboxContainer');
             if(!container) return;
             container.innerHTML = '';
+            
             let uniqueCategories = new Set();
             travelSpots.forEach(spot => {
                 if (spot.category) {
@@ -1007,6 +1012,8 @@
                     });
                 }
             });
+            
+            // Render basic category tags checkboxes
             uniqueCategories.forEach(cat => {
                 const label = document.createElement('label');
                 label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer active:bg-slate-950/60";
@@ -1019,6 +1026,22 @@
                 `;
                 container.appendChild(label);
             });
+
+            // APPEND ARCHIVE STATE MODIFIER AS FINAL COMPONENT
+            const divider = document.createElement('hr');
+            divider.className = "border-slate-800/80 my-1.5";
+            container.appendChild(divider);
+
+            const hideCompletedLabel = document.createElement('label');
+            hideCompletedLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 hover:bg-pink-500/10 text-pink-400 cursor-pointer active:bg-slate-950/60";
+            hideCompletedLabel.innerHTML = `
+                <span class="truncate pr-2 font-black">Hide Completed</span>
+                <input type="checkbox" id="hideCompletedFilterSystemCheckbox" ${hideCompletedSpotsStateBool ? 'checked' : ''}
+                       onchange="handleHideCompletedStateToggleCheckboxEvent(this)"
+                       class="w-3.5 h-3.5 accent-pink-500 rounded border-pink-500/30 bg-slate-950 focus:ring-0">
+            `;
+            container.appendChild(hideCompletedLabel);
+            
             updateHeaderBadgeHUDCounters();
         }
 
@@ -1035,11 +1058,23 @@
             plotDynamicMarkersOnCanvasMap();
         }
 
+        // Reactive controller mapping state flags
+        function handleHideCompletedStateToggleCheckboxEvent(checkboxElement) {
+            hideCompletedSpotsStateBool = checkboxElement.checked;
+            localStorage.setItem('compass_hide_completed', JSON.stringify(hideCompletedSpotsStateBool));
+            renderList();
+            plotDynamicMarkersOnCanvasMap();
+        }
+
         function clearAllFilterCheckboxes() {
             checkedFilterStateArray = [];
             localStorage.setItem('compass_active_filters', JSON.stringify([]));
+            
+            // Note: Does not clear the hide completed preference state, only category tags
             const checkboxes = document.getElementById('checkboxContainer').querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = false);
+            checkboxes.forEach(cb => {
+                if (cb.id !== "hideCompletedFilterSystemCheckbox") cb.checked = false;
+            });
             updateHeaderBadgeHUDCounters();
             renderList();
             plotDynamicMarkersOnCanvasMap();
@@ -1089,6 +1124,10 @@
 
             processed.sort((a, b) => a.distRaw - b.distRaw);
 
+            // Conditional filtering matching completed log criteria state flags
+            if (hideCompletedSpotsStateBool) {
+                processed = processed.filter(s => (s.status || "").toLowerCase().trim() !== "done");
+            }
             if (showStarredOnly) {
                 processed = processed.filter(s => s.priority?.toLowerCase() === 'high' || s.priority === '🔥' || s.priority?.toLowerCase() === 'must do' || s.priority?.toLowerCase() === 'starred');
             }
@@ -1167,7 +1206,9 @@
             }
 
             document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
-            document.getElementById('trayActionBtn').href = spotObj.latitude ? `http://googleusercontent.com/maps.google.com/?q=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
+            
+            // FIXED REDIRECT PIPELINE - Drops pin securely into Maps instances without parsing errors
+            document.getElementById('trayActionBtn').href = spotObj.latitude ? `https://www.google.com/maps/search/?api=1&query=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
 
             const bookedBadge = document.getElementById('trayBookedBadge');
             const ticketRow = document.getElementById('trayTicketRow');
@@ -1187,7 +1228,6 @@
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
-            // CRITICAL BINDING: Map view state change mutators fully operational
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
             doneBtn.onclick = () => {
                 updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
@@ -1248,7 +1288,8 @@
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                            ${spot.latitude ? `<a href="http://googleusercontent.com/maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>` : ''}
+                            
+                            ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95 whitespace-nowrap font-bold">🗺️ Get Direction</a>` : ''}
                         </div>
                         ${ticketLink !== "" ? `
                             <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
