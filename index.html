@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>InstaCompass</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,10 +20,42 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-        .card-transition { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Hardware-accelerated seamless tab transition styles */
+        .view-panel {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .view-panel.active-view {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        /* Custom glassmorphic styling parameters for map cube tokens */
+        .custom-map-cube {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: transform 0.2s ease;
+        }
+        .custom-map-cube.starred-cube {
+            border: 1.5px solid rgba(245, 158, 11, 0.6);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-pink-500/30 select-none">
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col overflow-hidden selection:bg-pink-500/30 select-none">
 
     <div id="userModal" class="fixed inset-0 bg-slate-950 z-[100] flex flex-col justify-center items-center p-6 hidden">
         <div class="text-center w-full max-w-xs space-y-6">
@@ -145,43 +179,19 @@
             </div>
         </div>
         
-        <div class="flex gap-2 items-center mb-2">
-            <div class="relative flex-1 flex items-center bg-slate-950 rounded-xl border border-slate-800/80 focus-within:border-pink-500/60 transition-colors">
-                <span class="pl-3.5 text-slate-500 text-sm pointer-events-none">🔍</span>
-                <input type="text" id="searchInput" placeholder="Search locations or pick a city..." 
-                       class="w-full bg-transparent text-sm px-2.5 py-3 text-slate-200 placeholder-slate-600 focus:outline-none">
-                <button onclick="triggerExplicitSearchInputConfirmation()" class="mr-2 px-3 py-1.5 bg-slate-900 border border-slate-800 text-[10px] font-black text-pink-400 uppercase tracking-wider rounded-lg active:scale-95 transition-transform">Go</button>
-                <div id="autocomplete-results" class="absolute w-full top-full left-0 bg-slate-900 rounded-xl mt-1.5 shadow-2xl border border-slate-800 max-h-60 overflow-y-auto hidden z-[60] no-scrollbar"></div>
-            </div>
-            
-            <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="p-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/40 rounded-xl font-extrabold text-xs text-pink-400 flex items-center gap-1.5 shrink-0 active:scale-95 transition-all shadow-lg shadow-pink-950/10">
-                <span>Filters</span>
-                <span id="activeFilterBadgeCount" class="hidden w-4 h-4 bg-pink-600 text-white font-black text-[9px] rounded-full flex items-center justify-center">0</span>
-            </button>
-        </div>
-
-        <div class="bg-slate-950/50 p-2.5 rounded-xl border border-slate-800/50 flex justify-between items-center text-[10px] text-slate-400 mt-2">
-            <div>Target sorting: <span id="current-target-name" class="text-pink-400 font-bold">Your Live GPS</span></div>
-            <button id="targetResetBtn" onclick="resetToGPS()" class="text-violet-400 underline font-bold hidden active:text-violet-300 transition-colors">Reset</button>
-        </div>
-        
-        <div id="crossCountryNoticeRow" class="hidden text-center text-[9px] font-bold tracking-wide text-amber-500 bg-amber-500/5 border border-amber-500/10 py-1.5 rounded-lg mt-1.5 animate-pulse">
-            All saved locations are in a different country! ✈️
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mt-2 pt-1">
-            <button onclick="togglePriorityFilterViewMode()" id="priorityToggleHUDButton" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-between">
-                <span id="priorityToggleHUDText">Show All</span>
-                <span id="priorityToggleHUDIndicator" class="text-slate-600 text-[10px]">○</span>
+        <div class="grid grid-cols-3 gap-2 mt-1">
+            <button onclick="togglePriorityFilterViewMode()" id="priorityToggleHUDButton" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1">
+                <span id="priorityToggleHUDIndicator" class="text-[11px]">○</span>
+                <span id="priorityToggleHUDText">Starred Only</span>
             </button>
             
             <div class="relative">
-                <button onclick="toggleCityDropdownOverlayMenu(event)" id="cityFilterHUDTriggerBtn" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-between truncate">
-                    <span id="cityHUDTriggerText" class="truncate">Select City</span>
-                    <span class="text-[9px] text-slate-600">▼</span>
+                <button id="cityFilterHUDTriggerBtn" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate">
+                    <span id="cityHUDTriggerText" class="truncate">All Cities</span>
+                    <span class="text-[8px] text-slate-600">▼</span>
                 </button>
                 
-                <div id="cityHUDDropdownPopupBox" class="absolute right-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden z-50 flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
+                <div id="cityHUDDropdownPopupBox" class="absolute right-0 left-0 top-full mt-1.5 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden z-50 flex flex-col max-h-56 overflow-y-auto no-scrollbar" onclick="event.stopPropagation()">
                     <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold max-h-44 overflow-y-auto no-scrollbar">
                         </div>
                     <div class="pt-1.5 mt-1.5 border-t border-slate-800/80 text-center">
@@ -189,19 +199,77 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative z-10">
-        <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
-            <span class="animate-pulse">⬇️ Keep pulling to force sync database...</span>
+            <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5">
+                <span>Filters</span>
+                <span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
+            </button>
         </div>
         
-        <div id="spots-list" class="p-4 space-y-3 pb-32">
-            </div>
+        <div id="crossCountryNoticeRow" class="hidden text-center text-[9px] font-bold tracking-wide text-amber-500 bg-amber-500/5 border border-amber-500/10 py-1.5 rounded-lg mt-2 animate-pulse">
+            All saved locations are in a different country! ✈️
+        </div>
     </div>
 
-    <button onclick="toggleQuickAddModal(true)" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-2xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-50 border border-white/10">
+    <div class="flex-1 relative overflow-hidden">
+        
+        <div id="view-map" class="view-panel active-view bg-slate-950 flex flex-col">
+            <div id="map-render-element" class="w-full flex-1 z-10 bg-slate-950"></div>
+            
+            <div id="mapDetailTrayHUD" class="absolute bottom-4 left-4 right-4 bg-slate-900/95 backdrop-blur-xl border border-slate-800 p-4 rounded-2xl shadow-2xl z-20 hidden transform translate-y-2 transition-all duration-300">
+                <div class="flex justify-between items-start gap-2">
+                    <div class="space-y-1 max-w-[75%]">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">City</span>
+                            <span id="trayStarredBadge" class="hidden text-[9px] font-black tracking-wide text-amber-400">★ Starred</span>
+                        </div>
+                        <h4 id="traySpotTitle" class="text-sm font-bold text-slate-100 truncate">Spot Name</h4>
+                        <p id="traySpotNotes" class="text-[11px] text-slate-400 line-clamp-2 leading-tight">Notes container text details...</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-2 shrink-0">
+                        <button onclick="document.getElementById('mapDetailTrayHUD').classList.add('hidden')" class="text-slate-500 text-xs font-bold px-1.5 py-0.5">✕</button>
+                        <a id="trayActionBtn" href="#" target="_blank" class="px-3 py-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-[11px] font-bold rounded-xl shadow-lg">Open Reel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-list" class="view-panel bg-slate-950 flex flex-col">
+            <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative">
+                <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
+                    <span class="animate-pulse">⬇️ Keep pulling to force sync database...</span>
+                </div>
+                <div id="spots-list" class="p-4 space-y-3 pb-24">
+                    </div>
+            </div>
+        </div>
+
+        <div id="view-itinerary" class="view-panel bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
+            <div class="space-y-2 max-w-xs">
+                <div class="text-4xl">🛠️</div>
+                <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Builder</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Work in progress workspace engine module layer. Structuring timeline dashboards coming later.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bg-slate-900/80 backdrop-blur-xl border-t border-slate-800/80 px-6 py-2.5 flex justify-around items-center shrink-0 z-50 relative rounded-t-2xl shadow-2xl">
+        <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="flex flex-col items-center gap-1 text-pink-500 transition-colors">
+            <span class="text-xl">🗺️</span>
+            <span class="text-[10px] font-bold tracking-wide">Map Canvas</span>
+        </button>
+        <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="flex flex-col items-center gap-1 text-slate-500 transition-colors">
+            <span class="text-xl">🗂️</span>
+            <span class="text-[10px] font-bold tracking-wide">Vault List</span>
+        </button>
+        <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="flex flex-col items-center gap-1 text-slate-500 transition-colors">
+            <span class="text-xl">⏳</span>
+            <span class="text-[10px] font-bold tracking-wide">Itinerary</span>
+        </button>
+    </div>
+
+    <button onclick="toggleQuickAddModal(true)" class="fixed bottom-20 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 active:scale-90 transition-transform z-50 border border-white/10">
         ➕
     </button>
 
@@ -246,10 +314,7 @@
     </div>
 
     <script>
-        // ========================================================
-        // ⚙️ CONFIGURATION INTERFACE: UPDATE APP VERSION HERE EASILY
-        // ========================================================
-        const APP_VERSION = "v1.0.0";
+        const APP_VERSION = "v1.1.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -257,14 +322,20 @@
         let travelSpots = JSON.parse(localStorage.getItem('compass_cache')) || [];
         let checkedFilterStateArray = JSON.parse(localStorage.getItem('compass_active_filters')) || [];
         let checkedCitiesStateArray = JSON.parse(localStorage.getItem('compass_active_cities')) || [];
+        let showStarredOnly = JSON.parse(localStorage.getItem('compass_starred_only')) || false;
         
         let userLat = 48.8566; 
         let userLon = 2.3522;
-        let searchTimeout;
         let areaContextStr = "Unknown Coordinates";
         let cachedHardwareString = "Unknown Device Model";
         let gpsStatusCachedBool = true;
+        let activeTabID = 'map';
         
+        // Leaflet dynamic maps instances tracking parameters
+        let leafletMapInstance = null;
+        let mapMarkersLayerGroup = null;
+        let userPositionPulseCircle = null;
+
         let startY = 0;
         let isPulling = false;
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
@@ -276,11 +347,14 @@
             document.getElementById('meta-hardware').innerText = `Model: ${cachedHardwareString}`;
             document.getElementById('meta-version').innerText = `Version: ${APP_VERSION}`;
             
+            initLeafletMapEngineCanvas();
             populateUserDropdowns();
+            syncPriorityFilterViewModeUI();
             
             if (travelSpots.length > 0) {
                 calculateSmartCityDefaultFilters();
                 renderList();
+                plotDynamicMarkersOnCanvasMap();
             }
             
             if (!currentUser) {
@@ -289,7 +363,6 @@
                 initializeSessionDashboard();
             }
             setupNetworkListeners();
-            setupSearchAutocomplete();
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
@@ -297,6 +370,20 @@
                 document.getElementById('cityHUDDropdownPopupBox').classList.add('hidden');
             });
         };
+
+        function initLeafletMapEngineCanvas() {
+            // Renders standard dark template mapping tiles safely inside viewport container bounds
+            leafletMapInstance = L.map('map-render-element', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([userLat, userLon], 13);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 20
+            }).addTo(leafletMapInstance);
+
+            mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
+        }
 
         function parseReadableDeviceHardware() {
             const ua = navigator.userAgent;
@@ -380,7 +467,6 @@
                 const usersList = await response.json();
                 
                 if (Array.isArray(usersList) && usersList.length > 0) {
-                    // Users exist: Enable layout nodes completely
                     dropdownContainer.style.display = 'block';
                     dividerLine.style.display = 'flex';
                     registerLabel.classList.add('hidden');
@@ -401,7 +487,6 @@
                         settingsDropdown.appendChild(opt2);
                     });
                 } else {
-                    // Empty list state: Enforce requested UX visual constraints
                     dropdownContainer.style.display = 'none';
                     dividerLine.style.display = 'none';
                     registerLabel.classList.remove('hidden');
@@ -421,28 +506,66 @@
         }
 
         function initializeSessionDashboard() {
-            // Main menu card target nodes fallback
             syncData(true);
             navigator.geolocation.getCurrentPosition(pos => {
                 gpsStatusCachedBool = true;
                 updateGpsHudStatus(true, "GPS Active");
                 userLat = pos.coords.latitude;
                 userLon = pos.coords.longitude;
+                updateUserMarkerPulseOnMap();
                 calculateSmartCityDefaultFilters();
                 renderList();
+                plotDynamicMarkersOnCanvasMap();
             }, () => {
                 gpsStatusCachedBool = false;
                 updateGpsHudStatus(false, "⚠️ GPS Off");
                 calculateSmartCityDefaultFilters();
                 renderList();
+                plotDynamicMarkersOnCanvasMap();
             }, { enableHighAccuracy: true, timeout: 4000 });
+        }
+
+        function updateUserMarkerPulseOnMap() {
+            if(!leafletMapInstance) return;
+            if(userPositionPulseCircle) userPositionPulseCircle.remove();
+            
+            // Center tracking frames explicitly matching phone geolocation coordinate feeds
+            leafletMapInstance.setView([userLat, userLon], 12);
+            
+            userPositionPulseCircle = L.circleMarker([userLat, userLon], {
+                radius: 8,
+                fillColor: '#3b82f6',
+                fillOpacity: 0.8,
+                color: '#ffffff',
+                weight: 2
+            }).addTo(leafletMapInstance);
+        }
+
+        // SMOOTH DASHBOARD VIEW TAB TRANSITIONS ENGINE SWITCH PIPELINE
+        function switchMasterMenuDashboardTab(targetTabID) {
+            if(targetTabID === activeTabID) return;
+            
+            // Clear prior navbar button active color states
+            document.getElementById(`nav-tab-${activeTabID}`).className = "flex flex-col items-center gap-1 text-slate-500 transition-colors";
+            document.getElementById(`view-${activeTabID}`).classList.remove('active-view');
+            
+            // Inject selection parameters into incoming node links
+            document.getElementById(`nav-tab-${targetTabID}`).className = "flex flex-col items-center gap-1 text-pink-500 transition-colors";
+            document.getElementById(`view-${targetTabID}`).classList.add('active-view');
+            
+            activeTabID = targetTabID;
+
+            // Recalculate mapping dimensional layouts if frame transitions into map canvas
+            if(targetTabID === 'map' && leafletMapInstance) {
+                setTimeout(() => {
+                    leafletMapInstance.invalidateSize();
+                }, 200);
+            }
         }
 
         async function handleInitialLoginSubmit() {
             const dropdownVal = document.getElementById('loginDropdown') ? document.getElementById('loginDropdown').value : "";
             const textVal = document.getElementById('customUsernameInput').value.trim();
-            
-            // Priority evaluation logic mapping profiles cleanly
             const dropdownVisible = document.getElementById('loginDropdownContainer').style.display !== 'none';
             const chosenName = (textVal !== "") ? textVal : (dropdownVisible ? dropdownVal : "");
 
@@ -489,6 +612,7 @@
                 userLat = pos.coords.latitude;
                 userLon = pos.coords.longitude;
                 updateGpsHudStatus(true, "GPS Active");
+                updateUserMarkerPulseOnMap();
                 calculateSmartCityDefaultFilters();
                 syncData(true);
             }, () => {
@@ -598,6 +722,7 @@
             localStorage.removeItem('compass_cache');
             localStorage.removeItem('compass_active_filters');
             localStorage.removeItem('compass_active_cities');
+            localStorage.removeItem('compass_starred_only');
             
             currentUser = null;
             travelSpots = [];
@@ -605,9 +730,9 @@
             checkedCitiesStateArray = [];
             showStarredOnly = false;
             
-            document.getElementById('priorityToggleHUDText').innerText = "Show All";
-            document.getElementById('priorityToggleHUDIndicator').innerText = "○";
+            syncPriorityFilterViewModeUI();
             document.getElementById('spots-list').innerHTML = '';
+            if(mapMarkersLayerGroup) mapMarkersLayerGroup.clearLayers();
             
             toggleSettingsMenu(false);
             document.getElementById('customUsernameInput').value = '';
@@ -636,6 +761,7 @@
                         localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
                         calculateSmartCityDefaultFilters();
                         renderList(); 
+                        plotDynamicMarkersOnCanvasMap();
                         syncText.innerText = "Synced Live Data";
                     } else {
                         syncText.innerText = "Up to Date";
@@ -713,11 +839,6 @@
             document.getElementById('cityHUDDropdownPopupBox').classList.toggle('hidden');
         };
 
-        function toggleCityDropdownOverlayMenu(event) {
-            event.stopPropagation(); 
-            document.getElementById('cityHUDDropdownPopupBox').classList.toggle('hidden');
-        }
-
         function handleCityHUDCheckboxEventToggle(checkboxElement) {
             const val = checkboxElement.value;
             if (checkboxElement.checked) {
@@ -728,6 +849,7 @@
             localStorage.setItem('compass_active_cities', JSON.stringify(checkedCitiesStateArray));
             updateCityHUDTriggerButtonLabelText();
             renderList();
+            plotDynamicMarkersOnCanvasMap();
         }
 
         function clearAllSelectedCityCheckboxes() {
@@ -737,6 +859,7 @@
             checkboxes.forEach(cb => cb.checked = false);
             updateCityHUDTriggerButtonLabelText();
             renderList();
+            plotDynamicMarkersOnCanvasMap();
         }
 
         function updateCityHUDTriggerButtonLabelText() {
@@ -746,36 +869,40 @@
             if (count === 0) {
                 textNode.innerText = "All Cities";
                 btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-between";
-            } else if (count === 1) {
-                textNode.innerText = checkedCitiesStateArray[0];
-                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl p-2.5 text-left text-xs font-black text-pink-400 flex items-center justify-between";
             } else {
-                textNode.innerText = `Filtered (${count})`;
+                textNode.innerText = count === 1 ? checkedCitiesStateArray[0] : `Cities (${count})`;
                 btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl p-2.5 text-left text-xs font-black text-pink-400 flex items-center justify-between";
             }
         }
 
-        let showStarredOnly = false;
+        // UNIFIED STARRED TOGGLE VIEWS LOGIC MANAGER
         function togglePriorityFilterViewMode() {
             showStarredOnly = !showStarredOnly;
-            const text = document.getElementById('priorityToggleHUDText');
-            const indicator = document.getElementById('priorityToggleHUDIndicator');
-            const btn = document.getElementById('priorityToggleHUDButton');
-            if (showStarredOnly) {
-                text.innerText = "Must Do Only";
-                indicator.innerText = "★";
-                btn.className = "w-full bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-left text-xs font-black text-amber-400 flex items-center justify-between";
-            } else {
-                text.innerText = "Show All";
-                indicator.innerText = "○";
-                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-between";
-            }
+            localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
+            syncPriorityFilterViewModeUI();
+            
             const list = document.getElementById('spots-list');
             list.style.opacity = "0.3";
             setTimeout(() => {
                 renderList();
+                plotDynamicMarkersOnCanvasMap();
                 list.style.opacity = "1";
-            }, 120);
+            }, 100);
+        }
+
+        function syncPriorityFilterViewModeUI() {
+            const text = document.getElementById('priorityToggleHUDText');
+            const indicator = document.getElementById('priorityToggleHUDIndicator');
+            const btn = document.getElementById('priorityToggleHUDButton');
+            if (showStarredOnly) {
+                text.innerText = "Starred Only";
+                indicator.innerText = "★";
+                btn.className = "w-full bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 text-center text-xs font-black text-amber-400 flex items-center justify-center gap-1";
+            } else {
+                text.innerText = "Starred Only";
+                indicator.innerText = "○";
+                btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-center text-xs font-bold text-slate-400 flex items-center justify-center gap-1";
+            }
         }
 
         function buildDynamicShoppingCheckboxList() {
@@ -815,6 +942,7 @@
             localStorage.setItem('compass_active_filters', JSON.stringify(checkedFilterStateArray));
             updateHeaderBadgeHUDCounters();
             renderList();
+            plotDynamicMarkersOnCanvasMap();
         }
 
         function clearAllFilterCheckboxes() {
@@ -824,13 +952,18 @@
             checkboxes.forEach(cb => cb.checked = false);
             updateHeaderBadgeHUDCounters();
             renderList();
+            plotDynamicMarkersOnCanvasMap();
         }
 
         function updateHeaderBadgeHUDCounters() {
             const badge = document.getElementById('activeFilterBadgeCount');
             const count = checkedFilterStateArray.length;
-            if(count > 0) badge.classList.remove('hidden');
-            else badge.classList.add('hidden');
+            if(count > 0) {
+                badge.innerText = count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -842,17 +975,15 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        function renderList() {
-            const container = document.getElementById('spots-list');
-            container.innerHTML = '';
-
+        // MATRIX DATA RE-EVALUATION PIPELINE UTILITY
+        function getFilteredDatasetRows() {
             let processed = travelSpots.map(spot => {
                 const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude || 0), parseFloat(spot.longitude || 0));
                 return { ...spot, distRaw: dist, distStr: dist > 1000 ? 'No Location' : (dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`) };
             }).sort((a, b) => a.distRaw - b.distRaw);
 
             if (showStarredOnly) {
-                processed = processed.filter(s => s.priority === 'High' || s.priority === '🔥' || s.priority === 'Must Do');
+                processed = processed.filter(s => s.priority?.toLowerCase() === 'high' || s.priority === '🔥' || s.priority?.toLowerCase() === 'must do' || s.priority?.toLowerCase() === 'starred');
             }
             if (checkedCitiesStateArray.length > 0) {
                 processed = processed.filter(spot => {
@@ -867,6 +998,72 @@
                     return checkedFilterStateArray.some(checkedCat => spotCats.includes(checkedCat.toLowerCase()));
                 });
             }
+            return processed;
+        }
+
+        // LEAFLET MAPS CANVAS PIN PLOTTING ROUTINE ENGINE
+        function plotDynamicMarkersOnCanvasMap() {
+            if(!mapMarkersLayerGroup) return;
+            mapMarkersLayerGroup.clearLayers();
+
+            const activeDataset = getFilteredDatasetRows();
+            
+            activeDataset.forEach(spot => {
+                if(!spot.latitude || !spot.longitude) return;
+                
+                const isStarred = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥' || spot.priority?.toLowerCase() === 'must do' || spot.priority?.toLowerCase() === 'starred';
+                
+                // Categorization dynamic icon identifier matching loops
+                let categoryIconEmoji = "📍";
+                const catStr = (spot.category || "").toLowerCase();
+                if(catStr.includes("food") || catStr.includes("cafe") || catStr.includes("dine")) categoryIconEmoji = "🍕";
+                else if(catStr.includes("photo") || catStr.includes("view") || catStr.includes("camera")) categoryIconEmoji = "📸";
+                else if(catStr.includes("shop") || catStr.includes("store") || catStr.includes("bag")) categoryIconEmoji = "🛍️";
+                else if(catStr.includes("bar") || catStr.includes("drink") || catStr.includes("vibe")) categoryIconEmoji = "🍸";
+
+                // Generate cube node parameters manually inside mapping canvas
+                const iconHTML = `<div class="custom-map-cube w-8 h-8 ${isStarred ? 'starred-cube' : ''}">${categoryIconEmoji}</div>`;
+                
+                const customMarkerIcon = L.divIcon({
+                    html: iconHTML,
+                    className: '',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                });
+
+                const leafMarker = L.marker([parseFloat(spot.latitude), parseFloat(spot.longitude)], {
+                    icon: customMarkerIcon
+                });
+
+                // Attach slider behavior trigger hooks safely across map node links
+                leafMarker.on('click', (event) => {
+                    L.DomEvent.stopPropagation(event);
+                    revealMapItemDetailTrayHUD(spot, isStarred);
+                });
+
+                mapMarkersLayerGroup.addLayer(leafMarker);
+            });
+        }
+
+        function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
+            const tray = document.getElementById('mapDetailTrayHUD');
+            document.getElementById('traySpotTitle').innerText = spotObj.spot_name || "Unnamed Destination";
+            document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
+            document.getElementById('traySpotNotes').innerText = spotObj.notes || "No custom vibe parameters assigned.";
+            document.getElementById('trayActionBtn').href = spotObj.instagram_url || "#";
+            
+            const starredBadge = document.getElementById('trayStarredBadge');
+            if(isStarredBool) starredBadge.classList.remove('hidden');
+            else starredBadge.classList.add('hidden');
+            
+            tray.classList.remove('hidden');
+        }
+
+        function renderList() {
+            const container = document.getElementById('spots-list');
+            container.innerHTML = '';
+
+            const processed = getFilteredDatasetRows();
 
             const noticeRow = document.getElementById('crossCountryNoticeRow');
             let distantItemCount = processed.filter(s => s.distRaw > 1200 && s.distRaw !== 99999).length;
@@ -877,14 +1074,14 @@
             }
 
             if(processed.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these checkboxes.</div>`;
+                container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these selection profiles.</div>`;
                 return;
             }
 
             processed.forEach(spot => {
                 const isDone = spot.status?.toLowerCase() === 'done';
                 const isBooked = spot.status?.toLowerCase() === 'booked';
-                const isHigh = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥' || spot.priority?.toLowerCase() === 'must do';
+                const isHigh = spot.priority?.toLowerCase() === 'high' || spot.priority === '🔥' || spot.priority?.toLowerCase() === 'must do' || spot.priority?.toLowerCase() === 'starred';
                 const ticketLink = spot.ticket_url || "";
 
                 const card = document.createElement('div');
@@ -897,7 +1094,7 @@
                         <div>
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city || 'Global'} • ${spot.category}</span>
-                                ${isHigh ? '<span class="text-[9px] font-black tracking-wide text-amber-400 flex items-center gap-0.5">★ Must Do</span>' : ''}
+                                ${isHigh ? '<span class="text-[9px] font-black tracking-wide text-amber-400 flex items-center gap-0.5">★ Starred</span>' : ''}
                                 ${isBooked ? '<span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>' : ''}
                             </div>
                             <h3 class="text-base font-bold text-slate-200 mt-1.5">${spot.spot_name || 'Unnamed Spot'}</h3>
@@ -908,19 +1105,20 @@
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
-                            ${spot.latitude ? `<a href="https://www.google.com/maps/search/?api=1&query=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95">🗺️ Map</a>` : ''}
+                            ${spot.latitude ? `<a href="http://maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs active:scale-95">🗺️ Map</a>` : ''}
                         </div>
                         ${ticketLink !== "" ? `
                             <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
                         ` : ''}
                         <div class="flex gap-2 mt-1 justify-end">
                             <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
-                            <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Must Do'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
+                            <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
+            updateHeaderBadgeHUDCounters();
         }
 
         async function updateCloudAction(rowId, action, value, spotName) {
@@ -929,6 +1127,7 @@
                 if (action === 'update_status') target.status = value;
                 if (action === 'toggle_priority') target.priority = value;
                 renderList();
+                plotDynamicMarkersOnCanvasMap();
             }
             try {
                 await fetch(API_URL, {
@@ -941,56 +1140,6 @@
             } catch(err) {}
         }
 
-        function setupSearchAutocomplete() {
-            const input = document.getElementById('searchInput');
-            const box = document.getElementById('autocomplete-results');
-            input.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const query = e.target.value.trim();
-                if (query.length < 3) { box.classList.add('hidden'); return; }
-                searchTimeout = setTimeout(() => {
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
-                        .then(res => res.json())
-                        .then(data => {
-                            box.innerHTML = '';
-                            if(!data || data.length === 0) { box.classList.add('hidden'); return; }
-                            box.classList.remove('hidden');
-                            data.forEach(place => {
-                                const d = document.createElement('div');
-                                d.className = "p-3 text-xs border-b border-slate-800 hover:bg-slate-800 cursor-pointer text-slate-300 text-left truncate";
-                                d.innerText = place.display_name;
-                                d.onclick = (event) => {
-                                    event.stopPropagation();
-                                    executeSpatialAnchorShift(parseFloat(place.lat), parseFloat(place.lon), place.name || "Custom Search Location");
-                                };
-                                box.appendChild(d);
-                            });
-                        }).catch(() => {});
-                }, 300);
-            });
-        }
-
-        function triggerExplicitSearchInputConfirmation() {
-            const rawVal = document.getElementById('searchInput').value.trim();
-            if(rawVal.length === 0) return;
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(rawVal)}&limit=1`)
-                .then(res => res.json())
-                .then(data => {
-                    if(data && data.length > 0) {
-                        executeSpatialAnchorShift(parseFloat(data[0].lat), parseFloat(data[0].lon), data[0].name);
-                    }
-                });
-        }
-
-        function executeSpatialAnchorShift(lat, lon, displayName) {
-            userLat = lat;
-            userLon = lon;
-            document.getElementById('current-target-name').innerText = displayName;
-            document.getElementById('autocomplete-results').classList.add('hidden');
-            document.getElementById('targetResetBtn').classList.remove('hidden'); 
-            renderList();
-        }
-
         function toggleQuickAddModal(show) {
             document.getElementById('quickAddModal').classList.toggle('hidden', !show);
         }
@@ -999,8 +1148,8 @@
         function toggleFormPriorityState() {
             const btn = document.getElementById('form-priority-btn');
             if(formPriorityState === "Normal") {
-                formPriorityState = "Must Do";
-                btn.innerText = "★ Must Do";
+                formPriorityState = "Starred";
+                btn.innerText = "★ Starred";
                 btn.className = "px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500 text-amber-400 font-extrabold transition-all active:scale-95";
             } else {
                 formPriorityState = "Normal";
@@ -1046,9 +1195,6 @@
         }
 
         function resetToGPS() {
-            document.getElementById('current-target-name').innerText = "Your Live GPS";
-            document.getElementById('searchInput').value = "";
-            document.getElementById('targetResetBtn').classList.add('hidden'); 
             forceReRequestGPSHardware();
         }
     </script>
