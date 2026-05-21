@@ -187,7 +187,6 @@
         </div>
         
         <div class="grid grid-cols-12 gap-2 mt-1 items-center">
-            
             <div class="col-span-5 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden">
                 <button onclick="setPriorityFilterState(false)" id="toggleOptionShowAll" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10">
                     Show All
@@ -199,7 +198,7 @@
             
             <div class="col-span-4 relative">
                 <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 transition-all active:scale-[0.98] flex items-center justify-center gap-1 truncate shadow-inner">
-                    <span id="cityHUDTriggerText" class="truncate font-black">All Cities</span>
+                    <span id="cityHUDTriggerText" class="truncate">All Cities</span>
                     <span class="text-[7px] text-slate-500 shrink-0">▼</span>
                 </button>
                 
@@ -228,6 +227,15 @@
         <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0"></div>
             
+            <div class="absolute top-4 right-4 z-[480] flex flex-col gap-2.5">
+                <button onclick="snapMapViewportToSelectedCityBounds()" class="w-11 h-11 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-base active:scale-90 transition-transform">
+                    🔍
+                </button>
+                <button onclick="triggerRecenterToGpsHardwareAction()" class="w-11 h-11 bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl flex items-center justify-center text-lg active:scale-90 transition-transform">
+                    🎯
+                </button>
+            </div>
+            
             <div id="mapDetailTrayHUD" class="absolute bottom-24 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[450] hidden transform transition-all duration-200 space-y-3">
                 <div class="flex justify-between items-start gap-2">
                     <div>
@@ -239,7 +247,7 @@
                         <h3 id="traySpotTitle" class="text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]">Spot Name</h3>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
-                        <span id="trayDistanceBadge" class="text-xs font-mono text-pink-400 font-bold bg-pink-500/10 px-2 py-1 rounded-lg">📍 0.0km</span>
+                        <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">Calculating...</span>
                         <button onclick="document.getElementById('mapDetailTrayHUD').classList.add('hidden')" class="w-6 h-6 bg-slate-950 border border-slate-800 text-slate-400 rounded-full flex items-center justify-center font-bold text-xs active:scale-90">✕</button>
                     </div>
                 </div>
@@ -341,7 +349,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.3.0";
+        const APP_VERSION = "v1.4.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -642,6 +650,48 @@
             }
         }
 
+        // RECENTER TARGETING PIPELINE WITH OS PERMISSION POPUP HANDLERS
+        function triggerRecenterToGpsHardwareAction() {
+            if (!leafletMapInstance) return;
+            
+            navigator.geolocation.getCurrentPosition(pos => {
+                gpsStatusCachedBool = true;
+                updateGpsHudStatus(true, "GPS Active");
+                userLat = pos.coords.latitude;
+                userLon = pos.coords.longitude;
+                updateUserMarkerPulseOnMap();
+                leafletMapInstance.setView([userLat, userLon], 14, { animate: true });
+            }, () => {
+                gpsStatusCachedBool = false;
+                updateGpsHudStatus(false, "⚠️ GPS Off");
+                // Native programmatic call forcing OS browser query challenge boxes
+                alert("Please enable location services or grant permission settings inside your device configuration to map your coordinates.");
+            }, { enableHighAccuracy: true, timeout: 5000 });
+        }
+
+        // CAMERA VECTOR SLIDER TUNED TO PREFERENCES
+        function snapMapViewportToSelectedCityBounds() {
+            if (!leafletMapInstance || travelSpots.length === 0) return;
+            
+            // Check if active city filters exist
+            if (checkedCitiesStateArray.length === 0) {
+                alert("Please check a city from the filter dropdown menu first to center the view.");
+                return;
+            }
+
+            // Find the first location card matching the active criteria
+            const matchTarget = travelSpots.find(spot => 
+                spot.latitude && spot.longitude && 
+                checkedCitiesStateArray.map(c => c.toLowerCase().trim()).includes((spot.city || "").toLowerCase().trim())
+            );
+
+            if (matchTarget) {
+                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 13, { animate: true });
+            } else {
+                alert("No coordinate points discovered matching the chosen city registry.");
+            }
+        }
+
         function forceReRequestGPSHardware() {
             updateGpsHudStatus(true, "Pinging...");
             navigator.geolocation.getCurrentPosition(pos => {
@@ -908,7 +958,6 @@
             }
         }
 
-        // NEW BALANCED TWO-WAY TOGGLE ACTION CONTROLLER
         function setPriorityFilterState(shouldShowStarredOnly) {
             showStarredOnly = shouldShowStarredOnly;
             localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
@@ -928,11 +977,9 @@
             const starredBtn = document.getElementById('toggleOptionStarred');
             
             if (showStarredOnly) {
-                // Starred activated style (illuminated yellow/amber tone)
                 showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-slate-500 bg-transparent";
                 starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10";
             } else {
-                // Show All activated style (illuminated yellow/amber tone)
                 showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-amber-400 bg-amber-500/10";
                 starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg transition-all duration-200 z-10 text-slate-500 bg-transparent";
             }
@@ -1008,11 +1055,28 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
+        // UNIFIED MATRIX TELEMETRY: Normalizes strings completely across elements
         function getFilteredDatasetRows() {
             let processed = travelSpots.map(spot => {
-                const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude || 0), parseFloat(spot.longitude || 0));
-                return { ...spot, distRaw: dist, distStr: dist > 1000 ? 'No Location' : (dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`) };
-            }).sort((a, b) => a.distRaw - b.distRaw);
+                const hasLatLon = spot.latitude && String(spot.latitude).trim() !== "" && spot.longitude && String(spot.longitude).trim() !== "";
+                let distanceOutputLabel = "";
+                let rawDistanceValue = 99999;
+
+                if (!hasLatLon) {
+                    distanceOutputLabel = "⚠️ Missing Coordinates";
+                } else if (!gpsStatusCachedBool) {
+                    distanceOutputLabel = "🛰️ GPS Off";
+                } else {
+                    const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude), parseFloat(spot.longitude));
+                    rawDistanceValue = dist;
+                    distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+                }
+
+                return { ...spot, distRaw: rawDistanceValue, distStr: distanceOutputLabel };
+            });
+
+            // Sort logic checks proximity profiles dynamically
+            processed.sort((a, b) => a.distRaw - b.distRaw);
 
             if (showStarredOnly) {
                 processed = processed.filter(s => s.priority?.toLowerCase() === 'high' || s.priority === '🔥' || s.priority?.toLowerCase() === 'must do' || s.priority?.toLowerCase() === 'starred');
@@ -1082,7 +1146,15 @@
             document.getElementById('traySpotTitle').innerText = spotObj.spot_name || "Unnamed Destination";
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
             document.getElementById('traySpotNotes').innerText = spotObj.notes || "No custom notes assigned.";
-            document.getElementById('trayDistanceBadge').innerText = `📍 ${spotObj.distStr || 'Map View'}`;
+            
+            // Evaluates text configurations directly matching unified constraints
+            const distanceBadge = document.getElementById('trayDistanceBadge');
+            distanceBadge.innerText = spotObj.distStr;
+            if (spotObj.distStr.includes("Missing") || spotObj.distStr.includes("Off")) {
+                distanceBadge.className = "text-[10px] font-bold bg-red-500/10 text-red-400 px-2 py-1 rounded-lg border border-red-500/20 whitespace-nowrap";
+            } else {
+                distanceBadge.className = "text-xs font-mono font-bold bg-pink-500/10 text-pink-400 px-2 py-1 rounded-lg border border-pink-500/20 whitespace-nowrap";
+            }
 
             document.getElementById('trayOpenReelBtn').href = spotObj.instagram_url || "#";
             document.getElementById('trayActionBtn').href = spotObj.latitude ? `http://googleusercontent.com/maps.google.com/?q=${spotObj.latitude},${spotObj.longitude}` : (spotObj.instagram_url || "#");
@@ -1111,9 +1183,11 @@
                 tray.classList.add('hidden');
             };
 
+            // FULLY INTERACTIVE EDITABLE STATE CONTROLS INSIDE CONTAINER OVERLAYS
             starBtn.innerText = isStarredBool ? 'Unstar' : '★ Star';
             starBtn.onclick = () => {
-                updateCloudAction(spotObj.rowid, 'toggle_priority', isStarredBool ? 'Normal' : 'Starred', spotObj.spot_name);
+                const targetNextState = isStarredBool ? 'Normal' : 'Starred';
+                updateCloudAction(spotObj.rowid, 'toggle_priority', targetNextState, spotObj.spot_name);
                 tray.classList.add('hidden');
             };
 
@@ -1151,19 +1225,25 @@
                 if(isDone) card.className = "card-transition p-4 rounded-2xl border bg-slate-900/30 border-slate-950 opacity-40";
                 if(isBooked && !isDone) card.className = "card-transition p-4 rounded-2xl border bg-slate-900 border-emerald-500/40 shadow-md shadow-emerald-950/5";
 
+                // Map styling context flags using standardized strings 
+                let badgeStyleClass = "text-xs font-mono font-bold bg-pink-500/10 text-pink-400 px-2 py-1 rounded-lg border border-pink-500/20 shrink-0";
+                if (spot.distStr.includes("Missing") || spot.distStr.includes("Off")) {
+                    badgeStyleClass = "text-[10px] font-bold bg-red-500/10 text-red-400 px-2 py-1 rounded-lg border border-red-500/20 shrink-0 h-fit text-center";
+                }
+
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-2">
-                        <div>
+                        <div class="max-w-[70%]">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city || 'Global'} • ${spot.category}</span>
                                 ${isHigh ? '<span class="text-[9px] font-black tracking-wide text-amber-400 flex items-center gap-0.5">★ Starred</span>' : ''}
                                 ${isBooked ? '<span class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>' : ''}
                             </div>
-                            <h3 class="text-base font-bold text-slate-200 mt-1.5">${spot.spot_name || 'Unnamed Spot'}</h3>
+                            <h3 class="text-base font-bold text-slate-200 mt-1.5 truncate">${spot.spot_name || 'Unnamed Spot'}</h3>
                         </div>
-                        <span class="text-xs font-mono text-pink-400 font-bold bg-pink-500/10 px-2 py-1 rounded-lg shrink-0">📍 ${spot.distStr === 'No Location' ? 'Map View' : spot.distStr}</span>
+                        <span class="${badgeStyleClass}">${spot.distStr}</span>
                     </div>
-                    <p class="text-xs text-slate-400 mt-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed">${spot.notes || 'No custom notes.'}</p>
+                    <p class="text-xs text-slate-400 mt-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-20 overflow-y-auto no-scrollbar">${spot.notes || 'No custom notes.'}</p>
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
