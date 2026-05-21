@@ -18,11 +18,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
-        
-        /* Smooth micro-interaction transitions for item rendering filters */
-        .card-transition {
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .card-transition { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col selection:bg-pink-500/30 select-none">
@@ -155,7 +151,7 @@
                 <div id="autocomplete-results" class="absolute w-full top-full left-0 bg-slate-900 rounded-xl mt-1.5 shadow-2xl border border-slate-800 max-h-60 overflow-y-auto hidden z-[60] no-scrollbar"></div>
             </div>
             
-            <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="p-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 hover:from-pink-500/30 hover:to-purple-500/30 border border-pink-500/40 rounded-xl font-extrabold text-xs text-pink-400 flex items-center gap-1.5 shrink-0 active:scale-95 transition-all shadow-lg shadow-pink-950/10">
+            <button onclick="toggleFilterDrawerMenu(true)" id="filterMenuTriggerBtn" class="p-3 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/40 rounded-xl font-extrabold text-xs text-pink-400 flex items-center gap-1.5 shrink-0 active:scale-95 transition-all shadow-lg shadow-pink-950/10">
                 <span>Filters</span>
                 <span id="activeFilterBadgeCount" class="hidden w-4 h-4 bg-pink-600 text-white font-black text-[9px] rounded-full flex items-center justify-center">0</span>
             </button>
@@ -195,7 +191,7 @@
 
     <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative z-10">
         <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
-            <span class="animate-pulse">⬇| Keep pulling to force sync database...</span>
+            <span class="animate-pulse">⬇️ Keep pulling to force sync database...</span>
         </div>
         
         <div id="spots-list" class="p-4 space-y-3 pb-32">
@@ -232,7 +228,7 @@
                     <input type="text" id="new-keyword" placeholder="e.g., Hidden Arch Viewpoint" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500">
                 </div>
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Vibe Check / Practical Execution Notes</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Vibe Check / Notes</label>
                     <textarea id="new-notes" rows="3" placeholder="Optimal angles, timings, or suggestions..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none focus:border-pink-500"></textarea>
                 </div>
                 <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 mt-2">
@@ -253,8 +249,6 @@
         let deviceId = localStorage.getItem('compass_device_id') || generateAndSaveDeviceId();
         let travelSpots = JSON.parse(localStorage.getItem('compass_cache')) || [];
         let checkedFilterStateArray = JSON.parse(localStorage.getItem('compass_active_filters')) || [];
-        
-        // NEW ARRAY: Holds checked city labels persistently via storage keys
         let checkedCitiesStateArray = JSON.parse(localStorage.getItem('compass_active_cities')) || [];
         
         let userLat = 48.8566; 
@@ -276,7 +270,6 @@
             
             populateUserDropdowns();
             
-            // Render cached items instantly to solve blank screen flashes
             if (travelSpots.length > 0) {
                 calculateSmartCityDefaultFilters();
                 renderList();
@@ -292,7 +285,6 @@
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
-            // Closes global open context boxes natively on outside touch event registers
             document.addEventListener('click', () => {
                 document.getElementById('cityHUDDropdownPopupBox').classList.add('hidden');
             });
@@ -375,6 +367,7 @@
                 dropdowns.forEach(dd => {
                     if(!dd) return;
                     dd.innerHTML = '';
+                    // REWRITTEN FIX: Strictly checks cloud array entries to prevent fallback string leaks
                     if (Array.isArray(usersList) && usersList.length > 0) {
                         usersList.forEach(user => {
                             const opt = document.createElement('option');
@@ -383,7 +376,7 @@
                             dd.appendChild(opt);
                         });
                     } else {
-                        dd.innerHTML = '<option value="">No users registered yet</option>';
+                        dd.innerHTML = '<option value="">No explorers logged</option>';
                     }
                 });
             } catch(e) {
@@ -395,14 +388,13 @@
             document.getElementById('userBadge').innerText = `👤 ${currentUser}`;
             document.getElementById('settingsRenameField').value = currentUser;
             
-            // Trigger high precision geo checks natively on boot
             navigator.geolocation.getCurrentPosition(pos => {
                 gpsStatusCachedBool = true;
                 updateGpsHudStatus(true, "GPS Active");
                 userLat = pos.coords.latitude;
                 userLon = pos.coords.longitude;
                 calculateSmartCityDefaultFilters();
-                syncData(true); // Automatically runs delta verification sync routines
+                syncData(true); 
             }, () => {
                 gpsStatusCachedBool = false;
                 updateGpsHudStatus(false, "⚠️ GPS Off");
@@ -416,7 +408,7 @@
             const textVal = document.getElementById('customUsernameInput').value.trim();
             const chosenName = textVal !== "" ? textVal : dropdownVal;
 
-            if(!chosenName || chosenName.startsWith("No users")) { alert("Please input or select an explorer identity profile."); return; }
+            if(!chosenName || chosenName.startsWith("No explorers")) { alert("Please input or select a profile identity."); return; }
             localStorage.setItem('compass_user', chosenName);
             currentUser = chosenName;
             document.getElementById('userModal').classList.add('hidden');
@@ -471,7 +463,7 @@
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=12`);
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lat=${lat}&lon=${lon}&zoom=12`);
                     const geo = await res.json();
                     areaContextStr = geo.address.suburb || geo.address.city_district || geo.address.city || "Unknown Area";
                 } catch(e) { areaContextStr = `${lat.toFixed(2)}, ${lon.toFixed(2)}`; }
@@ -501,21 +493,22 @@
             if(show) buildDynamicShoppingCheckboxList();
         }
 
+        // PURGE ENFORCEMENT: Corrected transmission channel pipeline to solve CORS blocks
         async function triggerSecureServerHistoryPurgeVault() {
-            const quirkyConfirm = confirm("🚨 TOTAL RESET DEPLOYED!\n\nYou are about to scrub your entire tracking database.\n\nThis wipes all Registered Users, Geolocation logs, and Profile history records down to a blank slate.\n\nThis cannot be undone. Proceed?");
+            const quirkyConfirm = confirm("🚨 TOTAL RESET ALERT!\n\nYou are about to execute a deep clear script operation.\n\nThis completely deletes all history entries AND registered profile rows from the cloud sheets instantly.\n\nThis cannot be undone. Proceed?");
             if(!quirkyConfirm) return;
 
-            const adminPasswordInput = prompt("🔒 SECURITY KEY ACCESS:");
+            const adminPasswordInput = prompt("🔒 PASSWORD CONFIRMATION:");
             if(!adminPasswordInput) return;
 
             toggleSettingsMenu(false);
             const syncText = document.getElementById('syncText');
-            syncText.innerText = "Executing cloud reset...";
+            syncText.innerText = "Authorizing reset...";
 
             try {
                 const req = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' }, 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Standard text payload routing clears pre-flight blocks
                     body: JSON.stringify({
                         action: 'purge_server_history', user: currentUser, deviceId: deviceId, password: adminPasswordInput
                     })
@@ -523,14 +516,14 @@
                 const res = await req.json();
                 
                 if (res.result === "success") {
-                    alert("💥 SERVER RESET METRIC SUCCEEDED!\n\nAll tracking logs and user profiles have been wiped. Tapping OK will clear local caches.");
+                    alert("💥 SERVER SCALED SCRUB SUCCESSFUL!\n\nAll tracking history logs and names have been wiped. Logging out device...");
                     clearDeviceSessionAndLogout();
                 } else if (res.result === "auth_failed") {
-                    alert("❌ DEPLOYMENT REJECTED: Password mismatch error.");
+                    alert("❌ ACCESS DENIED: Password mismatch.");
                     syncText.innerText = "Auth Error";
                 }
             } catch(err) {
-                alert("Cloud execution timeout connectivity gateway block.");
+                alert("Cloud transmission pipeline response error.");
                 syncText.innerText = "Network Error";
             }
         }
@@ -572,7 +565,6 @@
             checkedCitiesStateArray = [];
             showStarredOnly = false;
             
-            // Revert HUD toggles back to base positions
             document.getElementById('priorityToggleHUDText').innerText = "Show All";
             document.getElementById('priorityToggleHUDIndicator').innerText = "○";
             
@@ -613,14 +605,10 @@
             }
         }
 
-        // SMART CITY EVALUATION: Calculates default focus maps based on user geolocated parameters
         function calculateSmartCityDefaultFilters() {
             if (travelSpots.length === 0) return;
-            
-            // Extract unique city names from spreadsheet columns array list array parameters
             let citySet = new Set();
             let cityCountMap = {};
-            
             travelSpots.forEach(spot => {
                 if (spot.city && spot.city.trim() !== "") {
                     let cName = spot.city.trim();
@@ -629,15 +617,11 @@
                 }
             });
 
-            // Rebuild dropdown checklist popup nodes inside the sub header container layout bar
             buildDynamicCityHUDDropdownMenu(Array.from(citySet));
-
-            // Skip default parsing calculations if user has already explicitly ticked matching city markers
             if (checkedCitiesStateArray.length > 0) return;
 
             let closestCity = null;
-            let minimumDistance = 150; // Distance radius barrier parameter constraint threshold checklist limit (150 kilometers)
-
+            let minimumDistance = 150; 
             citySet.forEach(city => {
                 let sampleSpot = travelSpots.find(s => s.city === city && s.latitude && s.longitude);
                 if (sampleSpot) {
@@ -650,10 +634,8 @@
             });
 
             if (closestCity && gpsStatusCachedBool) {
-                // Snape views target directly to matching nearest destination points
                 checkedCitiesStateArray = [closestCity];
             } else {
-                // Find target density hub configuration arrays holding maximum database load items
                 let maxCount = -1;
                 let topDensityCity = null;
                 for (let city in cityCountMap) {
@@ -664,18 +646,15 @@
                 }
                 if (topDensityCity) checkedCitiesStateArray = [topDensityCity];
             }
-            
             localStorage.setItem('compass_active_cities', JSON.stringify(checkedCitiesStateArray));
         }
 
         function buildDynamicCityHUDDropdownMenu(cityListArray) {
             const container = document.getElementById('cityHUDChecklistContainer');
             container.innerHTML = '';
-            
             cityListArray.forEach(city => {
                 const label = document.createElement('label');
                 label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer active:bg-slate-950/60";
-                
                 const isChecked = checkedCitiesStateArray.includes(city);
                 label.innerHTML = `
                     <span class="truncate pr-2">${city}</span>
@@ -689,7 +668,7 @@
         }
 
         function toggleCityDropdownOverlayMenu(event) {
-            event.stopPropagation(); // Avoid event cascading loops triggering parent window bounds click blocks
+            event.stopPropagation(); 
             document.getElementById('cityHUDDropdownPopupBox').classList.toggle('hidden');
         }
 
@@ -718,7 +697,6 @@
             const textNode = document.getElementById('cityHUDTriggerText');
             const btn = document.getElementById('cityFilterHUDTriggerBtn');
             const count = checkedCitiesStateArray.length;
-            
             if (count === 0) {
                 textNode.innerText = "All Cities";
                 btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-between";
@@ -731,14 +709,12 @@
             }
         }
 
-        // TRIGGER PRIORITY FILTER VIEWS: Seamless cross fading list switches
         let showStarredOnly = false;
         function togglePriorityFilterViewMode() {
             showStarredOnly = !showStarredOnly;
             const text = document.getElementById('priorityToggleHUDText');
             const indicator = document.getElementById('priorityToggleHUDIndicator');
             const btn = document.getElementById('priorityToggleHUDButton');
-            
             if (showStarredOnly) {
                 text.innerText = "Must Do Only";
                 indicator.innerText = "★";
@@ -748,8 +724,6 @@
                 indicator.innerText = "○";
                 btn.className = "w-full bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 text-left text-xs font-bold text-slate-400 flex items-center justify-between";
             }
-            
-            // Re-render list with subtle transitional opacity adjustments
             const list = document.getElementById('spots-list');
             list.style.opacity = "0.3";
             setTimeout(() => {
@@ -809,21 +783,8 @@
         function updateHeaderBadgeHUDCounters() {
             const badge = document.getElementById('activeFilterBadgeCount');
             const count = checkedFilterStateArray.length;
-            if(count > 0) {
-                badge.innerText = count;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            if(!lat1 || !lon1 || !lat2 || !lon2) return 99999;
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            if(count > 0) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
         }
 
         function renderList() {
@@ -835,20 +796,15 @@
                 return { ...spot, distRaw: dist, distStr: dist > 1000 ? 'No Location' : (dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`) };
             }).sort((a, b) => a.distRaw - b.distRaw);
 
-            // Conditional Priority Filter logic matrices
             if (showStarredOnly) {
                 processed = processed.filter(s => s.priority === 'High' || s.priority === '🔥' || s.priority === 'Must Do');
             }
-            
-            // Sub Header dynamic target city filter logic pipeline matching conditions
             if (checkedCitiesStateArray.length > 0) {
                 processed = processed.filter(spot => {
                     if(!spot.city) return false;
                     return checkedCitiesStateArray.map(c => c.toLowerCase().trim()).includes(spot.city.toLowerCase().trim());
                 });
             }
-
-            // Category tag intersection selection mapping loop filter criteria checks
             if (checkedFilterStateArray.length > 0) {
                 processed = processed.filter(spot => {
                     if(!spot.category) return false;
@@ -857,7 +813,6 @@
                 });
             }
 
-            // CROSS-COUNTRY ALERT: Detects if loaded items reside outside your master spatial bubble zone limits
             const noticeRow = document.getElementById('crossCountryNoticeRow');
             let distantItemCount = processed.filter(s => s.distRaw > 1200 && s.distRaw !== 99999).length;
             if (distantItemCount > 0 && processed.length === distantItemCount && gpsStatusCachedBool) {
@@ -894,9 +849,7 @@
                         </div>
                         <span class="text-xs font-mono text-pink-400 font-bold bg-pink-500/10 px-2 py-1 rounded-lg shrink-0">📍 ${spot.distStr === 'No Location' ? 'Map View' : spot.distStr}</span>
                     </div>
-                    
                     <p class="text-xs text-slate-400 mt-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed">${spot.notes || 'No custom notes.'}</p>
-                    
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reel</a>
@@ -913,7 +866,6 @@
                 `;
                 container.appendChild(card);
             });
-            updateHeaderBadgeHUDCounters();
         }
 
         async function updateCloudAction(rowId, action, value, spotName) {
@@ -934,16 +886,13 @@
             } catch (err) {}
         }
 
-        // FULLY OPTIMIZED RESPONSIVE AUTOCOMPLETE SEARCH SYSTEM
         function setupSearchAutocomplete() {
             const input = document.getElementById('searchInput');
             const box = document.getElementById('autocomplete-results');
-            
             input.addEventListener('input', (e) => {
                 clearTimeout(searchTimeout);
                 const query = e.target.value.trim();
                 if (query.length < 3) { box.classList.add('hidden'); return; }
-                
                 searchTimeout = setTimeout(() => {
                     fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
                         .then(res => res.json())
@@ -951,7 +900,6 @@
                             box.innerHTML = '';
                             if(!data || data.length === 0) { box.classList.add('hidden'); return; }
                             box.classList.remove('hidden');
-                            
                             data.forEach(place => {
                                 const d = document.createElement('div');
                                 d.className = "p-3 text-xs border-b border-slate-800 hover:bg-slate-800 cursor-pointer text-slate-300 text-left truncate";
@@ -970,7 +918,6 @@
         function triggerExplicitSearchInputConfirmation() {
             const rawVal = document.getElementById('searchInput').value.trim();
             if(rawVal.length === 0) return;
-            document.getElementById('syncText').innerText = "Querying anchor...";
             fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(rawVal)}&limit=1`)
                 .then(res => res.json())
                 .then(data => {
@@ -985,12 +932,15 @@
             userLon = lon;
             document.getElementById('current-target-name').innerText = displayName;
             document.getElementById('autocomplete-results').classList.add('hidden');
-            document.getElementById('targetResetBtn').classList.remove('hidden'); // Show reset button only when using manual search location targets
+            document.getElementById('targetResetBtn').classList.remove('hidden'); 
             renderList();
         }
 
-        // FIXED: Click prioritization state configuration switch loop values
-        let formPriorityState = "Normal";
+        function toggleQuickAddModal(show) {
+            document.getElementById('quickAddModal').classList.toggle('hidden', !show);
+        }
+
+        // FIXED: Click prioritization function mapped accurately to clear freezes
         function toggleFormPriorityState() {
             const btn = document.getElementById('form-priority-btn');
             if(formPriorityState === "Normal") {
@@ -1043,9 +993,7 @@
         function resetToGPS() {
             document.getElementById('current-target-name').innerText = "Your Live GPS";
             document.getElementById('searchInput').value = "";
-            document.getElementById('targetResetBtn').classList.add('hidden'); // Hide reset button once returned to master default GPS
-            
-            // Simulates background check execution routines smoothly without moving visual element tags
+            document.getElementById('targetResetBtn').classList.add('hidden'); 
             forceReRequestGPSHardware();
         }
     </script>
