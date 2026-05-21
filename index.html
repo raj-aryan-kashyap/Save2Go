@@ -175,7 +175,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="forceReRequestGPSHardware()" id="gpsBadgeButton" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400">
+                <button id="gpsBadgeButton" onclick="forceReRequestGPSHardware();" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer pointer-events-auto">
                     <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="gpsBadgeText">GPS Active</span>
                 </button>
                 <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs">🔄</button>
@@ -251,6 +251,14 @@
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
                     <span class="animate-pulse">⬇️ Pull to check database streams...</span>
                 </div>
+                
+                <div class="px-4 pt-4 shrink-0">
+                    <div class="bg-slate-900 border border-slate-800/80 px-3.5 py-2 rounded-xl flex justify-between items-center shadow-inner">
+                        <span class="text-[10px] uppercase font-black tracking-widest text-slate-400">Database Summary</span>
+                        <span id="vaultDensityHUDLabelCounter" class="text-xs font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
+                    </div>
+                </div>
+
                 <div id="spots-list" class="p-4 space-y-3 pb-32"></div>
             </div>
         </div>
@@ -320,7 +328,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.4.1";
+        const APP_VERSION = "v1.4.2";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -331,6 +339,9 @@
         let showStarredOnly = JSON.parse(localStorage.getItem('compass_starred_only')) || false;
         let hideCompletedSpotsStateBool = localStorage.getItem('compass_hide_completed') !== null ? JSON.parse(localStorage.getItem('compass_hide_completed')) : true;
         
+        // Anti-race condition locks container
+        let operationalStateLocksRegistry = new Set();
+
         let userLat = 48.8566; let userLon = 2.3522;
         let areaContextStr = "Unknown Coordinates"; let cachedHardwareString = "Unknown Device Model";
         let gpsStatusCachedBool = false; let activeTabID = 'map';
@@ -561,11 +572,11 @@
             if(!btn || !dot || !text) return;
             
             if (isActive) {
-                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400";
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer";
                 dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"; 
                 text.innerText = message || "GPS Active";
             } else {
-                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400";
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer";
                 dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500"; 
                 text.innerText = message || "⚠️ GPS Off";
             }
@@ -594,6 +605,7 @@
         }
 
         function forceReRequestGPSHardware() {
+            updateGpsHudStatus(false, "Re-Pinging Hardware...");
             startLiveHardwareGPSTracking();
         }
 
@@ -704,11 +716,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-    const list = document.getElementById('spots-list');
-    if (list) list.style.opacity = '1';
-});
+            const list = document.getElementById('spots-list');
+            if (list) list.style.opacity = '1';
+        });
 
-function getFilteredDatasetRows() {
+        function getFilteredDatasetRows() {
             let processed = travelSpots.map(spot => {
                 const hasLatLon = spot.latitude && String(spot.latitude).trim() !== "" && spot.longitude && String(spot.longitude).trim() !== "";
                 let distanceOutputLabel = !hasLatLon ? "⚠️ Missing Coordinates" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
@@ -883,10 +895,17 @@ function getFilteredDatasetRows() {
 
         function renderList() {
             const container = document.getElementById('spots-list');
+            const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
             if(!container) return; 
             container.innerHTML = '';
             
             const processed = getFilteredDatasetRows();
+            
+            // UPDATED: Dynamically updates the Showing X / Y indicator text
+            if (counterHUD) {
+                counterHUD.innerText = `Showing ${processed.length} / ${travelSpots.length} Spots`;
+            }
+
             if(processed.length === 0) {
                 container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these selection profiles.</div>`; 
                 return;
@@ -928,7 +947,12 @@ function getFilteredDatasetRows() {
             });
         }
 
+        // IMPROVED: State protection layer stops asynchronous data overwrites on rapid interactions
         async function updateCloudAction(rowId, action, value, spotName) {
+            const lockKey = `${rowId}_${action}`;
+            if (operationalStateLocksRegistry.has(lockKey)) return; // Reject double-taps
+            operationalStateLocksRegistry.add(lockKey);
+
             const target = travelSpots.find(s => s.rowid === rowId);
             if (target) {
                 if (action === 'update_status') target.status = value;
@@ -940,8 +964,14 @@ function getFilteredDatasetRows() {
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName, deviceMeta: cachedHardwareString })
                 });
-                setTimeout(() => syncData(false), 800);
-            } catch(err) {}
+                // Delay background refresh slightly to let cloud storage write cycles settle completely
+                setTimeout(async () => {
+                    await syncData(false);
+                    operationalStateLocksRegistry.delete(lockKey);
+                }, 1000);
+            } catch(err) {
+                operationalStateLocksRegistry.delete(lockKey);
+            }
         }
 
         function calculateSmartCityDefaultFilters() {
