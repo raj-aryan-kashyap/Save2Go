@@ -212,7 +212,7 @@
 
             <div id="mapNavigationShortcutsStack" class="absolute top-1/2 right-4 -translate-y-1/2 z-[400] flex flex-col gap-2.5 pointer-events-auto">
                 <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🔍</button>
-                <button onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🧭</button>
+                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-transform duration-500 ease-out origin-center">🧭</button>
             </div>
             
             <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl z-[999] hidden space-y-4 pointer-events-auto max-w-md mx-auto max-h-[55vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -411,6 +411,7 @@
         let liveGpsWatchId = null; let speechBubbleHideTimer = null;
         let continuousGpsFailsafeIntervalId = null; 
         let lastGpsSuccessTime = 0; 
+        let cachedUserCoords = null; // Warm layout hardware state cache storage
 
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
         let activeBaseTileLayer = null; 
@@ -667,6 +668,8 @@
                 (pos) => {
                     gpsStatusCachedBool = true;
                     lastGpsSuccessTime = Date.now(); 
+                    // Write positions cleanly to warm cache object registers
+                    cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                     updateGpsHudStatus('active', "GPS Active");
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     if (leafletMapInstance) {
@@ -712,6 +715,7 @@
                         (pos) => {
                             gpsStatusCachedBool = true;
                             lastGpsSuccessTime = Date.now();
+                            cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                             userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                         },
                         () => {},
@@ -791,6 +795,7 @@
                 (pos) => {
                     gpsStatusCachedBool = true;
                     lastGpsSuccessTime = Date.now();
+                    cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     updateGpsHudStatus('active', "GPS Active");
                     if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 15);
@@ -805,23 +810,48 @@
             );
         }
 
-        // BI-DIRECTIONAL PERMISSIONS VERIFIED COMPASS ENGINE
+        // OPTIMISTIC HOT CACHE RECENTER COMPASS ENGINE MECHANICS (V2.4.0)
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance) return;
+
+            const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
+            if (compassBtn) {
+                // Flash transformation class layout rings instantly to give microfeedback input tracking acknowledgment
+                compassBtn.classList.add('rotate-180', 'scale-90');
+                setTimeout(() => { compassBtn.classList.remove('rotate-180', 'scale-90'); }, 500);
+            }
+
+            // PHASE 1 OPTIMISTIC VIEW SNAPPING LAYER: Reposition map space via warm variables instantly
+            if (cachedUserCoords) {
+                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 15, { animate: true });
+            }
 
             const executeHardwareQuery = () => {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         gpsStatusCachedBool = true;
                         lastGpsSuccessTime = Date.now();
-                        userLat = pos.coords.latitude; userLon = pos.coords.longitude;
-                        updateGpsHudStatus('active', "GPS Active");
                         
-                        if (userPositionPulseCircle) {
-                            userPositionPulseCircle.setLatLng([userLat, userLon]);
+                        const incomingLat = pos.coords.latitude;
+                        const incomingLon = pos.coords.longitude;
+                        
+                        // PHASE 2 REAL-TIME SATELLITE HANDSHAKE RECONCILIATION
+                        if (!cachedUserCoords || cachedUserCoords.lat !== incomingLat || cachedUserCoords.lon !== incomingLon) {
+                            cachedUserCoords = { lat: incomingLat, lon: incomingLon };
+                            userLat = incomingLat; userLon = incomingLon;
+                            updateGpsHudStatus('active', "GPS Active");
+                            
+                            if (userPositionPulseCircle) {
+                                userPositionPulseCircle.setLatLng([userLat, userLon]);
+                            } else {
+                                userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
+                                    radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
+                                }).addTo(leafletMapInstance);
+                            }
+                            // Smoothly shift map viewport container alignment to corrected coordinates frame
+                            leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
                         }
-                        leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
                     },
                     (err) => {
                         gpsStatusCachedBool = false;
@@ -832,7 +862,6 @@
                 );
             };
 
-            // Intercept permissions array explicitly to prevent stale hardware hangs when tracking is off
             if (navigator.permissions && navigator.permissions.query) {
                 navigator.permissions.query({ name: 'geolocation' }).then(status => {
                     if (status.state === 'denied') {
@@ -897,6 +926,7 @@
                         gpsStatusCachedBool = true;
                         userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                         lastGpsSuccessTime = Date.now();
+                        cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                     },
                     () => {},
                     { enableHighAccuracy: true, timeout: 2000 }
