@@ -79,6 +79,11 @@
             width: 40px !important;
             height: 40px !important;
         }
+
+        /* NEW: Fluid Nav Tab Transition Rules Stylesheet Hook */
+        .nav-tab-transition {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col overflow-hidden selection:bg-pink-500/30 select-none">
@@ -205,7 +210,7 @@
                 </button>
             </div>
             <div class="col-span-3 relative">
-                <button id="filterMenuMenuTriggerBtn" id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
+                <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
                     <span>Filters</span><span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
                 </button>
             </div>
@@ -222,7 +227,7 @@
                 <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="fixed bottom-[92px] left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[950] hidden space-y-3 pointer-events-auto">
+            <div id="mapDetailTrayHUD" class="fixed bottom-[100px] left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[999] hidden space-y-3 pointer-events-auto origin-bottom transition-transform duration-200 ease-out scale-100">
                 <div class="flex justify-between items-start gap-2">
                     <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -270,7 +275,7 @@
                     </div>
                 </div>
 
-                <div id="spots-list" class="p-4 space-y-3 pb-32"></div>
+                <div id="spots-list" class="p-4 space-y-3"></div>
             </div>
         </div>
 
@@ -284,14 +289,14 @@
     </div>
 
     <div class="fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/80 px-6 py-4 flex justify-around items-center shrink-0 z-[490] rounded-t-2xl shadow-2xl">
-        <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="flex flex-col items-center gap-1 text-pink-500">
-            <span class="text-xl">🗺️</span><span class="text-[10px] font-bold tracking-wide">Map</span>
+        <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="nav-tab-transition flex flex-col items-center gap-1 text-pink-500 scale-115 font-black">
+            <span class="text-xl">🗺️</span><span class="text-[10px] tracking-wide">Map</span>
         </button>
-        <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="flex flex-col items-center gap-1 text-slate-500">
-            <span class="text-xl">🗂️</span><span class="text-[10px] font-bold tracking-wide">Saved Spots</span>
+        <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="nav-tab-transition flex flex-col items-center gap-1 text-slate-500 opacity-60">
+            <span class="text-xl">🗂️</span><span class="text-[10px] tracking-wide">Saved Spots</span>
         </button>
-        <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="flex flex-col items-center gap-1 text-slate-500">
-            <span class="text-xl">⏳</span><span class="text-[10px] font-bold tracking-wide">Itinerary</span>
+        <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="nav-tab-transition flex flex-col items-center gap-1 text-slate-500 opacity-60">
+            <span class="text-xl">⏳</span><span class="text-[10px] tracking-wide">Itinerary</span>
         </button>
     </div>
 
@@ -339,7 +344,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.4.5";
+        const APP_VERSION = "v1.4.6";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -522,12 +527,20 @@
             );
         }
 
+        // IMPROVED: Smooth visual scaling loop configuration blocks for cross-menu swapping sequences
         function switchMasterMenuDashboardTab(targetTabID) {
             if(targetTabID === activeTabID) return;
-            document.getElementById(`nav-tab-${activeTabID}`).className = "flex flex-col items-center gap-1 text-slate-500";
+            
+            // Revert active styles from the old tab selection
+            const currentTabBtn = document.getElementById(`nav-tab-${activeTabID}`);
+            currentTabBtn.className = "nav-tab-transition flex flex-col items-center gap-1 text-slate-500 opacity-60 scale-100 font-medium";
             document.getElementById(`view-${activeTabID}`).classList.remove('active-view');
-            document.getElementById(`nav-tab-${targetTabID}`).className = "flex flex-col items-center gap-1 text-pink-500";
+            
+            // Apply scale pop and color variables to the newly selected tab profile
+            const nextTabBtn = document.getElementById(`nav-tab-${targetTabID}`);
+            nextTabBtn.className = "nav-tab-transition flex flex-col items-center gap-1 text-pink-500 scale-115 font-black";
             document.getElementById(`view-${targetTabID}`).classList.add('active-view');
+            
             activeTabID = targetTabID;
             if(targetTabID === 'map' && leafletMapInstance) { 
                 setTimeout(() => { 
@@ -603,12 +616,10 @@
             if (matchTarget) { leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 13, { animate: true }); }
         }
 
-        // AMENDED: Safely handles blocked hardware permission locks without browser workspace crash glitches
         function handleGpsBadgeClickAction() {
             if (navigator.permissions && navigator.permissions.query) {
                 navigator.permissions.query({ name: 'geolocation' }).then(status => {
                     if (status.state === 'denied') {
-                        // Open the descriptive native steps recovery manual instructions layout view card
                         document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
                     } else {
                         updateGpsHudStatus(false, "Re-pinging...");
@@ -654,7 +665,6 @@
             syncPriorityFilterViewModeUI(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
-        // Self-contained diagnostic ping to refresh location parameters silently during input interactions
         function silentPassiveHardwareLocationPingRefresh() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -664,9 +674,7 @@
                         userLon = pos.coords.longitude;
                         updateGpsHudStatus(true, "GPS Active");
                     },
-                    () => {
-                        // Suppressed to prevent breaking layout states
-                    },
+                    () => {},
                     { enableHighAccuracy: true, timeout: 2000 }
                 );
             }
@@ -979,9 +987,13 @@
                 `;
                 container.appendChild(card);
             });
+
+            // NEW: Injects structural scrolling buffer element past layout heights
+            const scrollingPaddingSpacer = document.createElement('div');
+            scrollingPaddingSpacer.className = "h-32 shrink-0 pointer-events-none";
+            container.appendChild(scrollingPaddingSpacer);
         }
 
-        // IMPROVED: Intercepts player touch inputs to run silent background location permission queries instantly
         async function updateCloudAction(rowId, action, value, spotName) {
             const target = travelSpots.find(s => s.rowid === rowId);
             if (target) {
@@ -991,10 +1003,7 @@
                 renderList(); 
                 plotDynamicMarkersOnCanvasMap();
             }
-
-            // High-responsiveness trigger recalculates location hardware status upon item updates
             silentPassiveHardwareLocationPingRefresh();
-
             try {
                 await fetch(API_URL, {
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
@@ -1062,6 +1071,7 @@
             }
         }
 
+        /* Entry Modal Form Controls */
         function toggleQuickAddModal(show) { document.getElementById('quickAddModal').classList.toggle('hidden', !show); }
         
         let formPriorityState = "Normal";
