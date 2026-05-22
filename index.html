@@ -29,8 +29,8 @@
         /* VIEWPORT HEIGHT CONFIGURATION */
         .view-panel {
             position: absolute;
-            top: 116px; /* Sits flush beneath the new fixed header bar height context */
-            bottom: 76px; /* Sits flush above the navigation panel deck height context */
+            top: 116px; 
+            bottom: 76px; 
             left: 0;
             right: 0;
             width: 100%;
@@ -183,7 +183,7 @@
                             <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400">★ Starred</span>
                             <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
                         </div>
-                        h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
+                        <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
@@ -349,7 +349,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.5.8";
+        const APP_VERSION = "v1.5.9";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -589,7 +589,7 @@
             const backdrop = document.getElementById('dropdownBlurBackdrop');
             document.getElementById('filterCategoryDropdownPopupBox').classList.add('hidden');
             if (!box.classList.contains('hidden')) { box.classList.add('hidden'); backdrop.classList.add('hidden'); } 
-            else { box.classList.remove('hidden'); backdrop.classList.remove('hidden'); calculateSmartCityDefaultFilters(); }
+            else { box.remove('hidden'); backdrop.classList.remove('hidden'); calculateSmartCityDefaultFilters(); }
         }
 
         function toggleFilterDropdownOverlayMenu(event) {
@@ -984,8 +984,9 @@
                 container.appendChild(card);
             });
 
+            // FIXED SPECIFIC SPACER ADJUSTMENT: Expanded to h-48 to clear navigation deck cleanly
             const scrollingPaddingSpacer = document.createElement('div');
-            scrollingPaddingSpacer.className = "h-32 shrink-0 pointer-events-none";
+            scrollingPaddingSpacer.className = "h-48 shrink-0 pointer-events-none";
             container.appendChild(scrollingPaddingSpacer);
         }
 
