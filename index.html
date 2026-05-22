@@ -216,12 +216,24 @@
         <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950 absolute inset-0">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
-            <div class="absolute bottom-24 right-4 z-[400] flex flex-col gap-2.5">
+            <div class="absolute top-4 right-4 z-[400] flex flex-col items-end gap-1.5">
+                <button onclick="document.getElementById('mapLayerStyleDropdownDeck').classList.toggle('hidden')" class="px-3 py-2 bg-slate-900/95 border border-slate-800 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-2xl text-slate-300 flex items-center gap-1.5 active:bg-slate-800 pointer-events-auto">
+                    <span>🥞 Layer Style</span><span>▼</span>
+                </button>
+                <div id="mapLayerStyleDropdownDeck" class="hidden w-40 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1.5 flex flex-col gap-1 pointer-events-auto">
+                    <button onclick="setMapBaseLayerProviderSource('dark')" class="w-full text-left text-[11px] font-bold p-2 hover:bg-slate-800 rounded-lg text-slate-300">Classic Dark</button>
+                    <button onclick="setMapBaseLayerProviderSource('light')" class="w-full text-left text-[11px] font-bold p-2 hover:bg-slate-800 rounded-lg text-slate-300">Light Streets</button>
+                    <button onclick="setMapBaseLayerProviderSource('voyager')" class="w-full text-left text-[11px] font-bold p-2 hover:bg-slate-800 rounded-lg text-slate-300">Travel Hub</button>
+                    <button onclick="setMapBaseLayerProviderSource('satellite')" class="w-full text-left text-[11px] font-bold p-2 hover:bg-slate-800 rounded-lg text-slate-300">Esri Satellite</button>
+                </div>
+            </div>
+
+            <div class="absolute bottom-[100px] right-4 z-[400] flex flex-col gap-2.5">
                 <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🔍</button>
                 <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="fixed bottom-[92px] left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[999] hidden space-y-3 pointer-events-auto origin-bottom transition-transform duration-200 scale-100 max-h-[45vh] flex flex-col overflow-hidden">
+            <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl z-[999] hidden space-y-4 pointer-events-auto max-w-md mx-auto max-h-[60vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 <div class="flex justify-between items-start gap-2 shrink-0">
                     <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -229,7 +241,7 @@
                             <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400">★ Starred</span>
                             <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
                         </div>
-                        <h3 id="traySpotTitle" class="text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]">Spot Name</h3>
+                        <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
@@ -237,20 +249,20 @@
                     </div>
                 </div>
                 
-                <p id="traySpotNotes" class="text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-[24vh] overflow-y-auto subtle-scrollbar flex-1">Notes context...</p>
+                <p id="traySpotNotes" class="text-xs text-slate-400 bg-slate-950/40 p-3 rounded-xl border border-slate-900/60 leading-relaxed overflow-y-auto subtle-scrollbar flex-1 max-h-[22vh]">Notes context...</p>
                 
-                <div class="flex flex-col gap-2 pt-0.5 shrink-0">
+                <div class="flex flex-col gap-2 pt-1 shrink-0">
                     <div class="flex gap-2">
-                        <a id="trayOpenReelBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reference</a>
+                        <a id="trayOpenReelBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3.5 rounded-xl text-white block shadow-lg">Open Reference</a>
                         <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold">🗺️ Get Direction</a>
                     </div>
                     <div id="trayTicketRow" class="hidden">
                         <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
                     </div>
                     
-                    <div class="flex gap-2 justify-end pt-2 border-t border-slate-800/60 mt-1">
-                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-1.5 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
-                        <button id="trayStarToggleBtn" class="text-xs px-3 py-1.5 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
+                    <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1">
+                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
+                        <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
                     </div>
                 </div>
             </div>
@@ -338,7 +350,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.5.1";
+        const APP_VERSION = "v1.5.2";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -355,6 +367,7 @@
         let liveGpsWatchId = null; 
         
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
+        let activeBaseTileLayer = null; // Map engine style holder track
         let startY = 0; let isPulling = false;
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
         const PULL_INDICATOR = document.getElementById('pullToRefreshIndicatorHUD');
@@ -392,6 +405,11 @@
                     closeAllActiveHUDDropdownOverlays();
                 }
                 
+                if (!event.target.closest('#mapLayerStyleDropdownDeck') && !event.target.closest('button[onclick*="mapLayerStyleDropdownDeck"]')) {
+                    const deck = document.getElementById('mapLayerStyleDropdownDeck');
+                    if (deck) deck.classList.add('hidden');
+                }
+
                 const settingsMenu = document.getElementById('settingsDrawer');
                 if (settingsMenu && !settingsMenu.classList.contains('hidden')) {
                     if (!event.target.closest('#settingsDrawerContentBody') && !event.target.closest('button[onclick="toggleSettingsMenu(true)"]')) {
@@ -404,12 +422,36 @@
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
             leafletMapInstance = L.map('map-render-element', { zoomControl: false, attributionControl: false }).setView([userLat, userLon], 13);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 20 }).addTo(leafletMapInstance);
-            mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
             
+            // Set dynamic baseline theme index properties
+            setMapBaseLayerProviderSource('dark');
+            
+            mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
             leafletMapInstance.on('zoomend', () => {
                 if (travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
             });
+        }
+
+        // NEW: MULTI-PROVIDER TILES INJECTION STRATEGY
+        function setMapBaseLayerProviderSource(styleKey) {
+            if(!leafletMapInstance) return;
+            if(activeBaseTileLayer) leafletMapInstance.removeLayer(activeBaseTileLayer);
+
+            let providerUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            let attributionMeta = { maxZoom: 20 };
+
+            if(styleKey === 'light') {
+                providerUrl = 'https://{s}.basemaps.cartocdn.com/polygon/{z}/{x}/{y}{r}.png';
+            } else if(styleKey === 'voyager') {
+                providerUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+            } else if(styleKey === 'satellite') {
+                providerUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+                attributionMeta = { maxZoom: 18 };
+            }
+
+            activeBaseTileLayer = L.tileLayer(providerUrl, attributionMeta).addTo(leafletMapInstance);
+            const deck = document.getElementById('mapLayerStyleDropdownDeck');
+            if(deck) deck.classList.add('hidden');
         }
 
         function parseReadableDeviceHardware() {
@@ -839,11 +881,13 @@
 
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
+            const blurBg = document.getElementById('dropdownBlurBackdrop');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
             const isDone = (spotObj.status || "").toLowerCase().trim() === 'done';
             const ticketLink = spotObj.ticket_url || "";
             
             if (plusBtn) plusBtn.classList.add('hidden');
+            if (blurBg) blurBg.classList.remove('hidden');
 
             const titleWidget = document.getElementById('traySpotTitle');
             const notesWidget = document.getElementById('traySpotNotes');
@@ -853,11 +897,11 @@
             document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
 
             if (isDone) {
-                titleWidget.className = "text-base font-bold text-slate-500 line-through mt-1.5 truncate max-w-[190px]";
-                notesWidget.className = "text-xs text-slate-500 bg-slate-950/20 p-2.5 rounded-xl border border-slate-900/30 line-through leading-relaxed max-h-[16vh] overflow-y-auto subtle-scrollbar flex-1";
+                titleWidget.className = "text-base font-black text-slate-500 line-through mt-2 truncate max-w-[220px]";
+                notesWidget.className = "text-xs text-slate-500 bg-slate-950/20 p-3 rounded-xl border border-slate-900/30 line-through leading-relaxed overflow-y-auto subtle-scrollbar flex-1 max-h-[22vh]";
             } else {
-                titleWidget.className = "text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]";
-                notesWidget.className = "text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 leading-relaxed max-h-[16vh] overflow-y-auto subtle-scrollbar flex-1";
+                titleWidget.className = "text-base font-black text-slate-200 mt-2 truncate max-w-[220px]";
+                notesWidget.className = "text-xs text-slate-400 bg-slate-950/40 p-3 rounded-xl border border-slate-800 leading-relaxed overflow-y-auto subtle-scrollbar flex-1 max-h-[22vh]";
             }
             
             document.getElementById('trayDistanceBadge').innerText = spotObj.distStr;
@@ -895,6 +939,8 @@
 
         function dismissMapDetailTrayHUDCard() {
             document.getElementById('mapDetailTrayHUD').classList.add('hidden');
+            const blurBg = document.getElementById('dropdownBlurBackdrop');
+            if (blurBg) blurBg.classList.add('hidden');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
             if (plusBtn) plusBtn.classList.remove('hidden');
         }
@@ -902,8 +948,7 @@
         function renderList() {
             const container = document.getElementById('spots-list');
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
-            if(!container) return; 
-            container.innerHTML = '';
+            if(!container) return; container.innerHTML = '';
             const processed = getFilteredDatasetRows();
             
             if (counterHUD) counterHUD.innerText = `Showing ${processed.length} / ${travelSpots.length} Spots`;
