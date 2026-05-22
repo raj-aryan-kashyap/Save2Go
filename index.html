@@ -805,42 +805,49 @@
             );
         }
 
-        // FIXED COMPASS RECENTER QUERY PATTERN
+        // BI-DIRECTIONAL PERMISSIONS VERIFIED COMPASS ENGINE
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance) return;
 
-            // Timeout removed completely so building reflections won't trigger a false hardware error
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    gpsStatusCachedBool = true;
-                    lastGpsSuccessTime = Date.now();
-                    userLat = pos.coords.latitude; userLon = pos.coords.longitude;
-                    updateGpsHudStatus('active', "GPS Active");
-                    
-                    if (userPositionPulseCircle) {
-                        userPositionPulseCircle.setLatLng([userLat, userLon]);
-                    }
-                    leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
-                },
-                (err) => {
-                    // Only show the overlay instructions modal if the phone explicitly returns a permission block/denied error code
-                    if (err.code === err.PERMISSION_DENIED) {
+            const executeHardwareQuery = () => {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        gpsStatusCachedBool = true;
+                        lastGpsSuccessTime = Date.now();
+                        userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                        updateGpsHudStatus('active', "GPS Active");
+                        
+                        if (userPositionPulseCircle) {
+                            userPositionPulseCircle.setLatLng([userLat, userLon]);
+                        }
+                        leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
+                    },
+                    (err) => {
+                        gpsStatusCachedBool = false;
+                        updateGpsHudStatus('off', "GPS Off");
+                        document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
+                    },
+                    { enableHighAccuracy: true }
+                );
+            };
+
+            // Intercept permissions array explicitly to prevent stale hardware hangs when tracking is off
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'geolocation' }).then(status => {
+                    if (status.state === 'denied') {
                         gpsStatusCachedBool = false;
                         updateGpsHudStatus('off', "GPS Off");
                         document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
                     } else {
-                        // Stale lock error recovery fallback strategy
-                        if(gpsStatusCachedBool) {
-                            leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
-                        }
+                        executeHardwareQuery();
                     }
-                },
-                { enableHighAccuracy: true, maximumAge: 0 }
-            );
+                });
+            } else {
+                executeHardwareQuery();
+            }
         }
 
-        // MAGNIFYING VIEW GUARD FIXED EXCLUSIVELY
         function snapMapViewportToSelectedCityBounds(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance || travelSpots.length === 0) return;
@@ -850,7 +857,6 @@
                 return;
             }
 
-            // Meticulously checks raw entry coordinate cells instead of relying on fragile UI display text labels
             const matchTarget = travelSpots.find(spot => {
                 const latVal = spot.latitude ? String(spot.latitude).trim() : "";
                 return latVal !== "" && latVal !== "0" && checkedCitiesStateArray.includes(spot.city);
