@@ -259,8 +259,12 @@
             
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Source URL</label>
-                    <input type="url" id="new-url" placeholder="https://..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Reference Link (Instagram/TikTok)</label>
+                    <input type="url" id="new-url" placeholder="https://instagram.com/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Google Maps Link / Location URL</label>
+                    <input type="url" id="new-maps-url" placeholder="https://maps.app.goo.gl/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -349,7 +353,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.6.0";
+        const APP_VERSION = "v2.0.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -665,6 +669,24 @@
             }
         }
 
+        // CASCADING DIRECTIONAL LINK RESOLVER FOR VERSION 2.0.0
+        function calculateAdaptiveDirectionRoutingLink(spotObj) {
+            const lat = spotObj.latitude ? String(spotObj.latitude).trim() : "";
+            const lng = spotObj.longitude ? String(spotObj.longitude).trim() : "";
+            const directLink = spotObj.maps_url ? String(spotObj.maps_url).trim() : "";
+            const parsedQuery = spotObj.parsed_query ? String(spotObj.parsed_query).trim() : "";
+
+            if (lat !== "" && lng !== "" && lat !== "0" && lng !== "0") {
+                return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            } else if (directLink !== "") {
+                return directLink;
+            } else if (parsedQuery !== "") {
+                return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parsedQuery)}`;
+            } else {
+                return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spotObj.spot_name || 'Location')}`;
+            }
+        }
+
         function setPriorityFilterState(shouldShowStarredOnly) {
             showStarredOnly = shouldShowStarredOnly;
             localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
@@ -770,8 +792,8 @@
 
         function getFilteredDatasetRows() {
             let processed = travelSpots.map(spot => {
-                const hasLatLon = spot.latitude && String(spot.latitude).trim() !== "" && spot.longitude && String(spot.longitude).trim() !== "";
-                let distanceOutputLabel = !hasLatLon ? "⚠️ Missing Coordinates" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
+                const hasLatLon = spot.latitude && String(spot.latitude).trim() !== "" && String(spot.latitude).trim() !== "0" && spot.longitude && String(spot.longitude).trim() !== "" && String(spot.longitude).trim() !== "0";
+                let distanceOutputLabel = !hasLatLon ? "📍 Text Query Mode" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
                 let rawDistanceValue = 99999;
                 if (hasLatLon && gpsStatusCachedBool) {
                     const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude), parseFloat(spot.longitude));
@@ -805,7 +827,7 @@
             if (currentZoom < CLUSTER_ZOOM_THRESHOLD) {
                 let gridClusters = {};
                 dataset.forEach(spot => {
-                    if(!spot.latitude || !spot.longitude) return;
+                    if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0") return;
                     let key = parseFloat(spot.latitude).toFixed(2) + "_" + parseFloat(spot.longitude).toFixed(2);
                     if(!gridClusters[key]) gridClusters[key] = [];
                     gridClusters[key].push(spot);
@@ -833,7 +855,7 @@
             } else {
                 let coordinationPresenceRegistry = {};
                 dataset.forEach((spot) => {
-                    if(!spot.latitude || !spot.longitude) return;
+                    if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0") return;
                     let coordKey = parseFloat(spot.latitude).toFixed(5) + "_" + parseFloat(spot.longitude).toFixed(5);
                     
                     let latOffset = 0; let lonOffset = 0;
@@ -841,7 +863,6 @@
                         coordinationPresenceRegistry[coordKey]++;
                         let count = coordinationPresenceRegistry[coordKey];
                         let angle = count * 0.7; 
-                        // FIXED EXACT TWEAK: Multiplier reduced from 0.00015 to 0.000075 to bring duplicate markers 50% closer
                         let radius = 0.000075 * count; 
                         latOffset = Math.sin(angle) * radius; lonOffset = Math.cos(angle) * radius;
                     } else {
@@ -904,7 +925,9 @@
             
             document.getElementById('trayDistanceBadge').innerText = spotObj.distStr;
             document.getElementById('trayOpenReferenceBtn').href = spotObj.instagram_url || "#";
-            document.getElementById('trayActionBtn').href = spotObj.latitude ? `http://googleusercontent.com/maps.google.com/?q=${spotObj.latitude},${spotObj.longitude}` : "#";
+            
+            // UPDATED MAPS HUD LAYER TARGET FOR VERSION 2.0.0
+            document.getElementById('trayActionBtn').href = calculateAdaptiveDirectionRoutingLink(spotObj);
 
             const ticketRow = document.getElementById('trayTicketRow');
             const ticketBtn = document.getElementById('trayTicketBtn');
@@ -962,6 +985,9 @@
                 const card = document.createElement('div');
                 card.className = `p-4 rounded-2xl border bg-slate-900 border-slate-800 ${isDone ? 'opacity-40' : ''}`;
                 
+                // ADAPTIVE FORM ROUTING PARAMETER FOR LIST CARDS VERSION 2.0.0
+                const resolvedDirectionalLink = calculateAdaptiveDirectionRoutingLink(spot);
+
                 card.innerHTML = `
                     <div class="flex justify-between items-start gap-2">
                         <div class="max-w-[70%]">
@@ -974,7 +1000,7 @@
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reference</a>
-                            ${spot.latitude ? `<a href="http://googleusercontent.com/maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap">🗺️ Get Direction</a>` : ''}
+                            <a href="${resolvedDirectionalLink}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap">🗺️ Get Direction</a>
                         </div>
                         ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
                         <div class="flex gap-2 mt-1 justify-end">
@@ -1068,21 +1094,38 @@
 
         async function submitNewSpotToCloud() {
             const url = document.getElementById('new-url').value;
+            const mapsUrl = document.getElementById('new-maps-url').value;
             const city = document.getElementById('new-city').value;
             const cat = document.getElementById('new-category').value;
             const keyword = document.getElementById('new-keyword').value;
             const notes = document.getElementById('new-notes').value;
             const submitBtn = document.getElementById('form-submit-btn');
 
-            if(!keyword || !url) { alert("Provide a keyword title and source link."); return; }
+            if(!keyword) { alert("Provide a keyword title for the spot asset."); return; }
+            if(!url && !mapsUrl) { alert("Please provide at least a Reference Link or a Google Maps Link."); return; }
+            
             submitBtn.innerText = "Injecting into Sheet Database..."; submitBtn.disabled = true;
 
             try {
                 await fetch(API_URL, {
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'append_new_spot', user: currentUser, city: city || 'Global', spot_name: keyword, category: cat, instagram_url: url, notes: notes, priority: formPriorityState, deviceMeta: cachedHardwareString })
+                    body: JSON.stringify({ 
+                        action: 'append_new_spot', 
+                        user: currentUser, 
+                        city: city || 'Global', 
+                        spot_name: keyword, 
+                        category: cat || 'General', 
+                        instagram_url: url, 
+                        maps_url: mapsUrl, // PACKAGE NEW INPUT DATA
+                        notes: notes, 
+                        priority: formPriorityState, 
+                        deviceMeta: cachedHardwareString 
+                    })
                 });
-                document.getElementById('new-url').value = ''; document.getElementById('new-keyword').value = ''; document.getElementById('new-notes').value = '';
+                document.getElementById('new-url').value = ''; 
+                document.getElementById('new-maps-url').value = ''; 
+                document.getElementById('new-keyword').value = ''; 
+                document.getElementById('new-notes').value = '';
                 toggleQuickAddModal(false); setTimeout(() => syncData(true), 1000);
             } catch(err) { alert("Submission timed out."); } 
             finally { submitBtn.innerText = "💾 Sync to Shared Google Sheet"; submitBtn.disabled = false; }
