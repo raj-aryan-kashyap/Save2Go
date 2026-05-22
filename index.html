@@ -353,7 +353,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v2.0.0";
+        const APP_VERSION = "v2.1.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -431,6 +431,22 @@
             leafletMapInstance.on('zoomend', () => {
                 if (travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
             });
+        }
+
+        // IRONCLAD CASCADING ROUTER PASS-THROUGH FOR V2.1.0 SHORT LINKS
+        function calculateAdaptiveDirectionRoutingLink(spotObj) {
+            const lat = spotObj.latitude ? String(spotObj.latitude).trim() : "";
+            const lng = spotObj.longitude ? String(spotObj.longitude).trim() : "";
+            const mapsUrl = spotObj.maps_url ? String(spotObj.maps_url).trim() : "";
+
+            // If coordinates exist, use them. If not, open the raw pasted short link directly!
+            if (lat !== "" && lng !== "" && lat !== "0" && lng !== "0") {
+                return `https://www.google.com/maps/search/?api=1&query=$${lat},${lng}`;
+            } else if (mapsUrl !== "") {
+                return mapsUrl;
+            } else {
+                return `https://www.google.com/maps/search/?api=1&query=$${encodeURIComponent(spotObj.spot_name || 'Location')}`;
+            }
         }
 
         function setMapBaseLayerProviderSource(styleKey) {
@@ -587,6 +603,7 @@
             }
         }
 
+        // CONTROL HANDLERS FOR DROPDOWNS
         function toggleCityDropdownOverlayMenu(event) {
             event.stopPropagation();
             const box = document.getElementById('cityHUDDropdownPopupBox');
@@ -666,24 +683,6 @@
             } else {
                 updateGpsHudStatus(false, "Re-pinging...");
                 startLiveHardwareGPSTracking();
-            }
-        }
-
-        // CASCADING DIRECTIONAL LINK RESOLVER FOR VERSION 2.0.0
-        function calculateAdaptiveDirectionRoutingLink(spotObj) {
-            const lat = spotObj.latitude ? String(spotObj.latitude).trim() : "";
-            const lng = spotObj.longitude ? String(spotObj.longitude).trim() : "";
-            const directLink = spotObj.maps_url ? String(spotObj.maps_url).trim() : "";
-            const parsedQuery = spotObj.parsed_query ? String(spotObj.parsed_query).trim() : "";
-
-            if (lat !== "" && lng !== "" && lat !== "0" && lng !== "0") {
-                return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-            } else if (directLink !== "") {
-                return directLink;
-            } else if (parsedQuery !== "") {
-                return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parsedQuery)}`;
-            } else {
-                return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spotObj.spot_name || 'Location')}`;
             }
         }
 
@@ -792,8 +791,11 @@
 
         function getFilteredDatasetRows() {
             let processed = travelSpots.map(spot => {
-                const hasLatLon = spot.latitude && String(spot.latitude).trim() !== "" && String(spot.latitude).trim() !== "0" && spot.longitude && String(spot.longitude).trim() !== "" && String(spot.longitude).trim() !== "0";
-                let distanceOutputLabel = !hasLatLon ? "📍 Text Query Mode" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
+                const latStr = spot.latitude ? String(spot.latitude).trim() : "";
+                const lngStr = spot.longitude ? String(spot.longitude).trim() : "";
+                const hasLatLon = latStr !== "" && latStr !== "0" && lngStr !== "" && lngStr !== "0";
+                
+                let distanceOutputLabel = !hasLatLon ? "🔗 Link Only Mode" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
                 let rawDistanceValue = 99999;
                 if (hasLatLon && gpsStatusCachedBool) {
                     const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude), parseFloat(spot.longitude));
@@ -827,7 +829,7 @@
             if (currentZoom < CLUSTER_ZOOM_THRESHOLD) {
                 let gridClusters = {};
                 dataset.forEach(spot => {
-                    if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0") return;
+                    if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0" || String(spot.latitude).trim() === "") return;
                     let key = parseFloat(spot.latitude).toFixed(2) + "_" + parseFloat(spot.longitude).toFixed(2);
                     if(!gridClusters[key]) gridClusters[key] = [];
                     gridClusters[key].push(spot);
@@ -855,7 +857,7 @@
             } else {
                 let coordinationPresenceRegistry = {};
                 dataset.forEach((spot) => {
-                    if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0") return;
+                    if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0" || String(spot.latitude).trim() === "") return;
                     let coordKey = parseFloat(spot.latitude).toFixed(5) + "_" + parseFloat(spot.longitude).toFixed(5);
                     
                     let latOffset = 0; let lonOffset = 0;
@@ -926,7 +928,7 @@
             document.getElementById('trayDistanceBadge').innerText = spotObj.distStr;
             document.getElementById('trayOpenReferenceBtn').href = spotObj.instagram_url || "#";
             
-            // UPDATED MAPS HUD LAYER TARGET FOR VERSION 2.0.0
+            // MAPS ACTION RE-ROUTE LAUNCHER FOR V2.1.0
             document.getElementById('trayActionBtn').href = calculateAdaptiveDirectionRoutingLink(spotObj);
 
             const ticketRow = document.getElementById('trayTicketRow');
@@ -985,7 +987,7 @@
                 const card = document.createElement('div');
                 card.className = `p-4 rounded-2xl border bg-slate-900 border-slate-800 ${isDone ? 'opacity-40' : ''}`;
                 
-                // ADAPTIVE FORM ROUTING PARAMETER FOR LIST CARDS VERSION 2.0.0
+                // NATIVE PASS-THROUGH ROUTER POP FOR SAVED SPOTS CARDS V2.1.0
                 const resolvedDirectionalLink = calculateAdaptiveDirectionRoutingLink(spot);
 
                 card.innerHTML = `
@@ -1116,7 +1118,7 @@
                         spot_name: keyword, 
                         category: cat || 'General', 
                         instagram_url: url, 
-                        maps_url: mapsUrl, // PACKAGE NEW INPUT DATA
+                        maps_url: mapsUrl, 
                         notes: notes, 
                         priority: formPriorityState, 
                         deviceMeta: cachedHardwareString 
