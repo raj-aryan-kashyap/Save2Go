@@ -32,9 +32,9 @@
             top: 0;
             left: 0;
             right: 0;
-            /* CRITICAL FIX: Explicitly prevents child panels from bleeding into the bottom nav region */
-            bottom: 76px; 
+            bottom: 0; 
             width: 100%;
+            height: 100%;
             opacity: 0;
             transform: scale(1);
             pointer-events: none;
@@ -218,18 +218,15 @@
 
     <div class="flex-1 relative w-full h-full overflow-hidden z-10">
         
-        <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950 flex flex-col justify-between relative overflow-hidden">
+        <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950 absolute inset-0">
+            <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
-            <div class="w-full flex-1 relative z-10">
-                <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0"></div>
-                
-                <div class="absolute bottom-4 right-4 z-[400] flex flex-col gap-2.5">
-                    <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🔍</button>
-                    <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
-                </div>
+            <div class="absolute bottom-44 right-4 z-[400] flex flex-col gap-2.5">
+                <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🔍</button>
+                <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="w-full bg-slate-900 border-t border-slate-800 p-4 shadow-2xl z-20 hidden space-y-3 shrink-0 pointer-events-auto transition-all duration-200 ease-out transform translate-y-0">
+            <div id="mapDetailTrayHUD" class="fixed bottom-[76px] mb-2 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[999] hidden space-y-3 pointer-events-auto origin-bottom transition-transform duration-200 scale-100">
                 <div class="flex justify-between items-start gap-2">
                     <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
@@ -642,6 +639,7 @@
             handleGpsBadgeClickAction();
         }
 
+        // Action hook to close dropdowns / drawers safely
         function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
 
         function setupNetworkListeners() {
@@ -730,6 +728,7 @@
             updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
+        // Action selector layout mapping loops
         function handleHideCompletedStateToggleCheckboxEvent(checkboxElement) {
             hideCompletedSpotsStateBool = checkboxElement.checked;
             localStorage.setItem('compass_hide_completed', JSON.stringify(hideCompletedSpotsStateBool));
@@ -934,15 +933,12 @@
             };
 
             tray.classList.remove('hidden');
-            // Force Leaflet redraw check to adjust camera to new layout constraints dynamically
-            if(leafletMapInstance) leafletMapInstance.invalidateSize();
         }
 
         function dismissMapDetailTrayHUDCard() {
             document.getElementById('mapDetailTrayHUD').classList.add('hidden');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
             if (plusBtn) plusBtn.classList.remove('hidden');
-            if(leafletMapInstance) leafletMapInstance.invalidateSize();
         }
 
         function renderList() {
