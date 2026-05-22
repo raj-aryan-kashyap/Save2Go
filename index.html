@@ -212,7 +212,7 @@
 
             <div id="mapNavigationShortcutsStack" class="absolute top-1/2 right-4 -translate-y-1/2 z-[400] flex flex-col gap-2.5 pointer-events-auto">
                 <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🔍</button>
-                <button onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">Compass</button>
+                <button onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🧭</button>
             </div>
             
             <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl z-[999] hidden space-y-4 pointer-events-auto max-w-md mx-auto max-h-[55vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -410,7 +410,7 @@
         let gpsStatusCachedBool = false; let activeTabID = 'map';
         let liveGpsWatchId = null; let speechBubbleHideTimer = null;
         let continuousGpsFailsafeIntervalId = null; 
-        let lastGpsSuccessTime = 0; // State Matrix timestamp engine anchor
+        let lastGpsSuccessTime = 0; 
 
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
         let activeBaseTileLayer = null; 
@@ -653,7 +653,6 @@
             updateNetworkStatusHUD(); 
         }
 
-        // DEBOUNCED MULTI-STATE GEO-ROUTING STREAM ENGINE
         function startLiveHardwareGPSTracking() {
             if (!navigator.geolocation) {
                 gpsStatusCachedBool = false;
@@ -662,12 +661,12 @@
             }
             if (liveGpsWatchId !== null) navigator.geolocation.clearWatch(liveGpsWatchId);
 
-            lastGpsSuccessTime = Date.now(); // Anchor startup timestamp context
+            lastGpsSuccessTime = Date.now();
 
             liveGpsWatchId = navigator.geolocation.watchPosition(
                 (pos) => {
                     gpsStatusCachedBool = true;
-                    lastGpsSuccessTime = Date.now(); // Record success packet arrivals
+                    lastGpsSuccessTime = Date.now(); 
                     updateGpsHudStatus('active', "GPS Active");
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     if (leafletMapInstance) {
@@ -682,7 +681,6 @@
                     renderList();
                 },
                 (err) => {
-                    // Do not drop status immediately on isolated thread timeouts
                     if (Date.now() - lastGpsSuccessTime > 6000) {
                         gpsStatusCachedBool = false;
                         updateGpsHudStatus('off', "GPS Off");
@@ -691,7 +689,6 @@
                 { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
             );
 
-            // SMOOTH INTEL DEBOUNCE BACKGROUND EVALUATION LOOP
             if (continuousGpsFailsafeIntervalId !== null) clearInterval(continuousGpsFailsafeIntervalId);
             continuousGpsFailsafeIntervalId = setInterval(() => {
                 const timeElapsed = Date.now() - lastGpsSuccessTime;
@@ -701,7 +698,6 @@
                 } else if (timeElapsed > 3000 && timeElapsed <= 6000) {
                     updateGpsHudStatus('syncing', "Syncing...");
                 } else {
-                    // Over 6 seconds elapsed - true drop detected
                     if (gpsStatusCachedBool) {
                         gpsStatusCachedBool = false;
                         updateGpsHudStatus('off', "GPS Off");
@@ -712,7 +708,6 @@
                         renderList();
                     }
                     
-                    // Fire quiet recovery background call without blocking thread execution
                     navigator.geolocation.getCurrentPosition(
                         (pos) => {
                             gpsStatusCachedBool = true;
@@ -788,7 +783,6 @@
             initializeSessionDashboard();
         }
 
-        // BADGE RE-PING HARDWARE ROUTINE HANDSHAKE
         function handleGpsBadgeClickAction(event) {
             if(event) event.stopPropagation();
             updateGpsHudStatus('syncing', "Re-pinging...");
@@ -807,16 +801,16 @@
                     updateGpsHudStatus('off', "GPS Off");
                     document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
                 },
-                { enableHighAccuracy: true, timeout: 3000 }
+                { enableHighAccuracy: true, timeout: 6000 }
             );
         }
 
-        // UPGRADED RECENTER LIVE HANDSHAKE COMPASS ENGINE
+        // FIXED COMPASS RECENTER QUERY PATTERN
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance) return;
 
-            // Direct live query mechanism - bypasses stale variables completely to secure zero-latency responses
+            // Timeout removed completely so building reflections won't trigger a false hardware error
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     gpsStatusCachedBool = true;
@@ -830,16 +824,25 @@
                     leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
                 },
                 (err) => {
-                    // System hardware channel is blocked or permissions explicitly denied
-                    gpsStatusCachedBool = false;
-                    updateGpsHudStatus('off', "GPS Off");
-                    document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
+                    // Only show the overlay instructions modal if the phone explicitly returns a permission block/denied error code
+                    if (err.code === err.PERMISSION_DENIED) {
+                        gpsStatusCachedBool = false;
+                        updateGpsHudStatus('off', "GPS Off");
+                        document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
+                    } else {
+                        // Stale lock error recovery fallback strategy
+                        if(gpsStatusCachedBool) {
+                            leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
+                        }
+                    }
                 },
-                { enableHighAccuracy: true, timeout: 2500 }
+                { enableHighAccuracy: true, maximumAge: 0 }
             );
         }
 
+        // MAGNIFYING VIEW GUARD FIXED EXCLUSIVELY
         function snapMapViewportToSelectedCityBounds(event) {
+            if(event) event.stopPropagation();
             if (!leafletMapInstance || travelSpots.length === 0) return;
             
             if (checkedCitiesStateArray.length === 0) {
@@ -847,7 +850,12 @@
                 return;
             }
 
-            const matchTarget = travelSpots.find(spot => spot.latitude && String(spot.latitude).trim() !== "" && String(spot.latitude).trim() !== "0" && checkedCitiesStateArray.includes(spot.city));
+            // Meticulously checks raw entry coordinate cells instead of relying on fragile UI display text labels
+            const matchTarget = travelSpots.find(spot => {
+                const latVal = spot.latitude ? String(spot.latitude).trim() : "";
+                return latVal !== "" && latVal !== "0" && checkedCitiesStateArray.includes(spot.city);
+            });
+
             if (matchTarget) { 
                 leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 13, { animate: true }); 
             } else {
@@ -969,7 +977,7 @@
         }
 
         function getFilteredDatasetRows() {
-            let processed = travelSpots.map(spot => {
+            return travelSpots.map(spot => {
                 const latStr = spot.latitude ? String(spot.latitude).trim() : "";
                 const lngStr = spot.longitude ? String(spot.longitude).trim() : "";
                 const hasLatLon = latStr !== "" && latStr !== "0" && lngStr !== "" && lngStr !== "0";
@@ -981,20 +989,17 @@
                     rawDistanceValue = dist; distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
                 }
                 return { ...spot, distRaw: rawDistanceValue, distStr: distanceOutputLabel };
-            });
-
-            processed.sort((a, b) => a.distRaw - b.distRaw);
-            if (hideCompletedSpotsStateBool) processed = processed.filter(s => (s.status || "").toLowerCase().trim() !== "done");
-            if (showStarredOnly) processed = processed.filter(s => ['high','🔥','must do','starred'].includes((s.priority || "").toLowerCase()));
-            if (checkedCitiesStateArray.length > 0) processed = processed.filter(s => checkedCitiesStateArray.includes(s.city));
-            if (checkedFilterStateArray.length > 0) {
-                processed = processed.filter(spot => {
-                    if(!spot.category) return false;
-                    const spotCats = spot.category.split(',').map(item => item.trim().toLowerCase());
+            }).sort((a, b) => a.distRaw - b.distRaw).filter(s => {
+                if (hideCompletedSpotsStateBool && (s.status || "").toLowerCase().trim() === "done") return false;
+                if (showStarredOnly && !['high','🔥','must do','starred'].includes((s.priority || "").toLowerCase())) return false;
+                if (checkedCitiesStateArray.length > 0 && !checkedCitiesStateArray.includes(s.city)) return false;
+                if (checkedFilterStateArray.length > 0) {
+                    if (!s.category) return false;
+                    const spotCats = s.category.split(',').map(item => item.trim().toLowerCase());
                     return checkedFilterStateArray.some(checkedCat => spotCats.includes(checkedCat.toLowerCase()));
-                });
-            }
-            return processed;
+                }
+                return true;
+            });
         }
 
         function plotDynamicMarkersOnCanvasMap() {
@@ -1177,7 +1182,7 @@
             }
 
             processed.forEach(spot => {
-                const isDone = (spot.status || "").toLowerCase().trim() === 'done';
+                const isDone = (spot.status || "").toLowerCase().trim() === "done";
                 const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
                 const ticketLink = spot.ticket_url || "";
                 
@@ -1234,7 +1239,6 @@
             } catch(err) {}
         }
 
-        // SMOOTH HARDWARE STATUS VISUAL RE-PAINT SWITCHBOARD ENGINE
         function updateGpsHudStatus(state, message) {
             const btn = document.getElementById('gpsBadgeButton');
             const dot = document.getElementById('gpsDotSignal');
