@@ -481,7 +481,8 @@
                 }
             });
 
-            leafletMapInstance.on('moveend zoomend', () => {
+            // MULTI-EVENT BINDING RADAR PIPELINE TO FLUSH CAMERA LATENCY DELAYS
+            leafletMapInstance.on('moveend zoomend viewreset animationend', () => {
                 if (leafletMapInstance) {
                     const center = leafletMapInstance.getCenter();
                     const zoom = leafletMapInstance.getZoom();
@@ -489,8 +490,12 @@
                     localStorage.setItem('compass_map_state_lng', center.lng);
                     localStorage.setItem('compass_map_state_zoom', zoom);
                     
-                    // RE-PLOT PROXIMITY COLLISIONS DYNAMICALLY UPON VIEWPORT CHANGE
-                    if (travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
+                    // Request animation frame layout thread to avoid calculation traps
+                    if (travelSpots.length > 0) {
+                        window.requestAnimationFrame(() => {
+                            plotDynamicMarkersOnCanvasMap();
+                        });
+                    }
                 }
             });
 
@@ -829,14 +834,12 @@
             );
         }
 
-        // COMPASS EM0JI INTERCEPT COMPONENT LAYER ROTATION FUNCTION (V2.5.0)
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance) return;
 
             const emojiSpinnerNode = document.getElementById('innerCompassEmojiSpinnerSpan');
             if (emojiSpinnerNode) {
-                // Safely twists the decoupled emoji child node 180 degrees via pure CSS matrices
                 emojiSpinnerNode.style.transform = 'rotate(180deg) scale(0.85)';
                 setTimeout(() => { emojiSpinnerNode.style.transform = 'rotate(0deg) scale(1)'; }, 500);
             }
@@ -928,7 +931,7 @@
             if (matchTarget) { 
                 isCameraLocked = false;
                 syncCameraLockVisualUIState();
-                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 13, { animate: true }); 
+                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 14, { animate: true }); 
             } else {
                 triggerCuteSpeechBubbleHUD("No pins found matching this city filter!", document.getElementById('shortcutMagnifyingButton'), event);
             }
@@ -1074,13 +1077,15 @@
             });
         }
 
-        // UPGRADED UNCONDITIONAL SCREEN-PIXEL COLLISION LOGIC ENGINE (V2.6.0)
+        // FULLY OPTIMIZED PIXEL COLLISION & MAXIMUM ZOOM FAILSAFE ENGINE (V2.7.0)
         function plotDynamicMarkersOnCanvasMap() {
             if(!mapMarkersLayerGroup || !leafletMapInstance) return;
             mapMarkersLayerGroup.clearLayers();
 
             const dataset = getFilteredDatasetRows();
-            const OVERLAP_PIXEL_RADIUS = 25; // 70%+ footprint intersection threshold
+            const currentZoom = leafletMapInstance.getZoom();
+            const maxZoomPossible = leafletMapInstance.getMaxZoom();
+            const OVERLAP_PIXEL_RADIUS = 25; 
             
             let structuredClustersArray = [];
 
@@ -1088,20 +1093,23 @@
                 if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0" || String(spot.latitude).trim() === "") return;
                 
                 const latLngObj = L.latLng(parseFloat(spot.latitude), parseFloat(spot.longitude));
-                // Convert coordinates into current layout screen pixel positions
                 const screenPoint = leafletMapInstance.latLngToLayerPoint(latLngObj);
                 
                 let assignedToCluster = false;
-                for (let i = 0; i < structuredClustersArray.length; i++) {
-                    let cluster = structuredClustersArray[i];
-                    let dx = screenPoint.x - cluster.centerPx.x;
-                    let dy = screenPoint.y - cluster.centerPx.y;
-                    let pixelDistance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (pixelDistance <= OVERLAP_PIXEL_RADIUS) {
-                        cluster.spots.push(spot);
-                        assignedToCluster = true;
-                        break;
+                
+                // CRITICAL FAILSAFE: If maximum altitude is reached, bypass grouping entirely to unpack layers
+                if (currentZoom < maxZoomPossible) {
+                    for (let i = 0; i < structuredClustersArray.length; i++) {
+                        let cluster = structuredClustersArray[i];
+                        let dx = screenPoint.x - cluster.centerPx.x;
+                        let dy = screenPoint.y - cluster.centerPx.y;
+                        let pixelDistance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (pixelDistance <= OVERLAP_PIXEL_RADIUS) {
+                            cluster.spots.push(spot);
+                            assignedToCluster = true;
+                            break;
+                        }
                     }
                 }
                 
@@ -1114,27 +1122,34 @@
                 }
             });
 
-            // Iterate over generated clusters to plot onto the viewport canvas map
             structuredClustersArray.forEach(cluster => {
                 const clusterSize = cluster.spots.length;
-                const leadSpot = cluster.spots[0];
 
                 if (clusterSize === 1) {
-                    renderSingleMarkerElement(leadSpot, 0, 0);
+                    renderSingleMarkerElement(cluster.spots[0], 0, 0);
                 } else {
-                    // Render custom numerical notification cluster bubble to let users know overlapping assets exist
-                    const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
-                    const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
-                    const clusterMarker = L.marker([cluster.leadLatLng.lat, cluster.leadLatLng.lng], { icon: clusterIcon });
-                    
-                    clusterMarker.on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
-                        // Safely drill down map viewport zoom altitude to unpack overlapping layout assets smoothly
-                        const maxPossibleZoom = leafletMapInstance.getMaxZoom();
-                        const nextZoomLevel = Math.min(leafletMapInstance.getZoom() + 2, maxPossibleZoom);
-                        leafletMapInstance.setView([cluster.leadLatLng.lat, cluster.leadLatLng.lng], nextZoomLevel, { animate: true });
-                    });
-                    mapMarkersLayerGroup.addLayer(clusterMarker);
+                    // If max zoom has been reached, we fan them out using micro-offsets so they are visible
+                    if (currentZoom >= maxZoomPossible - 1) {
+                        cluster.spots.forEach((spot, index) => {
+                            const angle = (index / clusterSize) * Math.PI * 2;
+                            // Convert micro-offsets safely into coordinate geometry space
+                            const latOffset = Math.sin(angle) * 0.00015;
+                            const lonOffset = Math.cos(angle) * 0.00015;
+                            renderSingleMarkerElement(spot, latOffset, lonOffset);
+                        });
+                    } else {
+                        // Plot standard numerical cluster representation token
+                        const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
+                        const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
+                        const clusterMarker = L.marker([cluster.leadLatLng.lat, cluster.leadLatLng.lng], { icon: clusterIcon });
+                        
+                        clusterMarker.on('click', (e) => {
+                            L.DomEvent.stopPropagation(e);
+                            const targetZoomLevel = Math.min(leafletMapInstance.getZoom() + 2, maxZoomPossible);
+                            leafletMapInstance.setView([cluster.leadLatLng.lat, cluster.leadLatLng.lng], targetZoomLevel, { animate: true });
+                        });
+                        mapMarkersLayerGroup.addLayer(clusterMarker);
+                    }
                 }
             });
         }
@@ -1276,7 +1291,7 @@
                     <div class="flex justify-between items-start gap-2">
                         <div class="max-w-[70%]">
                             <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
-                            <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
+                            h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
                         </div>
                         <span class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
                     </div>
