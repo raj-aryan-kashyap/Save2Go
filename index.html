@@ -481,7 +481,7 @@
                 }
             });
 
-            // MULTI-EVENT BINDING RADAR PIPELINE TO FLUSH CAMERA LATENCY DELAYS
+            // MULTI-BIND UNCONDITIONAL SYSTEM RADAR TRIGGERS
             leafletMapInstance.on('moveend zoomend viewreset animationend', () => {
                 if (leafletMapInstance) {
                     const center = leafletMapInstance.getCenter();
@@ -490,7 +490,6 @@
                     localStorage.setItem('compass_map_state_lng', center.lng);
                     localStorage.setItem('compass_map_state_zoom', zoom);
                     
-                    // Request animation frame layout thread to avoid calculation traps
                     if (travelSpots.length > 0) {
                         window.requestAnimationFrame(() => {
                             plotDynamicMarkersOnCanvasMap();
@@ -1077,7 +1076,7 @@
             });
         }
 
-        // FULLY OPTIMIZED PIXEL COLLISION & MAXIMUM ZOOM FAILSAFE ENGINE (V2.7.0)
+        // ADAPTIVE THRESHOLDS + STATELESS SPIDER MARKS STUSTEM (V2.8.0)
         function plotDynamicMarkersOnCanvasMap() {
             if(!mapMarkersLayerGroup || !leafletMapInstance) return;
             mapMarkersLayerGroup.clearLayers();
@@ -1085,7 +1084,14 @@
             const dataset = getFilteredDatasetRows();
             const currentZoom = leafletMapInstance.getZoom();
             const maxZoomPossible = leafletMapInstance.getMaxZoom();
-            const OVERLAP_PIXEL_RADIUS = 25; 
+            
+            // ADAPTIVE PIXEL THRESHOLDS BASED ON ALTITUDE ELEVATION KEYS
+            let overlapPixelRadiusThreshold = 28;
+            if (currentZoom >= 14 && currentZoom <= 15) {
+                overlapPixelRadiusThreshold = 14; 
+            } else if (currentZoom >= 16) {
+                overlapPixelRadiusThreshold = 6; 
+            }
             
             let structuredClustersArray = [];
 
@@ -1097,19 +1103,21 @@
                 
                 let assignedToCluster = false;
                 
-                // CRITICAL FAILSAFE: If maximum altitude is reached, bypass grouping entirely to unpack layers
-                if (currentZoom < maxZoomPossible) {
-                    for (let i = 0; i < structuredClustersArray.length; i++) {
-                        let cluster = structuredClustersArray[i];
-                        let dx = screenPoint.x - cluster.centerPx.x;
-                        let dy = screenPoint.y - cluster.centerPx.y;
-                        let pixelDistance = Math.sqrt(dx * dx + dy * dy);
-                        
-                        if (pixelDistance <= OVERLAP_PIXEL_RADIUS) {
-                            cluster.spots.push(spot);
-                            assignedToCluster = true;
-                            break;
-                        }
+                for (let i = 0; i < structuredClustersArray.length; i++) {
+                    let cluster = structuredClustersArray[i];
+                    
+                    // Force absolute coordinate verification checks to lock stack integrity parameters
+                    const isCoordinatesExactMatch = (cluster.leadLatLng.lat === latLngObj.lat && cluster.leadLatLng.lng === latLngObj.lng);
+                    
+                    let dx = screenPoint.x - cluster.centerPx.x;
+                    let dy = screenPoint.y - cluster.centerPx.y;
+                    let pixelDistance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Group nearby items OR lock exact matches completely into the cluster cell array
+                    if (isCoordinatesExactMatch || (pixelDistance <= overlapPixelRadiusThreshold)) {
+                        cluster.spots.push(spot);
+                        assignedToCluster = true;
+                        break;
                     }
                 }
                 
@@ -1128,23 +1136,24 @@
                 if (clusterSize === 1) {
                     renderSingleMarkerElement(cluster.spots[0], 0, 0);
                 } else {
-                    // If max zoom has been reached, we fan them out using micro-offsets so they are visible
-                    if (currentZoom >= maxZoomPossible - 1) {
+                    // Reveal scattered individual pins early once zoom factors break cell threshold bounds
+                    if (currentZoom >= 15) {
                         cluster.spots.forEach((spot, index) => {
                             const angle = (index / clusterSize) * Math.PI * 2;
-                            // Convert micro-offsets safely into coordinate geometry space
-                            const latOffset = Math.sin(angle) * 0.00015;
-                            const lonOffset = Math.cos(angle) * 0.00015;
+                            // Safe stateless geometric display transforms fanned smoothly around the true data anchor
+                            const latOffset = Math.sin(angle) * 0.00018;
+                            const lonOffset = Math.cos(angle) * 0.00022;
                             renderSingleMarkerElement(spot, latOffset, lonOffset);
                         });
                     } else {
-                        // Plot standard numerical cluster representation token
+                        // Display clean layout cluster notification count tokens in zoom levels <= 14
                         const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
                         const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
                         const clusterMarker = L.marker([cluster.leadLatLng.lat, cluster.leadLatLng.lng], { icon: clusterIcon });
                         
                         clusterMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
+                            // Smoothly drop altitude down two levels upon tapping numeric badge groups
                             const targetZoomLevel = Math.min(leafletMapInstance.getZoom() + 2, maxZoomPossible);
                             leafletMapInstance.setView([cluster.leadLatLng.lat, cluster.leadLatLng.lng], targetZoomLevel, { animate: true });
                         });
@@ -1291,7 +1300,7 @@
                     <div class="flex justify-between items-start gap-2">
                         <div class="max-w-[70%]">
                             <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
-                            h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
+                            <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
                         </div>
                         <span class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
                     </div>
