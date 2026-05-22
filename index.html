@@ -26,13 +26,15 @@
         .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
         .subtle-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
+        /* FIXED VIEWPORT FRAME: Reverted back to full inset to fix the black bar clipping issue */
         .view-panel {
             position: absolute;
-            top: 116px; /* Offset to clear the control deck header cleanly */
+            top: 0;
             left: 0;
             right: 0;
-            bottom: 76px; /* Offset to sit cleanly above bottom navigation deck */
+            bottom: 0;
             width: 100%;
+            height: 100%;
             opacity: 0;
             transform: scale(1);
             pointer-events: none;
@@ -215,7 +217,7 @@
         <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
-            <div class="absolute top-4 right-4 z-[400] flex flex-col items-end gap-1.5">
+            <div class="absolute top-[132px] right-4 z-[400] flex flex-col items-end gap-1.5">
                 <button onclick="document.getElementById('mapLayerStyleDropdownDeck').classList.toggle('hidden')" class="px-3 py-2 bg-slate-900/95 border border-slate-800 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-2xl text-slate-300 flex items-center gap-1.5 active:bg-slate-800 pointer-events-auto">
                     <span>Layer Style</span><span>▼</span>
                 </button>
@@ -227,7 +229,7 @@
                 </div>
             </div>
 
-            <div id="mapNavigationShortcutsStack" class="absolute bottom-6 right-4 z-[400] flex flex-col gap-2.5 pointer-events-auto">
+            <div id="mapNavigationShortcutsStack" class="absolute bottom-[92px] right-4 z-[400] flex flex-col gap-2.5 pointer-events-auto">
                 <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🔍</button>
                 <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
             </div>
@@ -267,7 +269,7 @@
             </div>
         </div>
 
-        <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
+        <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col pt-[116px]">
             <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
                     <span class="animate-pulse">⬇️ Pull to check database streams...</span>
@@ -284,7 +286,7 @@
             </div>
         </div>
 
-        <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
+        <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center pt-[116px]">
             <div class="space-y-2 max-w-xs">
                 <div class="text-4xl">🛠️</div>
                 <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Module</h3>
@@ -349,7 +351,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.5.3";
+        const APP_VERSION = "v1.5.4";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -421,7 +423,6 @@
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
             leafletMapInstance = L.map('map-render-element', { zoomControl: false, attributionControl: false }).setView([userLat, userLon], 13);
-            
             setMapBaseLayerProviderSource('dark');
             
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
@@ -430,7 +431,6 @@
             });
         }
 
-        // FIXED: Light Layer Endpoint Refactored to global ssl layer template
         function setMapBaseLayerProviderSource(styleKey) {
             if(!leafletMapInstance) return;
             if(activeBaseTileLayer) leafletMapInstance.removeLayer(activeBaseTileLayer);
