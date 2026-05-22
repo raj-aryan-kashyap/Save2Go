@@ -85,6 +85,17 @@
 
     <div id="dropdownBlurBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[500] hidden transition-all duration-300"></div>
 
+    <div id="gpsInstructionsOverlayModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-6 hidden">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl text-center">
+            <div class="text-3xl">📡</div>
+            <h3 class="text-base font-black text-slate-200 uppercase tracking-wider">Enable Location Services</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Your device has restricted location sharing access. Tap the lock icon or page settings badge next to your address bar, switch permissions to <span class="text-pink-400 font-bold">Allow</span>, and reload the app canvas.
+            </p>
+            <button onclick="document.getElementById('gpsInstructionsOverlayModal').classList.add('hidden')" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 font-bold text-xs uppercase tracking-wider rounded-xl text-white">Got It</button>
+        </div>
+    </div>
+
     <div class="fixed top-[112px] left-0 right-0 px-4 pointer-events-none z-[600]">
         <div class="max-w-md mx-auto relative w-full h-0">
             
@@ -175,7 +186,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="gpsBadgeButton" onclick="forceReRequestGPSHardware();" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer pointer-events-auto">
+                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction();" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer pointer-events-auto">
                     <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="gpsBadgeText">GPS Active</span>
                 </button>
                 <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs">🔄</button>
@@ -194,7 +205,7 @@
                 </button>
             </div>
             <div class="col-span-3 relative">
-                <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
+                <button id="filterMenuMenuTriggerBtn" id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
                     <span>Filters</span><span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
                 </button>
             </div>
@@ -328,7 +339,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.4.4";
+        const APP_VERSION = "v1.4.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -426,6 +437,8 @@
                         if (status.state === 'denied') { 
                             gpsStatusCachedBool = false; 
                             updateGpsHudStatus(false, "GPS Off"); 
+                        } else if (status.state === 'granted') {
+                            startLiveHardwareGPSTracking();
                         }
                     };
                     status.onchange = checkState; checkState();
@@ -503,11 +516,7 @@
                 },
                 (err) => {
                     gpsStatusCachedBool = false;
-                    if (err.code === err.PERMISSION_DENIED) {
-                        updateGpsHudStatus(false, "⚠️ GPS Denied");
-                    } else {
-                        updateGpsHudStatus(false, "⚠️ GPS Error");
-                    }
+                    updateGpsHudStatus(false, "GPS Off");
                 },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
@@ -575,7 +584,7 @@
             } else {
                 btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer";
                 dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500"; 
-                text.innerText = message || "⚠️ GPS Off";
+                text.innerText = message || "GPS Off";
             }
         }
 
@@ -584,14 +593,7 @@
             if (gpsStatusCachedBool) {
                 leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
             } else {
-                updateGpsHudStatus(false, "Pinging...");
-                navigator.geolocation.getCurrentPosition(pos => {
-                    userLat = pos.coords.latitude; userLon = pos.coords.longitude;
-                    gpsStatusCachedBool = true;
-                    updateGpsHudStatus(true, "GPS Active");
-                    startLiveHardwareGPSTracking();
-                    leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
-                }, () => { alert("Please grant device location access permissions."); }, { enableHighAccuracy: true, timeout: 4000 });
+                handleGpsBadgeClickAction();
             }
         }
 
@@ -601,9 +603,26 @@
             if (matchTarget) { leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 13, { animate: true }); }
         }
 
+        // AMENDED: Safely handles blocked hardware permission locks without browser workspace crash glitches
+        function handleGpsBadgeClickAction() {
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'geolocation' }).then(status => {
+                    if (status.state === 'denied') {
+                        // Open the descriptive native steps recovery manual instructions layout view card
+                        document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
+                    } else {
+                        updateGpsHudStatus(false, "Re-pinging...");
+                        startLiveHardwareGPSTracking();
+                    }
+                });
+            } else {
+                updateGpsHudStatus(false, "Re-pinging...");
+                startLiveHardwareGPSTracking();
+            }
+        }
+
         function forceReRequestGPSHardware() {
-            updateGpsHudStatus(false, "Re-Pinging Hardware...");
-            startLiveHardwareGPSTracking();
+            handleGpsBadgeClickAction();
         }
 
         function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
@@ -633,6 +652,24 @@
             showStarredOnly = shouldShowStarredOnly;
             localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
             syncPriorityFilterViewModeUI(); renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        // Self-contained diagnostic ping to refresh location parameters silently during input interactions
+        function silentPassiveHardwareLocationPingRefresh() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        gpsStatusCachedBool = true;
+                        userLat = pos.coords.latitude;
+                        userLon = pos.coords.longitude;
+                        updateGpsHudStatus(true, "GPS Active");
+                    },
+                    () => {
+                        // Suppressed to prevent breaking layout states
+                    },
+                    { enableHighAccuracy: true, timeout: 2000 }
+                );
+            }
         }
 
         function syncPriorityFilterViewModeUI() {
@@ -696,12 +733,13 @@
         function updateHeaderBadgeHUDCounters() {
             const badge = document.getElementById('activeFilterBadgeCount');
             const btn = document.getElementById('filterMenuTriggerBtn');
+            if(!btn) return;
             const count = checkedFilterStateArray.length;
             if(count > 0) {
-                badge.innerText = count; badge.classList.remove('hidden');
+                if(badge) { badge.innerText = count; badge.classList.remove('hidden'); }
                 btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] text-center text-[11px] font-black text-pink-400 flex items-center justify-center gap-1 shadow-inner";
             } else {
-                badge.classList.add('hidden');
+                if(badge) badge.classList.add('hidden');
                 btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner";
             }
         }
@@ -943,19 +981,21 @@
             });
         }
 
-        // REBUILT: Optimistic Engine renders layout changes within 1ms, then queues data updates in the background
+        // IMPROVED: Intercepts player touch inputs to run silent background location permission queries instantly
         async function updateCloudAction(rowId, action, value, spotName) {
             const target = travelSpots.find(s => s.rowid === rowId);
             if (target) {
                 if (action === 'update_status') target.status = value;
                 if (action === 'toggle_priority') target.priority = value;
                 
-                // INSTANT TRIGGER: Re-renders the entire app view immediately
                 renderList(); 
                 plotDynamicMarkersOnCanvasMap();
             }
+
+            // High-responsiveness trigger recalculates location hardware status upon item updates
+            silentPassiveHardwareLocationPingRefresh();
+
             try {
-                // Background transfer without halting input capabilities
                 await fetch(API_URL, {
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ rowId, action, value, user: currentUser, spot: spotName, deviceMeta: cachedHardwareString })
