@@ -216,13 +216,13 @@
         <div id="view-map" class="view-panel active-view w-full h-full bg-slate-950 absolute inset-0">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
-            <div class="absolute bottom-44 right-4 z-[400] flex flex-col gap-2.5">
+            <div class="absolute bottom-24 right-4 z-[400] flex flex-col gap-2.5">
                 <button onclick="snapMapViewportToSelectedCityBounds()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🔍</button>
                 <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base">🧭</button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="fixed bottom-[76px] mb-2 left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[999] hidden space-y-3 pointer-events-auto origin-bottom transition-transform duration-200 scale-100">
-                <div class="flex justify-between items-start gap-2">
+            <div id="mapDetailTrayHUD" class="fixed bottom-[92px] left-4 right-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-2xl z-[999] hidden space-y-3 pointer-events-auto origin-bottom transition-transform duration-200 scale-100 max-h-[45vh] flex flex-col overflow-hidden">
+                <div class="flex justify-between items-start gap-2 shrink-0">
                     <div>
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">Global</span>
@@ -237,9 +237,9 @@
                     </div>
                 </div>
                 
-                <p id="traySpotNotes" class="text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-16 overflow-y-auto no-scrollbar">Notes context...</p>
+                <p id="traySpotNotes" class="text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-[24vh] overflow-y-auto subtle-scrollbar flex-1">Notes context...</p>
                 
-                <div class="flex flex-col gap-2 pt-0.5">
+                <div class="flex flex-col gap-2 pt-0.5 shrink-0">
                     <div class="flex gap-2">
                         <a id="trayOpenReelBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reference</a>
                         <a id="trayActionBtn" href="#" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold">🗺️ Get Direction</a>
@@ -294,7 +294,7 @@
         </button>
     </div>
 
-    <button id="globalFloatingActionPlusButton" onclick="toggleQuickAddModal(true)" class="fixed bottom-24 right-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 z-[450] border border-white/10">➕</button>
+    <button id="globalFloatingActionPlusButton" onclick="toggleQuickAddModal(true)" class="fixed bottom-24 left-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-xl shadow-2xl shadow-pink-500/20 z-[450] border border-white/10">➕</button>
 
     <div id="quickAddModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-end hidden transition-all duration-300">
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl relative">
@@ -338,7 +338,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.4.9";
+        const APP_VERSION = "v1.5.1";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -505,10 +505,7 @@
                 (pos) => {
                     gpsStatusCachedBool = true;
                     updateGpsHudStatus(true, "GPS Active");
-                    
-                    userLat = pos.coords.latitude;
-                    userLon = pos.coords.longitude;
-                    
+                    userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     if (leafletMapInstance) {
                         if (userPositionPulseCircle) {
                             userPositionPulseCircle.setLatLng([userLat, userLon]);
@@ -630,33 +627,6 @@
             }
         }
 
-        function forceReRequestGPSHardware() {
-            handleGpsBadgeClickAction();
-        }
-
-        function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
-
-        function setupNetworkListeners() {
-            window.addEventListener('online', updateNetworkStatusHUD);
-            window.addEventListener('offline', updateNetworkStatusHUD);
-        }
-
-        function updateNetworkStatusHUD() {
-            const indicator = document.getElementById('networkIndicator');
-            const syncText = document.getElementById('syncText');
-            if(!indicator || !syncText) return;
-
-            if (navigator.onLine) {
-                indicator.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
-                syncText.className = "text-[9px] font-mono text-slate-500";
-                syncText.innerText = "Synced Live Data";
-            } else {
-                indicator.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse";
-                syncText.className = "text-[9px] font-mono text-amber-400 font-black tracking-wide";
-                syncText.innerText = "OFFLINE MODE";
-            }
-        }
-
         function setPriorityFilterState(shouldShowStarredOnly) {
             showStarredOnly = shouldShowStarredOnly;
             localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
@@ -668,8 +638,7 @@
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
                         gpsStatusCachedBool = true;
-                        userLat = pos.coords.latitude;
-                        userLon = pos.coords.longitude;
+                        userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                         updateGpsHudStatus(true, "GPS Active");
                     },
                     () => {},
@@ -678,7 +647,6 @@
             }
         }
 
-        style="text-transform: capitalize;"
         function syncPriorityFilterViewModeUI() {
             const showAllBtn = document.getElementById('toggleOptionShowAll');
             const starredBtn = document.getElementById('toggleOptionStarred');
@@ -830,15 +798,12 @@
                     if(!spot.latitude || !spot.longitude) return;
                     let coordKey = parseFloat(spot.latitude).toFixed(5) + "_" + parseFloat(spot.longitude).toFixed(5);
                     
-                    let latOffset = 0;
-                    let lonOffset = 0;
+                    let latOffset = 0; let lonOffset = 0;
                     if (coordinationPresenceRegistry[coordKey] !== undefined) {
                         coordinationPresenceRegistry[coordKey]++;
                         let count = coordinationPresenceRegistry[coordKey];
-                        let angle = count * 0.7;
-                        let radius = 0.00015 * count; 
-                        latOffset = Math.sin(angle) * radius;
-                        lonOffset = Math.cos(angle) * radius;
+                        let angle = count * 0.7; let radius = 0.00015 * count; 
+                        latOffset = Math.sin(angle) * radius; lonOffset = Math.cos(angle) * radius;
                     } else {
                         coordinationPresenceRegistry[coordKey] = 0;
                     }
@@ -889,10 +854,10 @@
 
             if (isDone) {
                 titleWidget.className = "text-base font-bold text-slate-500 line-through mt-1.5 truncate max-w-[190px]";
-                notesWidget.className = "text-xs text-slate-500 bg-slate-950/20 p-2.5 rounded-xl border border-slate-900/30 line-through leading-relaxed max-h-16 overflow-y-auto no-scrollbar";
+                notesWidget.className = "text-xs text-slate-500 bg-slate-950/20 p-2.5 rounded-xl border border-slate-900/30 line-through leading-relaxed max-h-[16vh] overflow-y-auto subtle-scrollbar flex-1";
             } else {
                 titleWidget.className = "text-base font-bold text-slate-200 mt-1.5 truncate max-w-[190px]";
-                notesWidget.className = "text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 leading-relaxed max-h-16 overflow-y-auto no-scrollbar";
+                notesWidget.className = "text-xs text-slate-400 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800 leading-relaxed max-h-[16vh] overflow-y-auto subtle-scrollbar flex-1";
             }
             
             document.getElementById('trayDistanceBadge').innerText = spotObj.distStr;
@@ -902,8 +867,7 @@
             const ticketRow = document.getElementById('trayTicketRow');
             const ticketBtn = document.getElementById('trayTicketBtn');
             if (ticketLink.trim() !== "") {
-                ticketRow.classList.remove('hidden');
-                ticketBtn.href = ticketLink;
+                ticketRow.classList.remove('hidden'); ticketBtn.href = ticketLink;
             } else {
                 ticketRow.classList.add('hidden');
             }
@@ -940,13 +904,9 @@
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
             if(!container) return; 
             container.innerHTML = '';
-            
             const processed = getFilteredDatasetRows();
             
-            if (counterHUD) {
-                counterHUD.innerText = `Showing ${processed.length} / ${travelSpots.length} Spots`;
-            }
-
+            if (counterHUD) counterHUD.innerText = `Showing ${processed.length} / ${travelSpots.length} Spots`;
             if(processed.length === 0) {
                 container.innerHTML = `<div class="text-center text-slate-600 py-12 text-xs">No entries loaded matching these selection profiles.</div>`; 
                 return;
@@ -956,7 +916,6 @@
                 const isDone = (spot.status || "").toLowerCase().trim() === 'done';
                 const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
                 const ticketLink = spot.ticket_url || "";
-                
                 const card = document.createElement('div');
                 card.className = `p-4 rounded-2xl border bg-slate-900 border-slate-800 ${isDone ? 'opacity-40' : ''}`;
                 
@@ -969,15 +928,12 @@
                         <span class="text-xs font-mono font-bold bg-pink-500/10 text-pink-400 px-2 py-1 rounded-lg shrink-0 h-fit">${spot.distStr}</span>
                     </div>
                     <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} mt-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-20 overflow-y-auto no-scrollbar">${spot.notes || 'No custom notes.'}</p>
-                    
                     <div class="flex flex-col gap-2 mt-4">
                         <div class="flex gap-2">
                             <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white block">Open Reference</a>
                             ${spot.latitude ? `<a href="http://googleusercontent.com/maps.google.com/?q=${spot.latitude},${spot.longitude}" target="_blank" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap">🗺️ Get Direction</a>` : ''}
                         </div>
-                        ${ticketLink.trim() !== "" ? `
-                            <a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
-                        ` : ''}
+                        ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
                         <div class="flex gap-2 mt-1 justify-end">
                             <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
                             <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
@@ -997,9 +953,7 @@
             if (target) {
                 if (action === 'update_status') target.status = value;
                 if (action === 'toggle_priority') target.priority = value;
-                
-                renderList(); 
-                plotDynamicMarkersOnCanvasMap();
+                renderList(); plotDynamicMarkersOnCanvasMap();
             }
             silentPassiveHardwareLocationPingRefresh();
             try {
@@ -1012,29 +966,17 @@
 
         function calculateSmartCityDefaultFilters() {
             const container = document.getElementById('cityHUDChecklistContainer');
-            if (!container) return; 
-            container.innerHTML = '';
-            
+            if (!container) return; container.innerHTML = '';
             let citySet = new Set();
-            travelSpots.forEach(spot => {
-                if (spot.city && String(spot.city).trim() !== "") {
-                    citySet.add(spot.city.trim());
-                }
-            });
-
+            travelSpots.forEach(spot => { if (spot.city && String(spot.city).trim() !== "") citySet.add(spot.city.trim()); });
             if (citySet.size === 0) {
-                container.innerHTML = `<div class="text-slate-500 text-[11px] p-2">No cities recorded</div>`;
-                return;
+                container.innerHTML = `<div class="text-slate-500 text-[11px] p-2">No cities recorded</div>`; return;
             }
-
             citySet.forEach(city => {
                 const label = document.createElement('label');
                 label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer";
                 const isChecked = checkedCitiesStateArray.includes(city);
-                label.innerHTML = `
-                    <span class="truncate pr-2">${city}</span>
-                    <input type="checkbox" value="${city}" ${isChecked ? 'checked' : ''} onchange="handleCityHUDCheckboxEventToggle(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">
-                `;
+                label.innerHTML = `<span class="truncate pr-2">${city}</span><input type="checkbox" value="${city}" ${isChecked ? 'checked' : ''} onchange="handleCityHUDCheckboxEventToggle(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
                 container.appendChild(label);
             });
             updateCityHUDTriggerButtonLabelText();
@@ -1049,8 +991,7 @@
         }
 
         function clearAllSelectedCityCheckboxes() {
-            checkedCitiesStateArray = []; 
-            localStorage.setItem('compass_active_cities', JSON.stringify([]));
+            checkedCitiesStateArray = []; localStorage.setItem('compass_active_cities', JSON.stringify([]));
             const checkboxes = document.getElementById('cityHUDChecklistContainer').querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(cb => cb.checked = false);
             updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
@@ -1070,7 +1011,6 @@
         }
 
         function toggleQuickAddModal(show) { document.getElementById('quickAddModal').classList.toggle('hidden', !show); }
-        
         let formPriorityState = "Normal";
         function toggleFormPriorityState() {
             const btn = document.getElementById('form-priority-btn');
@@ -1120,6 +1060,17 @@
             } catch (e) { if(syncText) syncText.innerText = "Offline Mode"; }
         }
         
+        function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
+        function setupNetworkListeners() { window.addEventListener('online', updateNetworkStatusHUD); window.addEventListener('offline', updateNetworkStatusHUD); }
+        function updateNetworkStatusHUD() {
+            const indicator = document.getElementById('networkIndicator'); const syncText = document.getElementById('syncText');
+            if(!indicator || !syncText) return;
+            if (navigator.onLine) {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-emerald-500"; syncText.className = "text-[9px] font-mono text-slate-500"; syncText.innerText = "Synced Live Data";
+            } else {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"; syncText.className = "text-[9px] font-mono text-amber-400 font-black tracking-wide"; syncText.innerText = "OFFLINE MODE";
+            }
+        }
         async function triggerSecureServerHistoryPurgeVault() {}
         function clearDeviceSessionAndLogout() {}
         function commitProfileRename() {}
