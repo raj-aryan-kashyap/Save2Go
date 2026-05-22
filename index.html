@@ -26,7 +26,7 @@
         .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
         .subtle-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
-        /* VIEWPORT PANEL FRAME SHIFT SWITCHERS */
+        /* VIEWPORT PANEL FRAME SWITCHERS */
         .view-panel {
             position: absolute;
             top: 116px; 
@@ -117,7 +117,7 @@
             <div class="text-3xl">📡</div>
             <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">Location Error</h3>
             <p class="text-xs text-slate-400 leading-relaxed font-medium">
-                Your device location setting might be turned off. Please check and try again.
+                Your device location setting might be turned off. Please enable device location tracking inside your hardware privacy settings dashboard and try again.
             </p>
             <button onclick="document.getElementById('gpsInstructionsOverlayModal').classList.add('hidden')" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 font-bold text-xs uppercase tracking-wider rounded-xl text-white">Got It</button>
         </div>
@@ -133,8 +133,8 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction();" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer pointer-events-auto">
-                    <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="gpsBadgeText">GPS Active</span>
+                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer pointer-events-auto">
+                    <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> <span id="gpsBadgeText">GPS Off</span>
                 </button>
                 <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs">🔄</button>
                 <button onclick="toggleSettingsMenu(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-xs">⚙️</button>
@@ -197,7 +197,7 @@
 
             <div id="mapNavigationShortcutsStack" class="absolute top-1/2 right-4 -translate-y-1/2 z-[400] flex flex-col gap-2.5 pointer-events-auto">
                 <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🔍</button>
-                <button onclick="triggerRecenterToGpsHardwareAction()" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🧭</button>
+                <button onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🧭</button>
             </div>
             
             <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl z-[999] hidden space-y-4 pointer-events-auto max-w-md mx-auto max-h-[55vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -393,6 +393,7 @@
         let cachedHardwareString = "Unknown Device Model";
         let gpsStatusCachedBool = false; let activeTabID = 'map';
         let liveGpsWatchId = null; let speechBubbleHideTimer = null;
+        let continuousGpsFailsafeIntervalId = null; // High-Frequency continuous hardware validation loop anchor
         
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
         let activeBaseTileLayer = null; 
@@ -475,7 +476,7 @@
             }
         }
 
-        // UPGRADED AUTO-CLAMPED CUTE FLOATING SPEECH BUBBLE HUDS MATRIX ENGINE
+        // AUTO-CLAMPED CUTE FLOATING SPEECH BUBBLE HUDS MATRIX ENGINE
         function triggerCuteSpeechBubbleHUD(message, elementTarget, event) {
             if(event) event.stopPropagation();
             const bubble = document.getElementById('globalToastSpeechBubbleHUD');
@@ -491,19 +492,13 @@
             const screenWidth = window.innerWidth;
             const padOffset = 16; 
 
-            // Calculate natural centered alignment position
             let targetLeftPosition = bounds.left + (bounds.width / 2) - (bubbleWidth / 2);
 
-            // Left boundary clamp check
-            if (targetLeftPosition < padOffset) {
-                targetLeftPosition = padOffset;
-            }
-            // Right boundary clamp check - prevents speech bubbles from ever clipping off edges
+            if (targetLeftPosition < padOffset) targetLeftPosition = padOffset;
             if (targetLeftPosition + bubbleWidth > screenWidth - padOffset) {
                 targetLeftPosition = screenWidth - bubbleWidth - padOffset;
             }
 
-            // Dynamically lock down pointer arrow alignment underneath the center of the targeted click trigger bounds
             const customPointerOffset = (bounds.left + (bounds.width / 2)) - targetLeftPosition;
             pointer.style.left = `${customPointerOffset}px`;
 
@@ -622,6 +617,7 @@
             updateNetworkStatusHUD(); 
         }
 
+        // RESTORED PERSISTENT HIGH-FREQUENCY CONTINUOUS HARDWARE VALIDATION LAYER
         function startLiveHardwareGPSTracking() {
             if (!navigator.geolocation) {
                 gpsStatusCachedBool = false;
@@ -630,6 +626,7 @@
             }
             if (liveGpsWatchId !== null) navigator.geolocation.clearWatch(liveGpsWatchId);
 
+            // Establish the primary asynchronous geographical position capture frame
             liveGpsWatchId = navigator.geolocation.watchPosition(
                 (pos) => {
                     gpsStatusCachedBool = true;
@@ -650,8 +647,34 @@
                     gpsStatusCachedBool = false;
                     updateGpsHudStatus(false, "GPS Off");
                 },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
             );
+
+            // NEW 1500ms LOOP CHECKER: Explicit state monitoring heartbeat routine to capture off-clicks instant
+            if (continuousGpsFailsafeIntervalId !== null) clearInterval(continuousGpsFailsafeIntervalId);
+            continuousGpsFailsafeIntervalId = setInterval(() => {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        if (!gpsStatusCachedBool) {
+                            gpsStatusCachedBool = true;
+                            updateGpsHudStatus(true, "GPS Active");
+                            renderList();
+                        }
+                    },
+                    (err) => {
+                        if (gpsStatusCachedBool) {
+                            gpsStatusCachedBool = false;
+                            updateGpsHudStatus(false, "GPS Off");
+                            if (userPositionPulseCircle && leafletMapInstance) {
+                                leafletMapInstance.removeLayer(userPositionPulseCircle);
+                                userPositionPulseCircle = null;
+                            }
+                            renderList();
+                        }
+                    },
+                    { enableHighAccuracy: true, timeout: 1200, maximumAge: 0 }
+                );
+            }, 1500);
         }
 
         function switchMasterMenuDashboardTab(targetTabID) {
@@ -716,12 +739,34 @@
             initializeSessionDashboard();
         }
 
-        function triggerRecenterToGpsHardwareAction() {
+        // RESTORED COMPREHENSIVE GPS HARDWARE SECURITY CHECK INTERCEPT MANDATE
+        function handleGpsBadgeClickAction(event) {
+            if(event) event.stopPropagation();
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'geolocation' }).then(status => {
+                    if (status.state === 'denied') {
+                        document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
+                    } else {
+                        updateGpsHudStatus(false, "Re-pinging...");
+                        startLiveHardwareGPSTracking();
+                    }
+                });
+            } else {
+                updateGpsHudStatus(false, "Re-pinging...");
+                startLiveHardwareGPSTracking();
+            }
+        }
+
+        // RESTORED COMPREHENSIVE COMPASS BUTTON CLICK PERMISSIONS GUARD
+        function triggerRecenterToGpsHardwareAction(event) {
+            if(event) event.stopPropagation();
             if (!leafletMapInstance) return;
+            
             if (gpsStatusCachedBool) {
                 leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
             } else {
-                handleGpsBadgeClickAction();
+                // If the hardware chip is unresponsive or explicitly blocked, break execution thread and display the instructions card card modal
+                document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
             }
         }
 
@@ -860,7 +905,6 @@
                 const lngStr = spot.longitude ? String(spot.longitude).trim() : "";
                 const hasLatLon = latStr !== "" && latStr !== "0" && lngStr !== "" && lngStr !== "0";
                 
-                // ADJUSTED FIELD KEY DESIGNATOR: Swapped string outputs to "Missing Location" in amber text styling
                 let distanceOutputLabel = !hasLatLon ? "Missing Location" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
                 let rawDistanceValue = 99999;
                 if (hasLatLon && gpsStatusCachedBool) {
@@ -932,7 +976,7 @@
                         let count = coordinationPresenceRegistry[coordKey];
                         let angle = count * 0.7; 
                         
-                        // RADIUS DISPLACEMENT ADJUSTMENT ENGINE: Tight cluster layout matrix constraints
+                        // ULTRA-ACCURATE DISTORTION FACTOR MARGIN: Limits dispersion deviation down below 5 meters
                         let radius = 0.000008 * count; 
                         latOffset = Math.sin(angle) * radius; lonOffset = Math.cos(angle) * radius;
                     } else {
@@ -996,7 +1040,6 @@
             const distHUD = document.getElementById('trayDistanceBadge');
             distHUD.innerText = spotObj.distStr;
             
-            // Adjust tray distance metric color if position data is completely absent
             if(spotObj.distStr === "Missing Location") {
                 distHUD.className = "text-xs font-mono font-bold bg-amber-500/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-500/20";
             } else {
@@ -1010,7 +1053,7 @@
             
             const rawLat = spotObj.latitude ? String(spotObj.latitude).trim() : "";
             if(rawLat === "" || rawLat === "0") {
-                actionBtn.innerText = "⚠️"; // Minimal clean yellow exclamation marker
+                actionBtn.innerText = "⚠️"; 
                 actionBtn.className = "px-6 bg-slate-950 border border-slate-800 text-amber-400 flex items-center justify-center rounded-xl text-sm font-black h-12 whitespace-nowrap";
             } else {
                 actionBtn.innerText = "🗺️ Get Direction";
@@ -1150,6 +1193,7 @@
             updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
+        // RESTORED COMPACT DROPDOWN RESETS
         function clearAllSelectedCityCheckboxes() {
             checkedCitiesStateArray = []; localStorage.setItem('compass_active_cities', JSON.stringify([]));
             const checkboxes = document.getElementById('cityHUDChecklistContainer').querySelectorAll('input[type="checkbox"]');
