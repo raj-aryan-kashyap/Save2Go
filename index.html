@@ -349,7 +349,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.5.9";
+        const APP_VERSION = "v1.6.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -589,7 +589,7 @@
             const backdrop = document.getElementById('dropdownBlurBackdrop');
             document.getElementById('filterCategoryDropdownPopupBox').classList.add('hidden');
             if (!box.classList.contains('hidden')) { box.classList.add('hidden'); backdrop.classList.add('hidden'); } 
-            else { box.remove('hidden'); backdrop.classList.remove('hidden'); calculateSmartCityDefaultFilters(); }
+            else { box.classList.remove('hidden'); backdrop.classList.remove('hidden'); calculateSmartCityDefaultFilters(); }
         }
 
         function toggleFilterDropdownOverlayMenu(event) {
@@ -840,7 +840,9 @@
                     if (coordinationPresenceRegistry[coordKey] !== undefined) {
                         coordinationPresenceRegistry[coordKey]++;
                         let count = coordinationPresenceRegistry[coordKey];
-                        let angle = count * 0.7; let radius = 0.00015 * count; 
+                        let angle = count * 0.7; 
+                        // FIXED EXACT TWEAK: Multiplier reduced from 0.00015 to 0.000075 to bring duplicate markers 50% closer
+                        let radius = 0.000075 * count; 
                         latOffset = Math.sin(angle) * radius; lonOffset = Math.cos(angle) * radius;
                     } else {
                         coordinationPresenceRegistry[coordKey] = 0;
@@ -984,7 +986,6 @@
                 container.appendChild(card);
             });
 
-            // FIXED SPECIFIC SPACER ADJUSTMENT: Expanded to h-48 to clear navigation deck cleanly
             const scrollingPaddingSpacer = document.createElement('div');
             scrollingPaddingSpacer.className = "h-48 shrink-0 pointer-events-none";
             container.appendChild(scrollingPaddingSpacer);
