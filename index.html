@@ -212,7 +212,7 @@
 
             <div id="mapNavigationShortcutsStack" class="absolute top-1/2 right-4 -translate-y-1/2 z-[400] flex flex-col gap-2.5 pointer-events-auto">
                 <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🔍</button>
-                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-transform duration-500 ease-out origin-center">🧭</button>
+                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center">🧭</button>
             </div>
             
             <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl z-[999] hidden space-y-4 pointer-events-auto max-w-md mx-auto max-h-[55vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -223,7 +223,7 @@
                             <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400">★ Starred</span>
                             <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
                         </div>
-                        <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
+                        h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
@@ -411,7 +411,8 @@
         let liveGpsWatchId = null; let speechBubbleHideTimer = null;
         let continuousGpsFailsafeIntervalId = null; 
         let lastGpsSuccessTime = 0; 
-        let cachedUserCoords = null; // Warm layout hardware state cache storage
+        let cachedUserCoords = null; 
+        let isCameraLocked = false; // Real-time mapping camera synchronization switch
 
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
         let activeBaseTileLayer = null; 
@@ -470,6 +471,14 @@
             setMapBaseLayerProviderSource(currentMapStyleKey);
             
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
+
+            // DETECT GESTURES TO IMMEDIATELY BREAK CAMERA POSITION LOCK
+            leafletMapInstance.on('movestart zoomstart dragstart', (e) => {
+                if (leafletMapInstance && e.target && isCameraLocked) {
+                    isCameraLocked = false;
+                    syncCameraLockVisualUIState();
+                }
+            });
 
             leafletMapInstance.on('moveend zoomend', () => {
                 if (leafletMapInstance) {
@@ -668,10 +677,10 @@
                 (pos) => {
                     gpsStatusCachedBool = true;
                     lastGpsSuccessTime = Date.now(); 
-                    // Write positions cleanly to warm cache object registers
                     cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                     updateGpsHudStatus('active', "GPS Active");
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                    
                     if (leafletMapInstance) {
                         if (userPositionPulseCircle) {
                             userPositionPulseCircle.setLatLng([userLat, userLon]);
@@ -679,6 +688,11 @@
                             userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
                                 radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
                             }).addTo(leafletMapInstance);
+                        }
+                        
+                        // SMOOTH LIVE CAM REALTIME SYNCHRONIZATION
+                        if (isCameraLocked) {
+                            leafletMapInstance.panTo([userLat, userLon], { animate: true });
                         }
                     }
                     renderList();
@@ -717,6 +731,10 @@
                             lastGpsSuccessTime = Date.now();
                             cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                             userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                            
+                            if (isCameraLocked && leafletMapInstance) {
+                                leafletMapInstance.panTo([userLat, userLon], { animate: true });
+                            }
                         },
                         () => {},
                         { enableHighAccuracy: true, timeout: 1500 }
@@ -798,6 +816,8 @@
                     cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     updateGpsHudStatus('active', "GPS Active");
+                    isCameraLocked = true;
+                    syncCameraLockVisualUIState();
                     if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 15);
                     startLiveHardwareGPSTracking();
                 },
@@ -810,19 +830,21 @@
             );
         }
 
-        // OPTIMISTIC HOT CACHE RECENTER COMPASS ENGINE MECHANICS (V2.4.0)
+        // RECENTER COMPASS PIPELINE WITH ADVANCED CAMERA TRACKING SYSTEM MAPPED
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance) return;
 
             const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
             if (compassBtn) {
-                // Flash transformation class layout rings instantly to give microfeedback input tracking acknowledgment
                 compassBtn.classList.add('rotate-180', 'scale-90');
                 setTimeout(() => { compassBtn.classList.remove('rotate-180', 'scale-90'); }, 500);
             }
 
-            // PHASE 1 OPTIMISTIC VIEW SNAPPING LAYER: Reposition map space via warm variables instantly
+            // Instantly engage real-time follow mode architecture 
+            isCameraLocked = true;
+            syncCameraLockVisualUIState();
+
             if (cachedUserCoords) {
                 leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 15, { animate: true });
             }
@@ -836,25 +858,26 @@
                         const incomingLat = pos.coords.latitude;
                         const incomingLon = pos.coords.longitude;
                         
-                        // PHASE 2 REAL-TIME SATELLITE HANDSHAKE RECONCILIATION
-                        if (!cachedUserCoords || cachedUserCoords.lat !== incomingLat || cachedUserCoords.lon !== incomingLon) {
-                            cachedUserCoords = { lat: incomingLat, lon: incomingLon };
-                            userLat = incomingLat; userLon = incomingLon;
-                            updateGpsHudStatus('active', "GPS Active");
-                            
-                            if (userPositionPulseCircle) {
-                                userPositionPulseCircle.setLatLng([userLat, userLon]);
-                            } else {
-                                userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
-                                    radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
-                                }).addTo(leafletMapInstance);
-                            }
-                            // Smoothly shift map viewport container alignment to corrected coordinates frame
+                        cachedUserCoords = { lat: incomingLat, lon: incomingLon };
+                        userLat = incomingLat; userLon = incomingLon;
+                        updateGpsHudStatus('active', "GPS Active");
+                        
+                        if (userPositionPulseCircle) {
+                            userPositionPulseCircle.setLatLng([userLat, userLon]);
+                        } else {
+                            userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
+                                radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
+                            }).addTo(leafletMapInstance);
+                        }
+                        
+                        if (isCameraLocked) {
                             leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
                         }
                     },
                     (err) => {
                         gpsStatusCachedBool = false;
+                        isCameraLocked = false;
+                        syncCameraLockVisualUIState();
                         updateGpsHudStatus('off', "GPS Off");
                         document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
                     },
@@ -866,6 +889,8 @@
                 navigator.permissions.query({ name: 'geolocation' }).then(status => {
                     if (status.state === 'denied') {
                         gpsStatusCachedBool = false;
+                        isCameraLocked = false;
+                        syncCameraLockVisualUIState();
                         updateGpsHudStatus('off', "GPS Off");
                         document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
                     } else {
@@ -874,6 +899,17 @@
                 });
             } else {
                 executeHardwareQuery();
+            }
+        }
+
+        // LIVE GLOWING HUD SWITCH OPERATIONS FOR ACTIVE TRACKING FEEDBACK
+        function syncCameraLockVisualUIState() {
+            const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
+            if (!compassBtn) return;
+            if (isCameraLocked) {
+                compassBtn.className = "w-12 h-12 bg-slate-900 border-2 border-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center";
+            } else {
+                compassBtn.className = "w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center";
             }
         }
 
@@ -892,6 +928,8 @@
             });
 
             if (matchTarget) { 
+                isCameraLocked = false;
+                syncCameraLockVisualUIState();
                 leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 13, { animate: true }); 
             } else {
                 triggerCuteSpeechBubbleHUD("No pins found matching this city filter!", document.getElementById('shortcutMagnifyingButton'), event);
