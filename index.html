@@ -212,7 +212,9 @@
 
             <div id="mapNavigationShortcutsStack" class="absolute top-1/2 right-4 -translate-y-1/2 z-[400] flex flex-col gap-2.5 pointer-events-auto">
                 <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🔍</button>
-                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center select-none">🧭</button>
+                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative">
+                    <span id="innerCompassEmojiSpinnerSpan" class="inline-block transform transition-transform duration-500 ease-out">🧭</span>
+                </button>
             </div>
             
             <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl z-[999] hidden space-y-4 pointer-events-auto max-w-md mx-auto max-h-[55vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -486,11 +488,10 @@
                     localStorage.setItem('compass_map_state_lat', center.lat);
                     localStorage.setItem('compass_map_state_lng', center.lng);
                     localStorage.setItem('compass_map_state_zoom', zoom);
+                    
+                    // RE-PLOT PROXIMITY COLLISIONS DYNAMICALLY UPON VIEWPORT CHANGE
+                    if (travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
                 }
-            });
-
-            leafletMapInstance.on('zoomend', () => {
-                if (travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
             });
 
             const savedLat = localStorage.getItem('compass_map_state_lat');
@@ -828,16 +829,16 @@
             );
         }
 
-        // COMPASS ENGINE ARCHITECTURE WITH OPTIMISTIC AND ROTATING TRANSFORMS RESTORED CLEANLY
+        // COMPASS EM0JI INTERCEPT COMPONENT LAYER ROTATION FUNCTION (V2.5.0)
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance) return;
 
-            const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
-            if (compassBtn) {
-                // Execute active physical snapshot turn rotation transformation classes safely
-                compassBtn.classList.add('rotate-180', 'scale-90');
-                setTimeout(() => { compassBtn.classList.remove('rotate-180', 'scale-90'); }, 500);
+            const emojiSpinnerNode = document.getElementById('innerCompassEmojiSpinnerSpan');
+            if (emojiSpinnerNode) {
+                // Safely twists the decoupled emoji child node 180 degrees via pure CSS matrices
+                emojiSpinnerNode.style.transform = 'rotate(180deg) scale(0.85)';
+                setTimeout(() => { emojiSpinnerNode.style.transform = 'rotate(0deg) scale(1)'; }, 500);
             }
 
             isCameraLocked = true;
@@ -900,14 +901,13 @@
             }
         }
 
-        // CONTROL STYLES CORRECTION MAPPING INTERFACE
         function syncCameraLockVisualUIState() {
             const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
             if (!compassBtn) return;
             if (isCameraLocked) {
-                compassBtn.className = "w-12 h-12 bg-slate-900 border-2 border-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center select-none";
+                compassBtn.className = "w-12 h-12 bg-slate-900 border-2 border-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center justify-center text-base active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative";
             } else {
-                compassBtn.className = "w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center select-none";
+                compassBtn.className = "w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative";
             }
         }
 
@@ -1074,61 +1074,69 @@
             });
         }
 
+        // UPGRADED UNCONDITIONAL SCREEN-PIXEL COLLISION LOGIC ENGINE (V2.6.0)
         function plotDynamicMarkersOnCanvasMap() {
             if(!mapMarkersLayerGroup || !leafletMapInstance) return;
             mapMarkersLayerGroup.clearLayers();
 
             const dataset = getFilteredDatasetRows();
-            const currentZoom = leafletMapInstance.getZoom();
-            const CLUSTER_ZOOM_THRESHOLD = 12;
+            const OVERLAP_PIXEL_RADIUS = 25; // 70%+ footprint intersection threshold
+            
+            let structuredClustersArray = [];
 
-            if (currentZoom < CLUSTER_ZOOM_THRESHOLD) {
-                let gridClusters = {};
-                dataset.forEach(spot => {
-                    if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0" || String(spot.latitude).trim() === "") return;
-                    let key = parseFloat(spot.latitude).toFixed(2) + "_" + parseFloat(spot.longitude).toFixed(2);
-                    if(!gridClusters[key]) gridClusters[key] = [];
-                    gridClusters[key].push(spot);
-                });
-
-                for (let key in gridClusters) {
-                    let spotsInCluster = gridClusters[key];
-                    let clusterSize = spotsInCluster.length;
-                    let targetLeadSpot = spotsInCluster[0];
-
-                    if (clusterSize === 1) {
-                        renderSingleMarkerElement(targetLeadSpot, 0, 0);
-                    } else {
-                        const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
-                        const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
-                        const clusterMarker = L.marker([parseFloat(targetLeadSpot.latitude), parseFloat(targetLeadSpot.longitude)], { icon: clusterIcon });
-                        
-                        clusterMarker.on('click', (e) => {
-                            L.DomEvent.stopPropagation(e);
-                            leafletMapInstance.setView([parseFloat(targetLeadSpot.latitude), parseFloat(targetLeadSpot.longitude)], CLUSTER_ZOOM_THRESHOLD + 1, { animate: true });
-                        });
-                        mapMarkersLayerGroup.addLayer(clusterMarker);
+            dataset.forEach(spot => {
+                if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0" || String(spot.latitude).trim() === "") return;
+                
+                const latLngObj = L.latLng(parseFloat(spot.latitude), parseFloat(spot.longitude));
+                // Convert coordinates into current layout screen pixel positions
+                const screenPoint = leafletMapInstance.latLngToLayerPoint(latLngObj);
+                
+                let assignedToCluster = false;
+                for (let i = 0; i < structuredClustersArray.length; i++) {
+                    let cluster = structuredClustersArray[i];
+                    let dx = screenPoint.x - cluster.centerPx.x;
+                    let dy = screenPoint.y - cluster.centerPx.y;
+                    let pixelDistance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (pixelDistance <= OVERLAP_PIXEL_RADIUS) {
+                        cluster.spots.push(spot);
+                        assignedToCluster = true;
+                        break;
                     }
                 }
-            } else {
-                let coordinationPresenceRegistry = {};
-                dataset.forEach((spot) => {
-                    if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0" || String(spot.latitude).trim() === "") return;
-                    let coordKey = parseFloat(spot.latitude).toFixed(5) + "_" + parseFloat(spot.longitude).toFixed(5);
+                
+                if (!assignedToCluster) {
+                    structuredClustersArray.push({
+                        centerPx: screenPoint,
+                        leadLatLng: latLngObj,
+                        spots: [spot]
+                    });
+                }
+            });
+
+            // Iterate over generated clusters to plot onto the viewport canvas map
+            structuredClustersArray.forEach(cluster => {
+                const clusterSize = cluster.spots.length;
+                const leadSpot = cluster.spots[0];
+
+                if (clusterSize === 1) {
+                    renderSingleMarkerElement(leadSpot, 0, 0);
+                } else {
+                    // Render custom numerical notification cluster bubble to let users know overlapping assets exist
+                    const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
+                    const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
+                    const clusterMarker = L.marker([cluster.leadLatLng.lat, cluster.leadLatLng.lng], { icon: clusterIcon });
                     
-                    let latOffset = 0; let lonOffset = 0;
-                    if (coordinationPresenceRegistry[coordKey] !== undefined) {
-                        coordinationPresenceRegistry[coordKey]++;
-                        let count = coordinationPresenceRegistry[coordKey];
-                        let angle = count * 0.7; 
-                        let radius = 0.000008 * count; 
-                        latOffset = Math.sin(angle) * radius; lonOffset = Math.cos(angle) * radius;
-                    } else {
-                        coordinationPresenceRegistry[coordKey] = 0;
-                    }
-                    renderSingleMarkerElement(spot, latOffset, lonOffset);
-                });
-            }
+                    clusterMarker.on('click', (e) => {
+                        L.DomEvent.stopPropagation(e);
+                        // Safely drill down map viewport zoom altitude to unpack overlapping layout assets smoothly
+                        const maxPossibleZoom = leafletMapInstance.getMaxZoom();
+                        const nextZoomLevel = Math.min(leafletMapInstance.getZoom() + 2, maxPossibleZoom);
+                        leafletMapInstance.setView([cluster.leadLatLng.lat, cluster.leadLatLng.lng], nextZoomLevel, { animate: true });
+                    });
+                    mapMarkersLayerGroup.addLayer(clusterMarker);
+                }
+            });
         }
 
         function renderSingleMarkerElement(spot, latOffset, lonOffset) {
