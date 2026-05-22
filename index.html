@@ -80,7 +80,6 @@
             height: 40px !important;
         }
 
-        /* NEW: Fluid Nav Tab Transition Rules Stylesheet Hook */
         .nav-tab-transition {
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
         }
@@ -93,9 +92,9 @@
     <div id="gpsInstructionsOverlayModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-6 hidden">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl text-center">
             <div class="text-3xl">📡</div>
-            <h3 class="text-base font-black text-slate-200 uppercase tracking-wider">Enable Location Services</h3>
-            <p class="text-xs text-slate-400 leading-relaxed">
-                Your device has restricted location sharing access. Tap the lock icon or page settings badge next to your address bar, switch permissions to <span class="text-pink-400 font-bold">Allow</span>, and reload the app canvas.
+            <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">Location Error</h3>
+            <p class="text-xs text-slate-400 leading-relaxed font-medium">
+                Your device location setting might be turned off. Please check and try again.
             </p>
             <button onclick="document.getElementById('gpsInstructionsOverlayModal').classList.add('hidden')" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 font-bold text-xs uppercase tracking-wider rounded-xl text-white">Got It</button>
         </div>
@@ -151,7 +150,7 @@
     </div>
 
     <div id="settingsDrawer" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden flex justify-end">
-        <div class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl overflow-y-auto no-scrollbar pb-24">
+        <div id="settingsDrawerContentBody" class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl overflow-y-auto no-scrollbar pb-24">
             <div class="space-y-6">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                     <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">⚙️ Control Settings</h3>
@@ -344,7 +343,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v1.4.6";
+        const APP_VERSION = "v1.4.7";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -390,12 +389,23 @@
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
+            // UPDATED GLOBAL CLICK DELEGATOR: Handles overlay closures when clicking outside UI bounds
             document.addEventListener('click', (event) => {
+                // Dropdowns overlay checks
                 if (!event.target.closest('#cityHUDDropdownPopupBox') && 
                     !event.target.closest('#filterCategoryDropdownPopupBox') && 
                     !event.target.closest('#cityFilterHUDTriggerBtn') && 
                     !event.target.closest('#filterMenuTriggerBtn')) {
                     closeAllActiveHUDDropdownOverlays();
+                }
+                
+                // Settings modal drawer backdrop check
+                const settingsMenu = document.getElementById('settingsDrawer');
+                if (settingsMenu && !settingsMenu.classList.contains('hidden')) {
+                    // Check if click hit outer wrapper box but completely missed content container body
+                    if (!event.target.closest('#settingsDrawerContentBody') && !event.target.closest('button[onclick="toggleSettingsMenu(true)"]')) {
+                        toggleSettingsMenu(false);
+                    }
                 }
             });
         };
@@ -527,16 +537,13 @@
             );
         }
 
-        // IMPROVED: Smooth visual scaling loop configuration blocks for cross-menu swapping sequences
         function switchMasterMenuDashboardTab(targetTabID) {
             if(targetTabID === activeTabID) return;
             
-            // Revert active styles from the old tab selection
             const currentTabBtn = document.getElementById(`nav-tab-${activeTabID}`);
             currentTabBtn.className = "nav-tab-transition flex flex-col items-center gap-1 text-slate-500 opacity-60 scale-100 font-medium";
             document.getElementById(`view-${activeTabID}`).classList.remove('active-view');
             
-            // Apply scale pop and color variables to the newly selected tab profile
             const nextTabBtn = document.getElementById(`nav-tab-${targetTabID}`);
             nextTabBtn.className = "nav-tab-transition flex flex-col items-center gap-1 text-pink-500 scale-115 font-black";
             document.getElementById(`view-${targetTabID}`).classList.add('active-view');
@@ -988,7 +995,6 @@
                 container.appendChild(card);
             });
 
-            // NEW: Injects structural scrolling buffer element past layout heights
             const scrollingPaddingSpacer = document.createElement('div');
             scrollingPaddingSpacer.className = "h-32 shrink-0 pointer-events-none";
             container.appendChild(scrollingPaddingSpacer);
@@ -1071,7 +1077,6 @@
             }
         }
 
-        /* Entry Modal Form Controls */
         function toggleQuickAddModal(show) { document.getElementById('quickAddModal').classList.toggle('hidden', !show); }
         
         let formPriorityState = "Normal";
