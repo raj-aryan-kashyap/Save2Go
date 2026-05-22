@@ -212,7 +212,7 @@
 
             <div id="mapNavigationShortcutsStack" class="absolute top-1/2 right-4 -translate-y-1/2 z-[400] flex flex-col gap-2.5 pointer-events-auto">
                 <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🔍</button>
-                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center">🧭</button>
+                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center select-none">🧭</button>
             </div>
             
             <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl z-[999] hidden space-y-4 pointer-events-auto max-w-md mx-auto max-h-[55vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -223,7 +223,7 @@
                             <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400">★ Starred</span>
                             <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
                         </div>
-                        h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
+                        <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
                     </div>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
@@ -412,7 +412,7 @@
         let continuousGpsFailsafeIntervalId = null; 
         let lastGpsSuccessTime = 0; 
         let cachedUserCoords = null; 
-        let isCameraLocked = false; // Real-time mapping camera synchronization switch
+        let isCameraLocked = false; 
 
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
         let activeBaseTileLayer = null; 
@@ -472,7 +472,6 @@
             
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
 
-            // DETECT GESTURES TO IMMEDIATELY BREAK CAMERA POSITION LOCK
             leafletMapInstance.on('movestart zoomstart dragstart', (e) => {
                 if (leafletMapInstance && e.target && isCameraLocked) {
                     isCameraLocked = false;
@@ -690,7 +689,6 @@
                             }).addTo(leafletMapInstance);
                         }
                         
-                        // SMOOTH LIVE CAM REALTIME SYNCHRONIZATION
                         if (isCameraLocked) {
                             leafletMapInstance.panTo([userLat, userLon], { animate: true });
                         }
@@ -830,18 +828,18 @@
             );
         }
 
-        // RECENTER COMPASS PIPELINE WITH ADVANCED CAMERA TRACKING SYSTEM MAPPED
+        // COMPASS ENGINE ARCHITECTURE WITH OPTIMISTIC AND ROTATING TRANSFORMS RESTORED CLEANLY
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance) return;
 
             const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
             if (compassBtn) {
+                // Execute active physical snapshot turn rotation transformation classes safely
                 compassBtn.classList.add('rotate-180', 'scale-90');
                 setTimeout(() => { compassBtn.classList.remove('rotate-180', 'scale-90'); }, 500);
             }
 
-            // Instantly engage real-time follow mode architecture 
             isCameraLocked = true;
             syncCameraLockVisualUIState();
 
@@ -902,14 +900,14 @@
             }
         }
 
-        // LIVE GLOWING HUD SWITCH OPERATIONS FOR ACTIVE TRACKING FEEDBACK
+        // CONTROL STYLES CORRECTION MAPPING INTERFACE
         function syncCameraLockVisualUIState() {
             const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
             if (!compassBtn) return;
             if (isCameraLocked) {
-                compassBtn.className = "w-12 h-12 bg-slate-900 border-2 border-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center";
+                compassBtn.className = "w-12 h-12 bg-slate-900 border-2 border-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center select-none";
             } else {
-                compassBtn.className = "w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center";
+                compassBtn.className = "w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-500 ease-out origin-center select-none";
             }
         }
 
