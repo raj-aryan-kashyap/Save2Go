@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.6.0</title>
+    <title>Save2Go V3.6.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -121,7 +121,6 @@
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
         }
 
-        /* SPRING ACCELERATED EXPANDED POPUP KEYFRAMES */
         @keyframes popupSpringIn {
             0% { transform: scale(0.85); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -152,8 +151,7 @@
     <div id="noteExpandedOverlayHUD" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[99999] flex items-center justify-center p-6 hidden transition-all duration-200">
         <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
             <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
-                <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded Document View</span>
-                <span class="text-[9px] font-mono text-slate-500">Release finger to minimize</span>
+                <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded View</span>
             </div>
             <div class="max-h-[60vh] overflow-y-auto subtle-scrollbar pr-1">
                 <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap"></p>
@@ -304,7 +302,7 @@
                                 <button id="trayFlipToBackBtn" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
                                     ℹ️ Extra Info
                                 </button>
-                                <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800">✓ Done</button>
+                                <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800">✓ Mark Done</button>
                                 <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800">★ Star</button>
                             </div>
                         </div>
@@ -344,7 +342,7 @@
         </div>
 
         <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
-            <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full">
+            <div id="gesture-touch-container" class="flex-1 overflow-y-auto subtle-scrollbar relative w-full h-full">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
                     <span class="animate-pulse">⬇️ Pull to check database streams...</span>
                 </div>
@@ -486,7 +484,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.6.0";
+        const APP_VERSION = "v3.6.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -514,7 +512,6 @@
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
         const PULL_INDICATOR = document.getElementById('pullToRefreshIndicatorHUD');
 
-        // GESTURE ZOOM ENGINE MATRIX SETUP
         let noteGestureTimerId = null;
         let isNoteZoomActive = false;
 
@@ -776,7 +773,7 @@
                     const checkState = () => {
                         if (status.state === 'denied') { 
                             gpsStatusCachedBool = false; 
-                            updateGpsHudStatus('off', "GPS Off"); 
+ updateGpsHudStatus('off', "GPS Off"); 
                         } else if (status.state === 'granted') {
                             startLiveHardwareGPSTracking();
                         }
@@ -914,8 +911,10 @@
             }, 2000);
         }
 
+        // TAB NAVIGATION HOOK (FORCES MAP CONTEXT TRAYS CLOSED IMMEDIATELY)
         function switchMasterMenuDashboardTab(targetTabID) {
             killLiveSpeechBubbleHUDState();
+            dismissMapDetailTrayHUDCard(); // FORCE SHUTS THE POPUP TRAY CANVAS OVERLAY ON WINDOW TRANSITIONS
 
             if(targetTabID === activeTabID) return;
             
@@ -1028,7 +1027,7 @@
                         const incomingLat = pos.coords.latitude;
                         const incomingLon = pos.coords.longitude;
                         
-                        cachedUserCoords = { lat: incomingLat, font: incomingLon };
+                        cachedUserCoords = { lat: incomingLat, lon: incomingLon };
                         userLat = incomingLat; userLon = incomingLon;
                         updateGpsHudStatus('active', "GPS Active");
                         
@@ -1430,7 +1429,8 @@
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
-            doneBtn.innerText = isDone ? '↩ Undo' : '✓ Done';
+            // REBRANDED LABELS
+            doneBtn.innerText = isDone ? '↩ Undo' : '✓ Mark Done';
             doneBtn.onclick = function() {
                 updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
                 dismissMapDetailTrayHUDCard();
@@ -1475,8 +1475,11 @@
         }
 
         function dismissMapDetailTrayHUDCard() {
-            document.getElementById('mapDetailTrayHUD').classList.add('hidden');
-            document.getElementById('mapDetailTrayHUD').classList.remove('flipped');
+            const mapDetailTray = document.getElementById('mapDetailTrayHUD');
+            if (mapDetailTray) {
+                mapDetailTray.classList.add('hidden');
+                mapDetailTray.classList.remove('flipped');
+            }
             const blurBg = document.getElementById('dropdownBlurBackdrop');
             if (blurBg) blurBg.classList.add('hidden');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
@@ -1518,7 +1521,6 @@
                 cardWrapper.id = uniqueCardContainerId;
                 cardWrapper.className = "w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200";
 
-                // TEXT CLEANED REVERSE PANELS WITH EXPLICIT NOTES DIRECTIVES INJECTED
                 cardWrapper.innerHTML = `
                     <div class="flip-card-inner-rotator w-full h-full">
                         
@@ -1547,7 +1549,7 @@
                                     <button onclick="event.stopPropagation(); document.getElementById('${uniqueCardContainerId}').classList.add('flipped');" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
                                         ℹ️ Extra Info
                                     </button>
-                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold active:bg-slate-850">${isDone ? '↩ Undo' : '✓ Mark Done'}</button>
                                     <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
                                 </div>
                             </div>
@@ -1582,10 +1584,15 @@
                 container.appendChild(cardWrapper);
             });
 
-            // TRUE SYSTEM INVISIBLE SPACING захист BLOCK - FORCED EXACTLY AT TAIL END INDEX
-            const transparentVirtualSpacerCard = document.createElement('div');
-            transparentVirtualSpacerCard.className = "min-h-[130px] h-[130px] w-full block bg-transparent border-0 pointer-events-none shrink-0";
-            container.appendChild(transparentVirtualSpacerCard);
+            // "END OF LIST" SYSTEM CUE HOUSING BADGE (Replaces the fake card framework)
+            const tailEndLabelDeckNode = document.createElement('div');
+            tailEndLabelDeckNode.className = "w-full pt-4 pb-14 flex items-center justify-center shrink-0 block";
+            tailEndLabelDeckNode.innerHTML = `
+                <div class="px-5 py-2.5 bg-slate-900/40 border border-slate-800/40 rounded-full text-center max-w-[180px] w-full">
+                    <span class="text-[10px] uppercase font-black tracking-widest text-slate-600">End of List View</span>
+                </div>
+            `;
+            container.appendChild(tailEndLabelDeckNode);
         }
 
         async function updateCloudAction(rowId, action, value, spotName) {
