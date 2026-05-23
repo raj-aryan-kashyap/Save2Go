@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.4.0</title>
+    <title>Save2Go V3.4.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -450,7 +450,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.4.0";
+        const APP_VERSION = "v3.4.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -479,7 +479,6 @@
         const PULL_INDICATOR = document.getElementById('pullToRefreshIndicatorHUD');
 
         window.onload = function() {
-            // CACHE OVERRIDE TO FORCE LEVEL 16 ALTITUDE PREFERENCES
             localStorage.setItem('compass_map_state_zoom', '16');
 
             cachedHardwareString = parseReadableDeviceHardware();
@@ -536,14 +535,13 @@
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
             
-            // FULL FORCE TWO-FINGER INTERACTION ENGAGED WITH RENDER BUFFERS
             leafletMapInstance = L.map('map-render-element', { 
                 zoomControl: false, 
                 attributionControl: false,
                 touchRotate: true,
                 rotate: true,
                 bounceAtZoomLimits: false
-            }).setView([userLat, userLon], 16); // LOCKED TO ALTITUDE ZOOM LEVEL 16
+            }).setView([userLat, userLon], 16);
             
             setMapBaseLayerProviderSource(currentMapStyleKey);
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
@@ -621,7 +619,6 @@
 
             let providerUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
             
-            // INTENSE RETENTION BUFFER TILES OVERRIDES
             let attributionMeta = { 
                 maxZoom: 20,
                 preload: true,
@@ -764,7 +761,6 @@
                             }).addTo(leafletMapInstance);
                         }
 
-                        // HIGH FIDELITY GEOMETRIC TRANSLUCENT ANTENNA RADAR ACCURACY HOOP
                         const currentAccuracyRadiusMeters = pos.coords.accuracy || 0;
                         if (userAccuracyRadiusCircle) {
                             userAccuracyRadiusCircle.setLatLng([userLat, userLon]).setRadius(currentAccuracyRadiusMeters);
@@ -779,7 +775,7 @@
                         }
                         
                         if (isCameraLocked) {
-                            leafletMapInstance.setView([userLat, userLon], 16, { animate: true });
+                            leafletMapInstance.panTo([userLat, userLon], { animate: true });
                         }
                     }
                     renderList();
@@ -824,7 +820,7 @@
                             userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                             
                             if (isCameraLocked && leafletMapInstance) {
-                                leafletMapInstance.setView([userLat, userLon], 16, { animate: true });
+                                leafletMapInstance.setView([userLat, userLon], 16);
                             }
                         },
                         () => {},
@@ -904,7 +900,7 @@
                     updateGpsHudStatus('active', "GPS Active");
                     isCameraLocked = true;
                     syncCameraLockVisualUIState();
-                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 16); // STRICT FORCE LEVEL 16
+                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 16); 
                     startLiveHardwareGPSTracking();
                 },
                 (err) => {
@@ -930,7 +926,7 @@
             syncCameraLockVisualUIState();
 
             if (cachedUserCoords) {
-                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 16, { animate: true }); // COMPASS LOCKS LEVEL 16
+                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 16, { animate: true }); 
             }
 
             const executeHardwareQuery = () => {
@@ -955,7 +951,7 @@
                         }
                         
                         if (isCameraLocked) {
-                            leafletMapInstance.setView([userLat, userLon], 16, { animate: true }); // COMPASS WATCH LOCK LEVEL 16
+                            leafletMapInstance.setView([userLat, userLon], 16, { animate: true }); 
                         }
                     },
                     (err) => {
@@ -996,26 +992,42 @@
             }
         }
 
+        // DYNAMIC BOUNDS CALCULATION
         function snapMapViewportToSelectedCityBounds(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance || travelSpots.length === 0) return;
             
             if (checkedCitiesStateArray.length === 0) {
-                triggerCuteSpeechBubbleHUD("Select a city filter first to zoom in!", document.getElementById('shortcutMagnifyingButton'), event);
+                triggerCuteSpeechBubbleHUD("Select a city filter first!", document.getElementById('shortcutMagnifyingButton'), event);
                 return;
             }
 
-            const matchTarget = travelSpots.find(spot => {
+            let activeCityPins = travelSpots.filter(spot => {
                 const latVal = spot.latitude ? String(spot.latitude).trim() : "";
                 return latVal !== "" && latVal !== "0" && checkedCitiesStateArray.includes(spot.city);
             });
 
-            if (matchTarget) { 
-                isCameraLocked = false;
-                syncCameraLockVisualUIState();
-                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 16, { animate: true }); 
+            if (activeCityPins.length === 0) {
+                triggerCuteSpeechBubbleHUD("No pins found for this city!", document.getElementById('shortcutMagnifyingButton'), event);
+                return;
+            }
+
+            isCameraLocked = false;
+            syncCameraLockVisualUIState();
+
+            if (activeCityPins.length === 1) {
+                leafletMapInstance.setView([parseFloat(activeCityPins[0].latitude), parseFloat(activeCityPins[0].longitude)], 16, { animate: true });
             } else {
-                triggerCuteSpeechBubbleHUD("No pins found matching this city filter!", document.getElementById('shortcutMagnifyingButton'), event);
+                let boundsContainer = L.latLngBounds();
+                activeCityPins.forEach(spot => {
+                    boundsContainer.extend([parseFloat(spot.latitude), parseFloat(spot.longitude)]);
+                });
+
+                leafletMapInstance.fitBounds(boundsContainer, {
+                    padding: [50, 50], 
+                    animate: true,
+                    duration: 0.6
+                });
             }
         }
 
@@ -1415,7 +1427,6 @@
                 cardWrapper.id = uniqueCardContainerId;
                 cardWrapper.className = "w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200";
 
-                // DIRECT STRUCTURAL BINDINGS APPLIED INTERNALLY BELOW
                 cardWrapper.innerHTML = `
                     <div class="flip-card-inner-rotator w-full h-full">
                         
