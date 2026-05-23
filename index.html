@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.4.5</title>
+    <title>Save2Go V3.5.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -33,7 +33,7 @@
             -webkit-transform-style: preserve-3d;
         }
 
-        /* MASTER VIEWPORT CONTAINER SEPARATORS */
+        /* MASTER VIEWPORT PANEL SWITCHERS */
         .view-panel {
             position: absolute;
             top: 116px; 
@@ -279,18 +279,17 @@
                         </div>
                     </div>
 
-                    <div class="flip-card-back-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-                        <div class="flex justify-between items-center border-b border-slate-800/60 pb-2 shrink-0">
+                    <div class="flip-card-back-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden">
+                        <div class="flex border-b border-slate-800/60 pb-2 shrink-0 items-center justify-between">
                             <h4 class="text-xs font-black uppercase tracking-wider text-slate-300">Extra Info</h4>
-                            <button id="trayFlipToFrontBtn" class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400">↩ Back</button>
                         </div>
 
                         <div class="flex-1 overflow-y-auto subtle-scrollbar space-y-4 pt-3 pr-0.5">
-                            <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-950/50 p-3 rounded-xl border border-slate-950/40 leading-relaxed font-medium">Loading descriptive logs...</p>
+                            <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-950/50 p-3 rounded-xl border border-slate-100/10 leading-relaxed font-medium">Loading descriptive logs...</p>
 
                             <div class="space-y-1.5">
                                 <span class="text-[9px] uppercase font-black tracking-widest text-slate-500">Schedule</span>
-                                <div id="trayBackHoursGrid" class="bg-slate-950/50 border border-slate-950/40 p-2.5 rounded-xl grid grid-cols-1 gap-1 font-mono text-[11px] text-slate-400"></div>
+                                <div id="trayBackHoursGrid" class="bg-slate-950/50 border border-slate-100/10 p-2.5 rounded-xl grid grid-cols-1 gap-1 font-mono text-[11px] text-slate-400"></div>
                             </div>
 
                             <div id="trayBackBookingWarningCard" class="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-start gap-2.5 hidden">
@@ -300,6 +299,13 @@
                                     <p id="trayBackBookingValueText" class="text-xs text-slate-300 leading-relaxed font-medium"></p>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1 items-center shrink-0">
+                            <button id="trayFlipToFrontBtn" class="text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-slate-900">
+                                ↩ Back
+                            </button>
+                            <div class="text-[8px] text-slate-600 font-mono">MAP INTERFACE VIEW</div>
                         </div>
                     </div>
 
@@ -320,7 +326,7 @@
                     </div>
                 </div>
 
-                <div id="spots-list" class="p-4 space-y-4 pb-44 flip-perspective-container"></div>
+                <div id="spots-list" class="p-4 space-y-4 flip-perspective-container"></div>
             </div>
         </div>
 
@@ -450,7 +456,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.4.5";
+        const APP_VERSION = "v3.5.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -830,7 +836,16 @@
             }, 2000);
         }
 
+        // TAB SYSTEM SWITCH HANDLER (FORCE KILL SPEECH BUBBLES IMMEDIATELY)
         function switchMasterMenuDashboardTab(targetTabID) {
+            // FORCE CLOSES RUNNING SPEECH BUBBLE MODALS ON SCREEN SWAPS
+            const globalBubbleHUD = document.getElementById('globalToastSpeechBubbleHUD');
+            if (globalBubbleHUD) {
+                globalBubbleHUD.classList.add('hidden');
+                globalBubbleHUD.classList.remove('bubble-popup-anim', 'bubble-popdown-anim');
+            }
+            if(speechBubbleHideTimer) clearTimeout(speechBubbleHideTimer);
+
             if(targetTabID === activeTabID) return;
             
             const currentTabBtn = document.getElementById(`nav-tab-${activeTabID}`);
@@ -992,7 +1007,6 @@
             }
         }
 
-        // DYNAMIC BOUNDS CALCULATION
         function snapMapViewportToSelectedCityBounds(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance || travelSpots.length === 0) return;
@@ -1427,6 +1441,7 @@
                 cardWrapper.id = uniqueCardContainerId;
                 cardWrapper.className = "w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200";
 
+                // BUBBLE EVENTS TRAPPED VIA EXPLICIT INLINE STOP_PROPAGATION HOOKS
                 cardWrapper.innerHTML = `
                     <div class="flip-card-inner-rotator w-full h-full">
                         
@@ -1452,7 +1467,7 @@
                                 </div>
                                 ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
                                 <div class="flex gap-2 mt-1 justify-end items-center">
-                                    <button onclick="document.getElementById('${uniqueCardContainerId}').classList.add('flipped');" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
+                                    <button onclick="event.stopPropagation(); document.getElementById('${uniqueCardContainerId}').classList.add('flipped');" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
                                         ℹ️ Extra Info
                                     </button>
                                     <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
@@ -1462,9 +1477,9 @@
                         </div>
 
                         <div class="flip-card-back-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between overflow-hidden">
-                            <div class="flex justify-between items-center border-b border-slate-800/60 pb-1.5 shrink-0">
+                            <div class="flex border-b border-slate-800/60 pb-1.5 shrink-0 items-center justify-between">
                                 <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Extra Info</span>
-                                <button onclick="document.getElementById('${uniqueCardContainerId}').classList.remove('flipped');" class="px-2 py-0.5 bg-slate-950 border border-slate-800 text-[9px] font-bold rounded text-slate-400">↩ Back</button>
+                                <span class="text-[8px] text-slate-600 font-mono">ID: #${spot.rowid}</span>
                             </div>
                             <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 pr-0.5 space-y-3 text-[11px]">
                                 <p class="text-slate-300 leading-relaxed font-medium bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No background summary recorded.'}</p>
@@ -1478,13 +1493,23 @@
                                     <span class="text-slate-300 leading-relaxed block mt-0.5">${spot.booking_requirement}</span>
                                 </div>` : ''}
                             </div>
-                            <div class="text-[8px] text-slate-600 font-mono text-right pt-1 border-t border-slate-950 shrink-0">ID Ref: #${spot.rowid}</div>
+                            <div class="flex gap-2 justify-end pt-2 border-t border-slate-950 shrink-0 items-center">
+                                <button onclick="event.stopPropagation(); document.getElementById('${uniqueCardContainerId}').classList.remove('flipped');" class="text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-slate-900">
+                                    ↩ Back
+                                </button>
+                                <span class="text-[8px] text-slate-600 font-mono">SAVED FILE INDEX</span>
+                            </div>
                         </div>
 
                     </div>
                 `;
                 container.appendChild(cardWrapper);
             });
+
+            // UNCOMPRESSIBLE SPACER BLOCK FORCE SEPARATES 3D BOUNDS FROM NAVIGATION WRAPPERS
+            const explicitBottomSpacer = document.createElement('div');
+            explicitBottomSpacer.className = "h-36 w-full pointer-events-none block shrink-0";
+            container.appendChild(explicitBottomSpacer);
         }
 
         async function updateCloudAction(rowId, action, value, spotName) {
