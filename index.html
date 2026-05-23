@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go</title>
+    <title>Save2Go V3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -45,6 +45,34 @@
             pointer-events: auto;
         }
 
+        /* 3D CARD REVOLUTION FLIP STRUCTURAL FRAMEWORK */
+        .flip-perspective-container {
+            perspective: 1200px;
+        }
+        .flip-card-inner-rotator {
+            position: relative;
+            width: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-perspective-container.flipped .flip-card-inner-rotator {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front-face, .flip-card-back-face {
+            position: relative;
+            width: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            top: 0;
+            left: 0;
+        }
+        .flip-card-back-face {
+            transform: rotateY(180deg);
+            position: absolute;
+            height: 100%;
+        }
+
+        /* CUTE MAP EXCLUSIVE CORE CLASSES */
         .custom-map-cube {
             background: rgba(15, 23, 42, 0.95) !important;
             backdrop-filter: blur(8px);
@@ -62,7 +90,6 @@
             border: 2px solid rgba(245, 158, 11, 0.9) !important;
             box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
         }
-
         .cluster-map-cube {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
             border: 2px solid rgba(255, 255, 255, 0.8) !important;
@@ -217,43 +244,84 @@
                 </button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl z-[999] hidden space-y-4 pointer-events-auto max-w-md mx-auto max-h-[55vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                <div class="flex justify-between items-start gap-2 shrink-0">
-                    <div>
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">Global</span>
-                            <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400">★ Starred</span>
-                            <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
-                        </div>
-                        <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
-                    </div>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
-                        <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
-                    </div>
-                </div>
-                
-                <p id="traySpotNotes" class="text-xs text-slate-400 bg-slate-950/40 p-3 rounded-xl border border-slate-900/60 leading-relaxed overflow-y-auto subtle-scrollbar flex-1 max-h-[22vh]">Notes context...</p>
-                
-                <div class="flex flex-col gap-2 pt-1 shrink-0">
-                    <div class="flex gap-2">
-                        <a id="trayOpenReferenceBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3.5 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
-                        <button id="trayActionBtn" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold h-12">🗺️ Get Direction</button>
-                    </div>
-                    <div id="trayTicketRow" class="hidden">
-                        <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
-                    </div>
+            <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 flip-perspective-container bg-transparent z-[999] hidden max-w-md mx-auto h-[480px] pointer-events-auto transition-transform">
+                <div class="flip-card-inner-rotator w-full h-full">
                     
-                    <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1">
-                        <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
-                        <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
+                    <div class="flip-card-front-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden">
+                        <div class="flex justify-between items-start gap-2 shrink-0">
+                            <div>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">Global</span>
+                                    <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400">★ Starred</span>
+                                    <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
+                                </div>
+                                <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
+                                <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 my-3 bg-slate-950/40 border border-slate-900/60 p-3 rounded-xl flex flex-col justify-between overflow-hidden">
+                            <p id="traySpotNotes" class="text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[160px]">Notes context...</p>
+                            <button id="trayFlipToBackBtn" class="mt-2 w-full py-2 bg-slate-800/80 border border-slate-700/50 rounded-lg text-[11px] font-black text-pink-400 flex items-center justify-center gap-1 active:bg-slate-800">
+                                <span>ℹ️ Reveal Deep Scraped Intelligence</span>
+                            </button>
+                        </div>
+                        
+                        <div class="flex flex-col gap-2 shrink-0">
+                            <div class="flex gap-2">
+                                <a id="trayOpenReferenceBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3.5 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
+                                <button id="trayActionBtn" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold h-12">🗺️ Get Direction</button>
+                            </div>
+                            <div id="trayTicketRow" class="hidden">
+                                <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
+                            </div>
+                            
+                            <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1">
+                                <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
+                                <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="flip-card-back-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+                        <div class="flex justify-between items-center border-b border-slate-800/60 pb-2 shrink-0">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm">🤖</span>
+                                <h4 class="text-xs font-black uppercase tracking-wider text-slate-300">Scraped Vault File</h4>
+                            </div>
+                            <button id="trayFlipToFrontBtn" class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 active:bg-slate-800">↩ Back</button>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto subtle-scrollbar space-y-4 pt-3 pr-0.5">
+                            <div class="space-y-1">
+                                <span class="text-[9px] uppercase font-black tracking-widest text-slate-500">Full Intelligence Summary</span>
+                                <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-950/50 p-3 rounded-xl border border-slate-950 leading-relaxed font-medium">Loading descriptive logs...</p>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <span class="text-[9px] uppercase font-black tracking-widest text-slate-500">Operational Timetable Status</span>
+                                <div id="trayBackHoursGrid" class="bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl grid grid-cols-1 gap-1 font-mono text-[11px] text-slate-400"></div>
+                            </div>
+
+                            <div id="trayBackBookingWarningCard" class="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-start gap-2.5 hidden">
+                                <span class="text-base mt-0.5">🗓️</span>
+                                <div class="space-y-0.5">
+                                    <h5 class="text-[10px] font-black text-amber-400 uppercase tracking-wider">Scraper Advisory Alert</h5>
+                                    <p id="trayBackBookingValueText" class="text-xs text-slate-300 leading-relaxed font-medium">Booking Matrix Context</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
 
         <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
-            <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full">
+            <div id="gesture-touch-container" class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full pb-32">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
                     <span class="animate-pulse">⬇️ Pull to check database streams...</span>
                 </div>
@@ -265,7 +333,7 @@
                     </div>
                 </div>
 
-                <div id="spots-list" class="p-4 space-y-3"></div>
+                <div id="spots-list" class="p-4 space-y-4 flip-perspective-container"></div>
             </div>
         </div>
 
@@ -395,7 +463,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v2.2.0";
+        const APP_VERSION = "v3.0.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -416,7 +484,8 @@
         let cachedUserCoords = null; 
         let isCameraLocked = false; 
 
-        let leafletMapInstance = null; let mapMarkersLayerGroup = null; let userPositionPulseCircle = null;
+        let leafletMapInstance = null; let mapMarkersLayerGroup = null; 
+        let userPositionPulseCircle = null; let userAccuracyRadiusCircle = null;
         let activeBaseTileLayer = null; 
         let startY = 0; let isPulling = false;
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
@@ -431,6 +500,15 @@
             initLeafletMapEngineCanvas();
             populateUserDropdowns();
             syncPriorityFilterViewModeUI();
+            
+            // WIRE UP CENTRAL COOPERATIVE FLIP INTERCEPTORS
+            document.getElementById('trayFlipToBackBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.add('flipped'); });
+            document.getElementById('trayFlipToFrontBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.remove('flipped'); });
+            
+            // PREVENT SEEPAGE MAP FLUIDITY BREAKS ON INTERACTIVE TRAYS
+            const trayNode = document.getElementById('mapDetailTrayHUD');
+            L.DomEvent.disableClickPropagation(trayNode);
+            L.DomEvent.on(trayNode, 'contextmenu', L.DomEvent.stopPropagation);
             
             if (travelSpots.length > 0) {
                 calculateSmartCityDefaultFilters();
@@ -469,9 +547,16 @@
 
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
-            leafletMapInstance = L.map('map-render-element', { zoomControl: false, attributionControl: false }).setView([userLat, userLon], 13);
-            setMapBaseLayerProviderSource(currentMapStyleKey);
             
+            // V3 ACCELERATED LOOK-AHEAD PRELOAD HARDWARE CONFIGURATION GRID
+            leafletMapInstance = L.map('map-render-element', { 
+                zoomControl: false, 
+                attributionControl: false,
+                touchRotate: true, // TWO FINGER CANVAS INTERACTION ROTATE ACTIVATED
+                rotate: true
+            }).setView([userLat, userLon], 16); // STANDARD CITADEL ALTITUDE PREFERENCE LOCK
+            
+            setMapBaseLayerProviderSource(currentMapStyleKey);
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
 
             leafletMapInstance.on('movestart zoomstart dragstart', (e) => {
@@ -481,7 +566,6 @@
                 }
             });
 
-            // MULTI-BIND UNCONDITIONAL SYSTEM RADAR TRIGGERS
             leafletMapInstance.on('moveend zoomend viewreset animationend', () => {
                 if (leafletMapInstance) {
                     const center = leafletMapInstance.getCenter();
@@ -549,7 +633,15 @@
             if(activeBaseTileLayer) leafletMapInstance.removeLayer(activeBaseTileLayer);
 
             let providerUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-            let attributionMeta = { maxZoom: 20 };
+            
+            // ENHANCED LOOK-AHEAD PRELOADING BUFFER CONTEXTS
+            let attributionMeta = { 
+                maxZoom: 20,
+                preload: true,
+                keepBuffer: 4,
+                updateWhenIdle: true,
+                updateWhenZooming: false
+            };
             let visibleLabel = "Style: Dark";
 
             if(styleKey === 'light') {
@@ -560,7 +652,7 @@
                 visibleLabel = "Style: Street";
             } else if(styleKey === 'satellite') {
                 providerUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-                attributionMeta = { maxZoom: 18 };
+                attributionMeta.maxZoom = 18;
                 visibleLabel = "Style: Sat";
             }
 
@@ -686,11 +778,26 @@
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     
                     if (leafletMapInstance) {
+                        // POSITION PULSE CHIP LAYERS
                         if (userPositionPulseCircle) {
                             userPositionPulseCircle.setLatLng([userLat, userLon]);
                         } else {
                             userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
                                 radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
+                            }).addTo(leafletMapInstance);
+                        }
+
+                        // HIGH FIDELITY TRANSLUCENT ACCURACY RADIUS RING INTEGRATION
+                        const currentAccuracyRadiusMeters = pos.coords.accuracy || 0;
+                        if (userAccuracyRadiusCircle) {
+                            userAccuracyRadiusCircle.setLatLng([userLat, userLon]).setRadius(currentAccuracyRadiusMeters);
+                        } else {
+                            userAccuracyRadiusCircle = L.circle([userLat, userLon], {
+                                radius: currentAccuracyRadiusMeters,
+                                fillColor: '#3b82f6',
+                                fillOpacity: 0.15,
+                                stroke: false,
+                                pointerEvents: 'none'
                             }).addTo(leafletMapInstance);
                         }
                         
@@ -724,6 +831,10 @@
                         if (userPositionPulseCircle && leafletMapInstance) {
                             leafletMapInstance.removeLayer(userPositionPulseCircle);
                             userPositionPulseCircle = null;
+                        }
+                        if (userAccuracyRadiusCircle && leafletMapInstance) {
+                            leafletMapInstance.removeLayer(userAccuracyRadiusCircle);
+                            userAccuracyRadiusCircle = null;
                         }
                         renderList();
                     }
@@ -768,7 +879,7 @@
                     if (savedLat && savedLng && savedZoom) {
                         leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], parseInt(savedZoom), { animate: false });
                     } else if(gpsStatusCachedBool) {
-                        leafletMapInstance.setView([userLat, userLon], 13, { animate: false });
+                        leafletMapInstance.setView([userLat, userLon], 16, { animate: false }); // ALTITUDE PREFERENCE PRESETS
                     }
                 }, 50); 
             }
@@ -821,7 +932,7 @@
                     updateGpsHudStatus('active', "GPS Active");
                     isCameraLocked = true;
                     syncCameraLockVisualUIState();
-                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 15);
+                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 16); // STANDARD CITADEL ALTITUDE LOCK
                     startLiveHardwareGPSTracking();
                 },
                 (err) => {
@@ -847,7 +958,7 @@
             syncCameraLockVisualUIState();
 
             if (cachedUserCoords) {
-                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 15, { animate: true });
+                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 16, { animate: true }); // UNIFIED ALTITUDE LEVEL 16 LOCK
             }
 
             const executeHardwareQuery = () => {
@@ -872,7 +983,7 @@
                         }
                         
                         if (isCameraLocked) {
-                            leafletMapInstance.setView([userLat, userLon], 15, { animate: true });
+                            leafletMapInstance.setView([userLat, userLon], 16, { animate: true }); // UNIFIED ALTITUDE LEVEL 16 LOCK
                         }
                     },
                     (err) => {
@@ -930,7 +1041,7 @@
             if (matchTarget) { 
                 isCameraLocked = false;
                 syncCameraLockVisualUIState();
-                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 14, { animate: true }); 
+                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 16, { animate: true }); 
             } else {
                 triggerCuteSpeechBubbleHUD("No pins found matching this city filter!", document.getElementById('shortcutMagnifyingButton'), event);
             }
@@ -1076,7 +1187,6 @@
             });
         }
 
-        // ADAPTIVE THRESHOLDS + STATELESS SPIDER MARKS STUSTEM (V2.8.0)
         function plotDynamicMarkersOnCanvasMap() {
             if(!mapMarkersLayerGroup || !leafletMapInstance) return;
             mapMarkersLayerGroup.clearLayers();
@@ -1085,7 +1195,6 @@
             const currentZoom = leafletMapInstance.getZoom();
             const maxZoomPossible = leafletMapInstance.getMaxZoom();
             
-            // ADAPTIVE PIXEL THRESHOLDS BASED ON ALTITUDE ELEVATION KEYS
             let overlapPixelRadiusThreshold = 28;
             if (currentZoom >= 14 && currentZoom <= 15) {
                 overlapPixelRadiusThreshold = 14; 
@@ -1105,15 +1214,12 @@
                 
                 for (let i = 0; i < structuredClustersArray.length; i++) {
                     let cluster = structuredClustersArray[i];
-                    
-                    // Force absolute coordinate verification checks to lock stack integrity parameters
                     const isCoordinatesExactMatch = (cluster.leadLatLng.lat === latLngObj.lat && cluster.leadLatLng.lng === latLngObj.lng);
                     
                     let dx = screenPoint.x - cluster.centerPx.x;
                     let dy = screenPoint.y - cluster.centerPx.y;
                     let pixelDistance = Math.sqrt(dx * dx + dy * dy);
                     
-                    // Group nearby items OR lock exact matches completely into the cluster cell array
                     if (isCoordinatesExactMatch || (pixelDistance <= overlapPixelRadiusThreshold)) {
                         cluster.spots.push(spot);
                         assignedToCluster = true;
@@ -1136,24 +1242,20 @@
                 if (clusterSize === 1) {
                     renderSingleMarkerElement(cluster.spots[0], 0, 0);
                 } else {
-                    // Reveal scattered individual pins early once zoom factors break cell threshold bounds
                     if (currentZoom >= 15) {
                         cluster.spots.forEach((spot, index) => {
                             const angle = (index / clusterSize) * Math.PI * 2;
-                            // Safe stateless geometric display transforms fanned smoothly around the true data anchor
                             const latOffset = Math.sin(angle) * 0.00018;
                             const lonOffset = Math.cos(angle) * 0.00022;
                             renderSingleMarkerElement(spot, latOffset, lonOffset);
                         });
                     } else {
-                        // Display clean layout cluster notification count tokens in zoom levels <= 14
                         const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
                         const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
                         const clusterMarker = L.marker([cluster.leadLatLng.lat, cluster.leadLatLng.lng], { icon: clusterIcon });
                         
                         clusterMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
-                            // Smoothly drop altitude down two levels upon tapping numeric badge groups
                             const targetZoomLevel = Math.min(leafletMapInstance.getZoom() + 2, maxZoomPossible);
                             leafletMapInstance.setView([cluster.leadLatLng.lat, cluster.leadLatLng.lng], targetZoomLevel, { animate: true });
                         });
@@ -1188,10 +1290,15 @@
             mapMarkersLayerGroup.addLayer(leafMarker);
         }
 
+        // UPGRADED DEEP LOGICAL DECK INFUSED CARD FLIP HYDRATION (V3.0.0)
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const blurBg = document.getElementById('dropdownBlurBackdrop');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
+            
+            // RESET TRANSFORM MATRIX TO FRONT STATE SAFELY ON TRADING FRESH TARGETS
+            tray.classList.remove('flipped');
+
             const isDone = (spotObj.status || "").toLowerCase().trim() === 'done';
             const ticketLink = spotObj.ticket_url || "";
             
@@ -1207,10 +1314,10 @@
 
             if (isDone) {
                 titleWidget.className = "text-base font-black text-slate-500 line-through mt-2 truncate max-w-[220px]";
-                notesWidget.className = "text-xs text-slate-500 bg-slate-950/20 p-3 rounded-xl border border-slate-900/30 line-through leading-relaxed overflow-y-auto subtle-scrollbar flex-1 max-h-[22vh]";
+                notesWidget.className = "text-xs text-slate-500 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[160px] line-through";
             } else {
                 titleWidget.className = "text-base font-black text-slate-200 mt-2 truncate max-w-[220px]";
-                notesWidget.className = "text-xs text-slate-400 bg-slate-950/40 p-3 rounded-xl border border-slate-800 leading-relaxed overflow-y-auto subtle-scrollbar flex-1 max-h-[22vh]";
+                notesWidget.className = "text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[160px]";
             }
             
             const distHUD = document.getElementById('trayDistanceBadge');
@@ -1262,17 +1369,49 @@
                 dismissMapDetailTrayHUDCard();
             };
 
+            // HYDRATE AND PARSE THE EXPANDED V3 BACK-CARD INTELLIGENCE RECORDS
+            const backDesc = document.getElementById('trayBackLongDescription');
+            backDesc.innerText = (spotObj.long_description && spotObj.long_description !== "N/A") ? spotObj.long_description : "Disclaimer: Deep background intelligence data logs currently unpopulated by visual scraper matrix streams.";
+
+            const hoursGrid = document.getElementById('trayBackHoursGrid');
+            hoursGrid.innerHTML = '';
+            const staticHoursString = spotObj.opening_hours || "";
+            if (staticHoursString.trim() !== "" && staticHoursString !== "N/A") {
+                const daysTokens = staticHoursString.split(';');
+                daysTokens.forEach(token => {
+                    if(!token.trim()) return;
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = "flex justify-between items-center py-0.5 border-b border-slate-900/40 last:border-0";
+                    rowDiv.innerHTML = `<span>${token.trim()}</span>`;
+                    hoursGrid.appendChild(rowDiv);
+                });
+            } else {
+                hoursGrid.innerHTML = `<div class="text-slate-500 italic text-[10px] p-1">Disclaimer: Operational schedule timetable data currently unavailable.</div>`;
+            }
+
+            const warningCard = document.getElementById('trayBackBookingWarningCard');
+            const warningText = document.getElementById('trayBackBookingValueText');
+            const bookingString = (spotObj.booking_requirement || "").trim();
+            if (bookingString !== "" && bookingString !== "N/A" && bookingString.toLowerCase() !== "none") {
+                warningText.innerText = bookingString;
+                warningCard.classList.remove('hidden');
+            } else {
+                warningCard.classList.add('hidden');
+            }
+
             tray.classList.remove('hidden');
         }
 
         function dismissMapDetailTrayHUDCard() {
             document.getElementById('mapDetailTrayHUD').classList.add('hidden');
+            document.getElementById('mapDetailTrayHUD').classList.remove('flipped');
             const blurBg = document.getElementById('dropdownBlurBackdrop');
             if (blurBg) blurBg.classList.add('hidden');
             const plusBtn = document.getElementById('globalFloatingActionPlusButton');
             if (plusBtn) plusBtn.classList.remove('hidden');
         }
 
+        // POLISHED RE-ARCHITECTED STATIC FEED PANEL CARDS WITH PERSPECTIVE ACTION TRIPPERS (V3.0.0)
         function renderList() {
             const container = document.getElementById('spots-list');
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
@@ -1285,46 +1424,91 @@
                 return;
             }
 
-            processed.forEach(spot => {
+            processed.forEach((spot, idx) => {
                 const isDone = (spot.status || "").toLowerCase().trim() === "done";
                 const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
                 const ticketLink = spot.ticket_url || "";
                 
-                const card = document.createElement('div');
-                card.className = `p-4 rounded-2xl border bg-slate-900 border-slate-800 ${isDone ? 'opacity-40' : ''}`;
-                
                 const latVal = spot.latitude ? String(spot.latitude).trim() : "";
                 const hasCoordinates = latVal !== "" && latVal !== "0";
 
-                card.innerHTML = `
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="max-w-[70%]">
-                            <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
-                            <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
+                const uniqueCardContainerId = `list-flip-wrapper-node-${idx}`;
+
+                // COMPILE CLEAN TIMETABLE DISPLAY FOR INNER STATIC GRID STACKS
+                let hoursHTMLTokens = '';
+                if(spot.opening_hours && spot.opening_hours !== "N/A" && spot.opening_hours.trim() !== "") {
+                    spot.opening_hours.split(';').forEach(t => {
+                        if(t.trim()) hoursHTMLTokens += `<div class="flex justify-between border-b border-slate-950 last:border-0 py-0.5"><span>${t.trim()}</span></div>`;
+                    });
+                } else {
+                    hoursHTMLTokens = `<div class="text-slate-600 italic text-[10px]">Timetable unpopulated.</div>`;
+                }
+
+                const cardWrapper = document.createElement('div');
+                cardWrapper.id = uniqueCardContainerId;
+                cardWrapper.className = "w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200";
+
+                cardWrapper.innerHTML = `
+                    <div class="flip-card-inner-rotator w-full h-full">
+                        
+                        <div class="flip-card-front-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start gap-2">
+                                    <div class="max-w-[70%]">
+                                        <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
+                                        <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
+                                    </div>
+                                    <span class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
+                                </div>
+                                <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 flex flex-col justify-between min-h-[90px]">
+                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto no-scrollbar">${spot.notes || 'No custom notes.'}</p>
+                                    <button onclick="document.getElementById('${uniqueCardContainerId}').classList.add('flipped')" class="mt-2 text-left text-[10px] font-black text-pink-400 flex items-center gap-0.5">
+                                        <span>ℹ️ View Deep Intelligence Files</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2 mt-3">
+                                <div class="flex gap-2">
+                                    <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
+                                    <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap h-12 ${!hasCoordinates ? 'bg-slate-950 border border-slate-800 text-amber-400 text-sm font-black w-14 shrink-0' : 'bg-slate-950 border border-slate-800 text-slate-300 flex-1'}">
+                                        ${!hasCoordinates ? '⚠️' : '🗺️ Get Direction'}
+                                    </button>
+                                </div>
+                                ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
+                                <div class="flex gap-2 mt-1 justify-end">
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
+                                </div>
+                            </div>
                         </div>
-                        <span class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
-                    </div>
-                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} mt-2 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 leading-relaxed max-h-20 overflow-y-auto no-scrollbar">${spot.notes || 'No custom notes.'}</p>
-                    <div class="flex flex-col gap-2 mt-4">
-                        <div class="flex gap-2">
-                            <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
-                            <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap h-12 ${!hasCoordinates ? 'bg-slate-950 border border-slate-800 text-amber-400 text-sm font-black w-14 shrink-0' : 'bg-slate-950 border border-slate-800 text-slate-300 flex-1'}">
-                                ${!hasCoordinates ? '⚠️' : '🗺️ Get Direction'}
-                            </button>
+
+                        <div class="flip-card-back-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between overflow-hidden">
+                            <div class="flex justify-between items-center border-b border-slate-800/60 pb-1.5 shrink-0">
+                                <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Scraped Metrics</span>
+                                <button onclick="document.getElementById('${uniqueCardContainerId}').classList.remove('flipped')" class="px-2 py-0.5 bg-slate-950 border border-slate-800 text-[9px] font-bold rounded text-slate-400">↩ Back</button>
+                            </div>
+                            <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 pr-0.5 space-y-3 text-[11px]">
+                                <div>
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Description Logs</span>
+                                    <p class="text-slate-300 leading-relaxed font-medium bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No comprehensive description recorded by scraper.'}</p>
+                                </div>
+                                <div>
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Hours Schedule</span>
+                                    <div class="bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl font-mono text-[10px] text-slate-400 space-y-0.5">${hoursHTMLTokens}</div>
+                                </div>
+                                ${(spot.booking_requirement && spot.booking_requirement !== "N/A" && spot.booking_requirement.toLowerCase() !== "none") ? `
+                                <div class="p-2.5 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-amber-400 block">Advisory Flag</span>
+                                    <span class="text-slate-300 leading-relaxed block mt-0.5">${spot.booking_requirement}</span>
+                                </div>` : ''}
+                            </div>
+                            <div class="text-[8px] text-slate-600 font-mono text-right pt-1 border-t border-slate-950 shrink-0">ID Ref: #${spot.rowid}</div>
                         </div>
-                        ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
-                        <div class="flex gap-2 mt-1 justify-end">
-                            <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
-                            <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? 'Unstar' : '★ Star'}</button>
-                        </div>
+
                     </div>
                 `;
-                container.appendChild(card);
+                container.appendChild(cardWrapper);
             });
-
-            const scrollingPaddingSpacer = document.createElement('div');
-            scrollingPaddingSpacer.className = "h-48 shrink-0 pointer-events-none";
-            container.appendChild(scrollingPaddingSpacer);
         }
 
         async function updateCloudAction(rowId, action, value, spotName) {
