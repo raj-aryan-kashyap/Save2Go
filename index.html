@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.3.5</title>
+    <title>Save2Go V3.4.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -26,7 +26,14 @@
         .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
         .subtle-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
-        /* VIEWPORT PANEL FRAME SWITCHERS */
+        /* HARDWARE ACCELERATED TILE RENDERING FIXES */
+        .leaflet-tile-container {
+            will-change: transform;
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+        }
+
+        /* MASTER VIEWPORT CONTAINER SEPARATORS */
         .view-panel {
             position: absolute;
             top: 116px; 
@@ -45,22 +52,27 @@
             pointer-events: auto;
         }
 
-        /* 3D CARD REVOLUTION FLIP STRUCTURAL FRAMEWORK */
+        /* ISOLATED 3D CSS CARD REVOLUTION TRANSFORM MATRIX */
         .flip-perspective-container {
             perspective: 1200px;
+            -webkit-perspective: 1200px;
         }
         .flip-card-inner-rotator {
             position: relative;
             width: 100%;
+            height: 100%;
             transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
         }
         .flip-perspective-container.flipped .flip-card-inner-rotator {
             transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
         }
         .flip-card-front-face, .flip-card-back-face {
             position: relative;
             width: 100%;
+            height: 100%;
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
             top: 0;
@@ -68,11 +80,11 @@
         }
         .flip-card-back-face {
             transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
             position: absolute;
-            height: 100%;
         }
 
-        /* CUTE MAP EXCLUSIVE CORE CLASSES */
+        /* CUSTOM CONTROLS PACK */
         .custom-map-cube {
             background: rgba(15, 23, 42, 0.95) !important;
             backdrop-filter: blur(8px);
@@ -104,27 +116,8 @@
             width: 40px !important;
             height: 40px !important;
         }
-
         .nav-tab-transition {
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
-        }
-
-        /* TOOLTIP POPUP CUTE ANIMATIONS */
-        .bubble-popup-anim {
-            transform-origin: bottom center;
-            animation: popInBubble 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        .bubble-popdown-anim {
-            transform-origin: bottom center;
-            animation: popOutBubble 0.25s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
-        }
-        @keyframes popInBubble {
-            0% { transform: scale(0.4) translateY(12px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        @keyframes popOutBubble {
-            0% { transform: scale(1) translateY(0); opacity: 1; }
-            100% { transform: scale(0.3) translateY(12px); opacity: 0; }
         }
     </style>
 </head>
@@ -218,28 +211,28 @@
                 </button>
                 
                 <div id="mapLayerStyleDropdownDeck" class="hidden w-full bg-slate-900/95 border border-slate-800 rounded-2xl shadow-2xl p-3 grid grid-cols-4 gap-2 pointer-events-auto transition-all duration-200">
-                    <button onclick="setMapBaseLayerProviderSource('dark')" id="styleCard-dark" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 transition-all">
-                        <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center border border-white/5 shadow text-lg">🌑</div>
+                    <button onclick="setMapBaseLayerProviderSource('dark')" id="styleCard-dark" class="flex flex-col items-center gap-1 p-1 bg-slate-900 rounded-xl border-2 border-pink-500 shadow-lg">
+                        <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-lg">🌑</div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Dark</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('light')" id="styleCard-light" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 transition-all">
-                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center border border-black/5 shadow text-lg">☀️</div>
+                    <button onclick="setMapBaseLayerProviderSource('light')" id="styleCard-light" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-lg">☀️</div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Light</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('street')" id="styleCard-street" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 transition-all">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center border border-white/5 shadow text-lg">🗺️</div>
+                    <button onclick="setMapBaseLayerProviderSource('street')" id="styleCard-street" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center text-lg">🗺️</div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Street</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('satellite')" id="styleCard-satellite" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 transition-all">
-                        <div class="w-10 h-10 rounded-lg bg-blue-950 flex items-center justify-center border border-white/5 shadow text-lg">🛰️</div>
+                    <button onclick="setMapBaseLayerProviderSource('satellite')" id="styleCard-satellite" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                        <div class="w-10 h-10 rounded-lg bg-blue-950 flex items-center justify-center text-lg">🛰️</div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Sat</span>
                     </button>
                 </div>
             </div>
 
             <div id="mapNavigationShortcutsStack" class="absolute top-1/2 right-4 -translate-y-1/2 z-[400] flex flex-col gap-2.5 pointer-events-auto">
-                <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-colors">🔍</button>
-                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative">
+                <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800">🔍</button>
+                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-base active:bg-slate-800 overflow-hidden relative">
                     <span id="innerCompassEmojiSpinnerSpan" class="inline-block transform transition-transform duration-500 ease-out">🧭</span>
                 </button>
             </div>
@@ -280,37 +273,31 @@
                                 <button id="trayFlipToBackBtn" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
                                     ℹ️ Extra Info
                                 </button>
-                                <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800 transition-colors">✓ Done</button>
-                                <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800 transition-colors">★ Star</button>
+                                <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800">✓ Done</button>
+                                <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800">★ Star</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="flip-card-back-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
                         <div class="flex justify-between items-center border-b border-slate-800/60 pb-2 shrink-0">
-                            <div class="flex items-center gap-2">
-                                <span class="text-sm">🤖</span>
-                                <h4 class="text-xs font-black uppercase tracking-wider text-slate-300">Scraped Vault File</h4>
-                            </div>
-                            <button id="trayFlipToFrontBtn" class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400 active:bg-slate-800">↩ Back</button>
+                            <h4 class="text-xs font-black uppercase tracking-wider text-slate-300">Extra Info</h4>
+                            <button id="trayFlipToFrontBtn" class="px-2.5 py-1 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-400">↩ Back</button>
                         </div>
 
                         <div class="flex-1 overflow-y-auto subtle-scrollbar space-y-4 pt-3 pr-0.5">
-                            <div class="space-y-1">
-                                <span class="text-[9px] uppercase font-black tracking-widest text-slate-500">Full Intelligence Summary</span>
-                                <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-950/50 p-3 rounded-xl border border-slate-950 leading-relaxed font-medium">Loading descriptive logs...</p>
-                            </div>
+                            <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-950/50 p-3 rounded-xl border border-slate-950/40 leading-relaxed font-medium">Loading descriptive logs...</p>
 
                             <div class="space-y-1.5">
-                                <span class="text-[9px] uppercase font-black tracking-widest text-slate-500">Operational Timetable Status</span>
-                                <div id="trayBackHoursGrid" class="bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl grid grid-cols-1 gap-1 font-mono text-[11px] text-slate-400"></div>
+                                <span class="text-[9px] uppercase font-black tracking-widest text-slate-500">Schedule</span>
+                                <div id="trayBackHoursGrid" class="bg-slate-950/50 border border-slate-950/40 p-2.5 rounded-xl grid grid-cols-1 gap-1 font-mono text-[11px] text-slate-400"></div>
                             </div>
 
                             <div id="trayBackBookingWarningCard" class="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-start gap-2.5 hidden">
                                 <span class="text-base mt-0.5">🗓️</span>
                                 <div class="space-y-0.5">
-                                    <h5 class="text-[10px] font-black text-amber-400 uppercase tracking-wider">Scraper Advisory Alert</h5>
-                                    <p id="trayBackBookingValueText" class="text-xs text-slate-300 leading-relaxed font-medium">Booking Matrix Context</p>
+                                    <h5 class="text-[10px] font-black text-amber-400 uppercase tracking-wider">Alert</h5>
+                                    <p id="trayBackBookingValueText" class="text-xs text-slate-300 leading-relaxed font-medium"></p>
                                 </div>
                             </div>
                         </div>
@@ -463,8 +450,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.3.5";
-        // LIVE INSTALLED GOOGLE DEPLOYMENT LINK INJECTED SUCCESSFULLY
+        const APP_VERSION = "v3.4.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -493,6 +479,9 @@
         const PULL_INDICATOR = document.getElementById('pullToRefreshIndicatorHUD');
 
         window.onload = function() {
+            // CACHE OVERRIDE TO FORCE LEVEL 16 ALTITUDE PREFERENCES
+            localStorage.setItem('compass_map_state_zoom', '16');
+
             cachedHardwareString = parseReadableDeviceHardware();
             document.getElementById('meta-id').innerText = `Device ID: ${deviceId}`;
             document.getElementById('meta-hardware').innerText = `Model: ${cachedHardwareString}`;
@@ -547,13 +536,14 @@
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
             
-            // HARDWARE PINCH TWIST AND ROTATION PARAMETERS PASSED DIRECTLY
+            // FULL FORCE TWO-FINGER INTERACTION ENGAGED WITH RENDER BUFFERS
             leafletMapInstance = L.map('map-render-element', { 
                 zoomControl: false, 
                 attributionControl: false,
                 touchRotate: true,
-                rotate: true
-            }).setView([userLat, userLon], 16); // HARMONIZED LEVEL 16 ALTITUDE
+                rotate: true,
+                bounceAtZoomLimits: false
+            }).setView([userLat, userLon], 16); // LOCKED TO ALTITUDE ZOOM LEVEL 16
             
             setMapBaseLayerProviderSource(currentMapStyleKey);
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
@@ -568,10 +558,9 @@
             leafletMapInstance.on('moveend zoomend viewreset animationend', () => {
                 if (leafletMapInstance) {
                     const center = leafletMapInstance.getCenter();
-                    const zoom = leafletMapInstance.getZoom();
                     localStorage.setItem('compass_map_state_lat', center.lat);
                     localStorage.setItem('compass_map_state_lng', center.lng);
-                    localStorage.setItem('compass_map_state_zoom', zoom);
+                    localStorage.setItem('compass_map_state_zoom', '16');
                     
                     if (travelSpots.length > 0) {
                         window.requestAnimationFrame(() => {
@@ -583,9 +572,8 @@
 
             const savedLat = localStorage.getItem('compass_map_state_lat');
             const savedLng = localStorage.getItem('compass_map_state_lng');
-            const savedZoom = localStorage.getItem('compass_map_state_zoom');
-            if (savedLat && savedLng && savedZoom) {
-                leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], parseInt(savedZoom));
+            if (savedLat && savedLng) {
+                leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 16);
             }
         }
 
@@ -633,11 +621,11 @@
 
             let providerUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
             
-            // ACCELERATED LOOK-AHEAD MEMORY BUFFER FOR FAST MOVEMENTS
+            // INTENSE RETENTION BUFFER TILES OVERRIDES
             let attributionMeta = { 
                 maxZoom: 20,
                 preload: true,
-                keepBuffer: 8,
+                keepBuffer: 12,
                 updateWhenIdle: false,
                 updateWhenZooming: false
             };
@@ -776,7 +764,7 @@
                             }).addTo(leafletMapInstance);
                         }
 
-                        // TRANSLUCENT RADAR ANTENNA ACCURACY CIRCLE
+                        // HIGH FIDELITY GEOMETRIC TRANSLUCENT ANTENNA RADAR ACCURACY HOOP
                         const currentAccuracyRadiusMeters = pos.coords.accuracy || 0;
                         if (userAccuracyRadiusCircle) {
                             userAccuracyRadiusCircle.setLatLng([userLat, userLon]).setRadius(currentAccuracyRadiusMeters);
@@ -791,7 +779,7 @@
                         }
                         
                         if (isCameraLocked) {
-                            leafletMapInstance.panTo([userLat, userLon], { animate: true });
+                            leafletMapInstance.setView([userLat, userLon], 16, { animate: true });
                         }
                     }
                     renderList();
@@ -836,7 +824,7 @@
                             userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                             
                             if (isCameraLocked && leafletMapInstance) {
-                                leafletMapInstance.panTo([userLat, userLon], { animate: true });
+                                leafletMapInstance.setView([userLat, userLon], 16, { animate: true });
                             }
                         },
                         () => {},
@@ -864,11 +852,10 @@
                     leafletMapInstance.invalidateSize(); 
                     const savedLat = localStorage.getItem('compass_map_state_lat');
                     const savedLng = localStorage.getItem('compass_map_state_lng');
-                    const savedZoom = localStorage.getItem('compass_map_state_zoom');
-                    if (savedLat && savedLng && savedZoom) {
-                        leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], parseInt(savedZoom), { animate: false });
+                    if (savedLat && savedLng) {
+                        leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 16, { animate: false });
                     } else if(gpsStatusCachedBool) {
-                        leafletMapInstance.setView([userLat, userLon], 16, { animate: false }); // STEADY VIEW FACTOR 16
+                        leafletMapInstance.setView([userLat, userLon], 16, { animate: false });
                     }
                 }, 50); 
             }
@@ -917,7 +904,7 @@
                     updateGpsHudStatus('active', "GPS Active");
                     isCameraLocked = true;
                     syncCameraLockVisualUIState();
-                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 16); // HARMONIZED LEVEL 16
+                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 16); // STRICT FORCE LEVEL 16
                     startLiveHardwareGPSTracking();
                 },
                 (err) => {
@@ -943,7 +930,7 @@
             syncCameraLockVisualUIState();
 
             if (cachedUserCoords) {
-                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 16, { animate: true }); // HARMONIZED LEVEL 16
+                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 16, { animate: true }); // COMPASS LOCKS LEVEL 16
             }
 
             const executeHardwareQuery = () => {
@@ -968,7 +955,7 @@
                         }
                         
                         if (isCameraLocked) {
-                            leafletMapInstance.setView([userLat, userLon], 16, { animate: true }); // HARMONIZED LEVEL 16
+                            leafletMapInstance.setView([userLat, userLon], 16, { animate: true }); // COMPASS WATCH LOCK LEVEL 16
                         }
                     },
                     (err) => {
@@ -1026,7 +1013,7 @@
             if (matchTarget) { 
                 isCameraLocked = false;
                 syncCameraLockVisualUIState();
-                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 16, { animate: true }); // HARMONIZED LEVEL 16
+                leafletMapInstance.setView([parseFloat(matchTarget.latitude), parseFloat(matchTarget.longitude)], 16, { animate: true }); 
             } else {
                 triggerCuteSpeechBubbleHUD("No pins found matching this city filter!", document.getElementById('shortcutMagnifyingButton'), event);
             }
@@ -1353,7 +1340,7 @@
             };
 
             const backDesc = document.getElementById('trayBackLongDescription');
-            backDesc.innerText = (spotObj.long_description && spotObj.long_description !== "N/A") ? spotObj.long_description : "Disclaimer: Deep background intelligence data logs currently unpopulated by visual scraper matrix streams.";
+            backDesc.innerText = (spotObj.long_description && spotObj.long_description !== "N/A") ? spotObj.long_description : "Disclaimer: Deep background details unpopulated.";
 
             const hoursGrid = document.getElementById('trayBackHoursGrid');
             hoursGrid.innerHTML = '';
@@ -1368,7 +1355,7 @@
                     hoursGrid.appendChild(rowDiv);
                 });
             } else {
-                hoursGrid.innerHTML = `<div class="text-slate-500 italic text-[10px] p-1">Disclaimer: Operational schedule timetable data currently unavailable.</div>`;
+                hoursGrid.innerHTML = `<div class="text-slate-500 italic text-[10px] p-1">Disclaimer: Schedule data unavailable.</div>`;
             }
 
             const warningCard = document.getElementById('trayBackBookingWarningCard');
@@ -1421,13 +1408,14 @@
                         if(t.trim()) hoursHTMLTokens += `<div class="flex justify-between border-b border-slate-950 last:border-0 py-0.5"><span>${t.trim()}</span></div>`;
                     });
                 } else {
-                    hoursHTMLTokens = `<div class="text-slate-600 italic text-[10px]">Timetable unpopulated.</div>`;
+                    hoursHTMLTokens = `<div class="text-slate-600 italic text-[10px]">Schedule unpopulated.</div>`;
                 }
 
                 const cardWrapper = document.createElement('div');
                 cardWrapper.id = uniqueCardContainerId;
                 cardWrapper.className = "w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200";
 
+                // DIRECT STRUCTURAL BINDINGS APPLIED INTERNALLY BELOW
                 cardWrapper.innerHTML = `
                     <div class="flip-card-inner-rotator w-full h-full">
                         
@@ -1453,7 +1441,7 @@
                                 </div>
                                 ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
                                 <div class="flex gap-2 mt-1 justify-end items-center">
-                                    <button onclick="document.getElementById('${uniqueCardContainerId}').classList.add('flipped')" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
+                                    <button onclick="document.getElementById('${uniqueCardContainerId}').classList.add('flipped');" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
                                         ℹ️ Extra Info
                                     </button>
                                     <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400">${isDone ? '↩ Undo' : '✓ Done'}</button>
@@ -1464,21 +1452,18 @@
 
                         <div class="flip-card-back-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between overflow-hidden">
                             <div class="flex justify-between items-center border-b border-slate-800/60 pb-1.5 shrink-0">
-                                <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Scraped Metrics</span>
-                                <button onclick="document.getElementById('${uniqueCardContainerId}').classList.remove('flipped')" class="px-2 py-0.5 bg-slate-950 border border-slate-800 text-[9px] font-bold rounded text-slate-400">↩ Back</button>
+                                <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Extra Info</span>
+                                <button onclick="document.getElementById('${uniqueCardContainerId}').classList.remove('flipped');" class="px-2 py-0.5 bg-slate-950 border border-slate-800 text-[9px] font-bold rounded text-slate-400">↩ Back</button>
                             </div>
                             <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 pr-0.5 space-y-3 text-[11px]">
+                                <p class="text-slate-300 leading-relaxed font-medium bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No background summary recorded.'}</p>
                                 <div>
-                                    <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Description Logs</span>
-                                    <p class="text-slate-300 leading-relaxed font-medium bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No comprehensive description recorded by scraper.'}</p>
-                                </div>
-                                <div>
-                                    <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Hours Schedule</span>
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Schedule</span>
                                     <div class="bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl font-mono text-[10px] text-slate-400 space-y-0.5">${hoursHTMLTokens}</div>
                                 </div>
                                 ${(spot.booking_requirement && spot.booking_requirement !== "N/A" && spot.booking_requirement.toLowerCase() !== "none") ? `
                                 <div class="p-2.5 bg-amber-500/5 border border-amber-500/20 rounded-xl">
-                                    <span class="text-[8px] font-black uppercase tracking-widest text-amber-400 block">Advisory Flag</span>
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-amber-400 block">Alert</span>
                                     <span class="text-slate-300 leading-relaxed block mt-0.5">${spot.booking_requirement}</span>
                                 </div>` : ''}
                             </div>
