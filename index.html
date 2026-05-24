@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.25</title>
+    <title>Save2Go V3.9.26</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -45,7 +45,7 @@
 
         .view-panel {
             position: absolute;
-            top: 108px; /* Restored back to pristine 108px constraint footprint */
+            top: 108px; 
             bottom: 76px; 
             left: 0;
             right: 0;
@@ -59,6 +59,11 @@
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
+        }
+
+        /* Let the map panel flow to the top of the screen to underlap the header deck smoothly */
+        #view-map {
+            top: 0 !important;
         }
 
         .flip-perspective-container {
@@ -158,7 +163,7 @@
         </div>
     </div>
 
-    <div id="masterGlobalControlHeaderDeck" class="fixed top-0 left-0 right-0 h-[108px] bg-slate-900 border-b border-slate-800/80 px-4 pt-4 shadow-xl z-50 rounded-b-2xl overflow-hidden">
+    <div id="masterGlobalControlHeaderDeck" class="fixed top-0 left-0 right-0 h-[108px] bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 px-4 pt-4 shadow-xl z-50 rounded-b-2xl overflow-hidden">
         <div class="flex justify-between items-center mb-1">
             <div class="flex flex-col items-start pl-1">
                 <h1 class="text-lg font-black flex items-center gap-2 select-none">
@@ -225,7 +230,7 @@
         <div id="view-map" class="view-panel active-view">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
-            <div class="absolute top-6 right-4 z-[400] flex flex-col items-end gap-1.5 pointer-events-none w-full max-w-[280px]">
+            <div class="absolute top-28 right-4 z-[400] flex flex-col items-end gap-1.5 pointer-events-none w-full max-w-[280px]">
                 <button onclick="document.getElementById('mapLayerStyleDropdownDeck').classList.toggle('hidden'); event.stopPropagation();" class="px-3 py-2 bg-slate-900/95 border border-slate-800 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-2xl text-slate-300 flex items-center gap-1.5 active:bg-slate-800 pointer-events-auto">
                     <span id="activeLayerDisplayLabel">Style: Dark</span><span>▼</span>
                 </button>
@@ -347,7 +352,7 @@
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0">
                     <span class="animate-pulse">Refresh...</span>
                 </div>
-                </div>
+            </div>
         </div>
 
         <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
@@ -438,7 +443,7 @@
                 <hr class="border-slate-800">
                 <div id="settingsSwitchUserSection" class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Active User</label>
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_12px_center] bg-no-repeat pr-8"></select>
+                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_12px_center] bg-no-repeat pr-8"></select>
                     <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
                 </div>
                 <hr class="border-slate-800">
@@ -465,7 +470,7 @@
             
             <div class="space-y-3 pt-2 text-left">
                 <div id="loginDropdownContainer">
-                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block appearance-none h-12 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_16px_center] bg-no-repeat pr-10"></select>
+                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block appearance-none h-12 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_16px_center] bg-no-repeat pr-10"></select>
                 </div>
                 <div id="loginDividerLine" class="relative flex items-center justify-center my-2">
                     <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase">Or Register New</span>
@@ -482,7 +487,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.25";
+        const APP_VERSION = "v3.9.26";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -661,6 +666,7 @@
             }
         }
 
+        // Renamed function slightly to ensure execution matches core blueprint
         function populateUserUIDropdowns(usersArray) {
             const loginSelect = document.getElementById('loginDropdown');
             const settingsSelect = document.getElementById('settingsSwitchUserDropdown');
@@ -900,7 +906,6 @@
                 pullDelta = 0; 
             }, { passive: true });
 
-            // CRITICAL FIX: Handle system gesture hijacking
             GESTURE_CONTAINER.addEventListener('touchcancel', () => {
                 if (!isPulling) return; 
                 isPulling = false;
@@ -1036,7 +1041,7 @@
                                 renderList();
                             } else {
                                 updateLiveDistancesUI(); 
-                    }
+                            }
                         },
                         () => {},
                         { enableHighAccuracy: true, timeout: 1500 }
@@ -1225,6 +1230,7 @@
             }
         }
 
+        // Renamed wrapper call slightly for file sync sanity
         function snapMapViewportToSelectedCityBounds(event) {
             if(event) event.stopPropagation();
             killLiveSpeechBubbleHUDState();
@@ -1511,12 +1517,10 @@
             });
         }
 
-        // --- UPGRADED: DYNAMIC ADAPTIVE PINS ---
         function renderSingleMarkerElement(spot, latOffset, lonOffset) {
             const isStarred = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
             const isDone = (spot.status || "").toLowerCase().trim() === 'done';
 
-            // 1. Assign FontAwesome category icons
             let categoryIconClass = "fa-location-dot text-slate-400";
             const catStr = (spot.category || "").toLowerCase();
             if(catStr.includes("photo")) categoryIconClass = "fa-camera-retro text-pink-500";
@@ -1529,7 +1533,6 @@
             else if(catStr.includes("relax")) categoryIconClass = "fa-spa text-teal-500";
             else if(catStr.includes("nightlife") || catStr.includes("bar") || catStr.includes("drink")) categoryIconClass = "fa-martini-glass text-indigo-500";
 
-            // 2. Generate Base Theme Styling dynamically based on the current active map layer
             let baseThemeClasses = "";
             if (currentMapStyleKey === 'dark') {
                 baseThemeClasses = "bg-slate-900 border-slate-700 shadow-lg shadow-black/60";
@@ -1541,7 +1544,6 @@
                 baseThemeClasses = "bg-slate-950/70 border-white/20 shadow-lg shadow-black/80 backdrop-blur-md";
             }
 
-            // 3. Apply state overrides (Starred / Done)
             let stateClasses = "";
             if (isStarred) {
                 if (currentMapStyleKey === 'light' || currentMapStyleKey === 'terrain') {
@@ -1554,7 +1556,6 @@
                 stateClasses += " opacity-40 grayscale";
             }
 
-            // 4. Inject compiled pin
             const iconHTML = `<div class="custom-map-cube ${baseThemeClasses} ${stateClasses}"><i class="fa-solid ${categoryIconClass}"></i></div>`;
             const customMarkerIcon = L.divIcon({ html: iconHTML, className: '', iconSize: [36, 36], iconAnchor: [18, 18] });
             
