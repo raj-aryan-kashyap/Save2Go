@@ -408,7 +408,7 @@
                 </div>
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Maps Link</label>
-                    <input type="url" id="new-maps-url" placeholder="https://maps.app.goo.gl/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                    <input type="url" id="new-maps-url" placeholder="http://maps.google.com/?q=..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -1128,7 +1128,7 @@
                                 renderList();
                             } else {
                                 updateLiveDistancesUI(); 
-                    }
+                            }
                         },
                         () => {},
                         { enableHighAccuracy: true, timeout: 1500 }
@@ -1249,7 +1249,8 @@
             if (mapsUrl !== "" && mapsUrl !== "N/A") {
                 window.open(mapsUrl, '_blank');
             } else if (lat !== "" && lat !== "0" && lng !== "" && lng !== "0") {
-                window.open(`http://googleusercontent.com/maps.google.com/?q=${lat},${lng}`, '_blank');
+                // Bulletproof consumer fallback redirection link mapping to handle standalone database coordinate points
+                window.open(`https://maps.google.com/?q=${lat},${lng}`, '_blank');
             } else {
                 triggerCuteSpeechBubbleHUD("Map data missing in database!", buttonElement, event);
             }
@@ -1279,7 +1280,6 @@
                 const currentCenterPos = leafletMapInstance.getCenter();
                 const currentZoomScale = leafletMapInstance.getZoom();
                 
-                // Formulated protective baseline matching parameters to bypass the Leaflet moveend lifecycle loop bug entirely
                 const isMatchingLat = Math.abs(currentCenterPos.lat - cachedUserCoords.lat) < 0.00001;
                 const isMatchingLng = Math.abs(currentCenterPos.lng - cachedUserCoords.lon) < 0.00001;
                 const isExactlyLevel18 = (currentZoomScale === 18);
@@ -1898,7 +1898,7 @@
                                     <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'forward')" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
                                         <i class="fa-solid fa-circle-info mr-1"></i> Extra Info
                                     </button>
-                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold active:bg-slate-850">${isDone ? '<i class="fa-solid fa-arrow-rotate-left mr-1"></i> Undo' : '<i class="fa-solid fa-check mr-1"></i> Mark Done'}</button>
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold active:bg-slate-855">${isDone ? '<i class="fa-solid fa-arrow-rotate-left mr-1"></i> Undo' : '<i class="fa-solid fa-check mr-1"></i> Mark Done'}</button>
                                     <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? '<i class="fa-solid fa-star-half-stroke mr-1"></i> Unstar' : '<i class="fa-solid fa-star mr-1"></i> Star'}</button>
                                 </div>
                             </div>
