@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V4.7.0 - Integrated Matrix Engine Production Baseline</title>
+    <title>Save2Go V4.7.1 - Integrated Matrix Engine Production Baseline</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -540,44 +540,45 @@
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[95vh] overflow-y-auto no-scrollbar shadow-2xl relative">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                 <h3 class="text-sm font-black flex items-center gap-2 text-pink-400">
-                    <i class="fa-solid fa-route"></i> Setup Day Matrix
+                    <i class="fa-solid fa-route"></i> Build Your Itinerary
                 </h3>
                 <button onclick="toggleItineraryCreationDrawerForm(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
-            <div class="space-y-3 text-xs">
+            <div class="space-y-3 text-xs w-full">
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Itinerary Tracking Name</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Name</label>
                     <input type="text" id="itin-new-name" placeholder="e.g., Paris Day 1" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none text-xs font-semibold">
                 </div>
                 
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Calendar Date</label>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Date</label>
                         <input type="date" id="itin-new-date" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-200 focus:outline-none text-[11px] h-[38px] font-mono">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Active City</label>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">City</label>
                         <select id="itin-new-city" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-200 focus:outline-none h-[38px] text-[11px] font-bold block appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:8px_auto] bg-[right_10px_center] bg-no-repeat pr-6"></select>
                     </div>
-                    <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Time Window</label>
-                        <div class="flex gap-1 items-center">
-                            <input type="time" id="itin-new-start" value="09:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[10px] font-mono h-[38px]">
-                            <span class="text-slate-600 font-black">-</span>
-                            <input type="time" id="itin-new-end" value="21:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[10px] font-mono h-[38px]">
-                        </div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Time Window</label>
+                    <div class="flex gap-1 items-center w-full">
+                        <input type="time" id="itin-new-start" value="09:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[10px] font-mono h-[38px]">
+                        <span class="text-slate-600 font-black px-1">-</span>
+                        <input type="time" id="itin-new-end" value="21:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[10px] font-mono h-[38px]">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Select Categories Sequence Pattern</label>
-                    <div id="itinModalCategoryGridContainer" class="grid grid-cols-3 gap-1.5 max-h-36 overflow-y-auto subtle-scrollbar p-2 bg-slate-950/40 rounded-xl border border-slate-900/60"></div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Categories Sequence for Itinerary Building</label>
+                    <div id="itinModalCategoryGridContainer" class="grid grid-cols-3 gap-1.5 max-h-24 overflow-y-auto subtle-scrollbar p-2 bg-slate-950/40 rounded-xl border border-slate-900/60 w-full"></div>
                 </div>
 
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Active Query Sequence Sequence Tracker</label>
-                    <div id="itinModalSequenceQueryRowBox" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 min-h-[46px] flex gap-1.5 items-center overflow-x-auto no-scrollbar subtle-scrollbar"></div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Active Query Sequence Tracker</label>
+                    <div id="itinModalSequenceQueryRowBox" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 min-h-[80px] flex gap-1.5 items-center flex-wrap subtle-scrollbar"></div>
                 </div>
 
                 <button onclick="compileItineraryFromSequencePatternForm()" class="w-full mt-2 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-xs uppercase tracking-wider">
@@ -590,7 +591,7 @@
     <script>
         const ENABLE_MAP_ROTATION = false; 
 
-        const APP_VERSION = "v4.7.0";
+        const APP_VERSION = "v4.7.1";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -2432,12 +2433,10 @@
             toggleItineraryCreationDrawerForm(true);
             itinSelectedCategorySequence = [];
             
-            // Auto populate date picker field anchor placeholder with current systemic parameters
             const todayStr = new Date().toISOString().split('T')[0];
             const dateInput = document.getElementById('itin-new-date');
             if (dateInput) dateInput.value = todayStr;
 
-            // Sync dynamic source values into form dropdown element references
             const selectCity = document.getElementById('itin-new-city');
             if (selectCity) {
                 selectCity.innerHTML = '';
@@ -2460,7 +2459,6 @@
             gridContainer.innerHTML = '';
             rowBox.innerHTML = '';
 
-            // Compute structural frequency metrics map
             let countsMap = {};
             itinSelectedCategorySequence.forEach(cat => { countsMap[cat] = (countsMap[cat] || 0) + 1; });
 
@@ -2475,9 +2473,9 @@
                 const btn = document.createElement('button');
                 btn.type = "button";
                 if (isSelected) {
-                    btn.className = "p-2 rounded-xl text-[10px] font-black border text-left flex flex-col justify-between h-14 bg-pink-500/10 border-pink-500 text-pink-400";
+                    btn.className = "p-2 rounded-xl text-[10px] font-black text-left flex flex-col justify-between h-14 bg-pink-500/10 border border-dashed border-pink-500 text-pink-400";
                 } else {
-                    btn.className = "p-2 rounded-xl text-[10px] font-bold border text-left flex flex-col justify-between h-14 bg-slate-950/60 border-slate-800 text-slate-400 hover:bg-slate-900";
+                    btn.className = "p-2 rounded-xl text-[10px] font-bold text-left flex flex-col justify-between h-14 bg-slate-950/60 border border-dashed border-slate-700 text-slate-400 hover:bg-slate-900";
                 }
 
                 btn.onclick = function() {
@@ -2492,22 +2490,21 @@
                 gridContainer.appendChild(btn);
             });
 
-            // Populate the active sequential visualization pattern query row row tracking items
             if (itinSelectedCategorySequence.length === 0) {
                 rowBox.innerHTML = `<span class="text-[10px] italic text-slate-600 font-medium p-1">No selection patterns logged. Click categories above.</span>`;
             } else {
                 itinSelectedCategorySequence.forEach((cat, idx) => {
                     const pill = document.createElement('div');
-                    pill.className = "flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg py-1 px-2 shrink-0 text-[10px] font-bold text-slate-300 shadow";
+                    pill.className = "flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-2 shrink-0 text-[10px] font-bold text-slate-300 shadow";
                     pill.innerHTML = `
                         <span>${cat}</span>
-                        <button onclick="removeCategoryFromSequenceByIndex(${idx})" class="text-slate-500 hover:text-red-400 text-[9px] ml-0.5"><i class="fa-solid fa-xmark"></i></button>
+                        <button onclick="removeCategoryFromSequenceByIndex(${idx})" class="w-4 h-4 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-[8px] hover:bg-red-900/60 transition-colors"><i class="fa-solid fa-xmark"></i></button>
                     `;
                     rowBox.appendChild(pill);
 
                     if (idx < itinSelectedCategorySequence.length - 1) {
                         const separator = document.createElement('span');
-                        separator.className = "text-slate-700 font-mono text-[9px] shrink-0";
+                        separator.className = "text-pink-500 font-black text-[14px] shrink-0 mx-0.5 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]";
                         separator.innerText = "→";
                         rowBox.appendChild(separator);
                     }
@@ -2564,7 +2561,7 @@
             // EVALUATE FRESH LANDING ONBOARDING PAGE REQUIREMENTS SYSTEMATICALLY
             if (isItineraryCacheWhollyEmpty()) {
                 if (topHeaderBar) topHeaderBar.classList.add('hidden');
-                container.className = "flex-1 overflow-y-auto w-full px-6 flex flex-col justify-center items-center text-center gap-4 h-full pb-12 select-none";
+                container.className = "flex-1 w-full px-6 flex flex-col justify-center items-center text-center gap-4 h-full select-none";
                 container.innerHTML = `
                     <div class="max-w-xs space-y-4 animate-fade-in">
                         <div class="w-16 h-16 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 text-2xl mx-auto filter drop-shadow-[0_0_15px_rgba(236,72,153,0.2)]">
