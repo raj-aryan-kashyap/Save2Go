@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V4.7.1 - Integrated Matrix Engine Production Baseline</title>
+    <title>Save2Go V4.7.2 - Integrated Matrix Engine Production Baseline</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -536,7 +536,7 @@
         </div>
     </div>
 
-    <div id="itineraryCreationDrawerModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-end hidden transition-all duration-300">
+    <div id="itineraryCreationDrawerModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[999] flex items-end hidden transition-all duration-300">
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[95vh] overflow-y-auto no-scrollbar shadow-2xl relative">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                 <h3 class="text-sm font-black flex items-center gap-2 text-pink-400">
@@ -550,35 +550,46 @@
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Name</label>
                     <input type="text" id="itin-new-name" placeholder="e.g., Paris Day 1" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none text-xs font-semibold">
                 </div>
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Pacing</label>
+                    <div class="bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden transition-all duration-200">
+                        <button onclick="setItinPacingMode('max')" id="itinPacingToggleMax" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors"><i class="fa-solid fa-rocket"></i> Max Exploration</button>
+                        <button onclick="setItinPacingMode('relaxed')" id="itinPacingToggleRelaxed" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors"><i class="fa-solid fa-mug-hot"></i> Relaxed</button>
+                    </div>
+                </div>
                 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Date</label>
-                        <input type="date" id="itin-new-date" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-200 focus:outline-none text-[11px] h-[38px] font-mono">
+                        <div onclick="openMultiDatePickerModal()" class="w-full bg-slate-950 px-2.5 rounded-xl border border-slate-800 text-slate-200 flex flex-col justify-center h-[38px] cursor-pointer shadow-inner relative">
+                            <span id="itin-date-display" class="text-[11px] font-mono font-semibold text-slate-300">Select Dates</span>
+                            <span id="itin-date-meta" class="absolute right-2 text-[8px] font-black uppercase text-amber-400 tracking-wider hidden bg-amber-500/10 px-1.5 py-0.5 rounded"></span>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">City</label>
-                        <select id="itin-new-city" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-200 focus:outline-none h-[38px] text-[11px] font-bold block appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:8px_auto] bg-[right_10px_center] bg-no-repeat pr-6"></select>
+                        <select id="itin-new-city" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-200 focus:outline-none h-[38px] text-[11px] font-bold block appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:8px_auto] bg-[right_10px_center] bg-no-repeat pr-6 shadow-inner"></select>
                     </div>
                 </div>
 
                 <div class="mt-3">
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Time Window</label>
                     <div class="flex gap-1 items-center w-full">
-                        <input type="time" id="itin-new-start" value="09:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[10px] font-mono h-[38px]">
+                        <input type="time" id="itin-new-start" value="09:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[11px] font-mono h-[38px] shadow-inner">
                         <span class="text-slate-600 font-black px-1">-</span>
-                        <input type="time" id="itin-new-end" value="21:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[10px] font-mono h-[38px]">
+                        <input type="time" id="itin-new-end" value="21:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[11px] font-mono h-[38px] shadow-inner">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Categories Sequence for Itinerary Building</label>
-                    <div id="itinModalCategoryGridContainer" class="grid grid-cols-3 gap-1.5 max-h-24 overflow-y-auto subtle-scrollbar p-2 bg-slate-950/40 rounded-xl border border-slate-900/60 w-full"></div>
+                    <div id="itinModalCategoryGridContainer" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto subtle-scrollbar p-2.5 bg-slate-950/40 rounded-xl border border-slate-900/60 w-full"></div>
                 </div>
 
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Active Query Sequence Tracker</label>
-                    <div id="itinModalSequenceQueryRowBox" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 min-h-[80px] flex gap-1.5 items-center flex-wrap subtle-scrollbar"></div>
+                    <div id="itinModalSequenceQueryRowBox" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 min-h-[80px] flex gap-1.5 items-center flex-wrap subtle-scrollbar shadow-inner items-start content-start"></div>
                 </div>
 
                 <button onclick="compileItineraryFromSequencePatternForm()" class="w-full mt-2 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-xs uppercase tracking-wider">
@@ -588,10 +599,29 @@
         </div>
     </div>
 
+    <div id="itinCalendarModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center hidden p-4">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="changeMultiCalendarMonth(-1)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 bg-slate-800 rounded-full"><i class="fa-solid fa-chevron-left"></i></button>
+                <h3 id="calendarMonthTitle" class="text-sm font-black text-slate-200 tracking-wide uppercase">Month Year</h3>
+                <button onclick="changeMultiCalendarMonth(1)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 bg-slate-800 rounded-full"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                <span class="text-[9px] font-black text-slate-500">SUN</span><span class="text-[9px] font-black text-slate-500">MON</span><span class="text-[9px] font-black text-slate-500">TUE</span>
+                <span class="text-[9px] font-black text-slate-500">WED</span><span class="text-[9px] font-black text-slate-500">THU</span><span class="text-[9px] font-black text-slate-500">FRI</span><span class="text-[9px] font-black text-slate-500">SAT</span>
+            </div>
+            <div id="calendarDaysGrid" class="grid grid-cols-7 gap-y-2 gap-x-1 text-center mb-6"></div>
+            
+            <button onclick="closeMultiDatePickerModal()" class="w-full mt-auto bg-gradient-to-r from-emerald-600 to-teal-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-xs uppercase tracking-wider">
+                Confirm Selection
+            </button>
+        </div>
+    </div>
+
     <script>
         const ENABLE_MAP_ROTATION = false; 
 
-        const APP_VERSION = "v4.7.1";
+        const APP_VERSION = "v4.7.2";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -636,14 +666,19 @@
         let noteGestureStartX = 0;
         let noteGestureStartY = 0;
 
-        // LOCALIZED OPERATIONS REGISTRY KEYS
         let itineraryItems = JSON.parse(localStorage.getItem('compass_itinerary_cache')) || { "1": [], "2": [], "3": [] };
         let activeItineraryDayTracker = 1;
         let itinWizardSequenceBlueprint = ['Photo Spot', 'Food Spot', 'Viewpoint', 'Activity'];
         let finalGeneratedSequenceRowIds = [null, null, null, null];
 
-        // ADDED DYNAMIC SEQUENCE FOR PATTERN TRACKS
         let itinSelectedCategorySequence = [];
+        let itinPacingMode = 'max';
+
+        // Custom Multi-Date Calendar State
+        let calCurrentDate = new Date();
+        let calMonth = calCurrentDate.getMonth();
+        let calYear = calCurrentDate.getFullYear();
+        let selectedMultiDatesArray = [];
 
         function initializeNoteGestureEngine(clientX, clientY, textContent) {
             if (!textContent || textContent.trim() === "") return;
@@ -2433,10 +2468,6 @@
             toggleItineraryCreationDrawerForm(true);
             itinSelectedCategorySequence = [];
             
-            const todayStr = new Date().toISOString().split('T')[0];
-            const dateInput = document.getElementById('itin-new-date');
-            if (dateInput) dateInput.value = todayStr;
-
             const selectCity = document.getElementById('itin-new-city');
             if (selectCity) {
                 selectCity.innerHTML = '';
@@ -2448,7 +2479,114 @@
                     selectCity.appendChild(opt);
                 });
             }
+            
+            updateMultiDateUILabel();
             renderItineraryFormCategoriesAndQueryRows();
+        }
+
+        // ========================================================
+        // PACING TOGGLE ENGINE
+        // ========================================================
+        function setItinPacingMode(mode) {
+            itinPacingMode = mode;
+            const maxBtn = document.getElementById('itinPacingToggleMax');
+            const relBtn = document.getElementById('itinPacingToggleRelaxed');
+            if(mode === 'max') {
+                maxBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors";
+                relBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent";
+            } else {
+                maxBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent";
+                relBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-emerald-400 bg-emerald-500/10 flex items-center justify-center gap-1.5 transition-colors";
+            }
+        }
+
+        // ========================================================
+        // MULTI-DATE CALENDAR UI ENGINE
+        // ========================================================
+        function openMultiDatePickerModal() {
+            document.getElementById('itinCalendarModal').classList.remove('hidden');
+            renderMultiDateCalendarGrid();
+        }
+
+        function changeMultiCalendarMonth(offset) {
+            calMonth += offset;
+            if (calMonth < 0) { calMonth = 11; calYear--; }
+            else if (calMonth > 11) { calMonth = 0; calYear++; }
+            renderMultiDateCalendarGrid();
+        }
+
+        function renderMultiDateCalendarGrid() {
+            const grid = document.getElementById('calendarDaysGrid');
+            const title = document.getElementById('calendarMonthTitle');
+            grid.innerHTML = '';
+            
+            let firstDay = new Date(calYear, calMonth, 1).getDay();
+            let daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            title.innerText = `${monthNames[calMonth]} ${calYear}`;
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div></div>`;
+            }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                let dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                let isSelected = selectedMultiDatesArray.includes(dateStr);
+                let btnClass = isSelected 
+                    ? "w-8 h-8 rounded-full bg-pink-600 text-white font-bold text-xs flex items-center justify-center mx-auto shadow-lg shadow-pink-600/30 transform scale-110 transition-transform" 
+                    : "w-8 h-8 rounded-full bg-slate-900 text-slate-300 font-medium text-xs flex items-center justify-center mx-auto border border-slate-800 hover:bg-slate-800 hover:text-white cursor-pointer transition-colors";
+                
+                grid.innerHTML += `<div onclick="toggleMultiDateSelection('${dateStr}')" class="${btnClass}">${i}</div>`;
+            }
+        }
+
+        function toggleMultiDateSelection(dateStr) {
+            if (selectedMultiDatesArray.includes(dateStr)) {
+                selectedMultiDatesArray = selectedMultiDatesArray.filter(d => d !== dateStr);
+            } else {
+                selectedMultiDatesArray.push(dateStr);
+            }
+            renderMultiDateCalendarGrid();
+        }
+
+        function checkSequentialDates(dates) {
+            if(dates.length <= 1) return true;
+            let sorted = [...dates].sort(); 
+            for(let i=1; i<sorted.length; i++) {
+                let d1 = new Date(sorted[i-1]);
+                d1.setDate(d1.getDate() + 1);
+                let nextDayStr = d1.toISOString().split('T')[0];
+                if (nextDayStr !== sorted[i]) return false;
+            }
+            return true;
+        }
+
+        function closeMultiDatePickerModal() {
+            document.getElementById('itinCalendarModal').classList.add('hidden');
+            updateMultiDateUILabel();
+        }
+
+        function updateMultiDateUILabel() {
+            const display = document.getElementById('itin-date-display');
+            const meta = document.getElementById('itin-date-meta');
+            
+            if (selectedMultiDatesArray.length === 0) {
+                display.innerText = "Select Dates";
+                meta.classList.add('hidden');
+            } else if (selectedMultiDatesArray.length === 1) {
+                display.innerText = selectedMultiDatesArray[0];
+                meta.classList.add('hidden');
+            } else {
+                display.innerText = `${selectedMultiDatesArray.length} Days Selected`;
+                let isSeq = checkSequentialDates(selectedMultiDatesArray);
+                if (!isSeq) {
+                    meta.innerText = "Non-sequential days";
+                    meta.classList.remove('hidden');
+                } else {
+                    meta.classList.add('hidden');
+                }
+            }
         }
 
         function renderItineraryFormCategoriesAndQueryRows() {
@@ -2473,9 +2611,9 @@
                 const btn = document.createElement('button');
                 btn.type = "button";
                 if (isSelected) {
-                    btn.className = "p-2 rounded-xl text-[10px] font-black text-left flex flex-col justify-between h-14 bg-pink-500/10 border border-dashed border-pink-500 text-pink-400";
+                    btn.className = "px-2 py-1.5 rounded-lg text-[10px] font-black flex items-center justify-between min-h-[30px] bg-pink-500/10 border border-dashed border-pink-500 text-pink-400 shadow-sm transition-all";
                 } else {
-                    btn.className = "p-2 rounded-xl text-[10px] font-bold text-left flex flex-col justify-between h-14 bg-slate-950/60 border border-dashed border-slate-700 text-slate-400 hover:bg-slate-900";
+                    btn.className = "px-2 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-between min-h-[30px] bg-slate-950/60 border border-dashed border-slate-700 text-slate-400 hover:bg-slate-900 transition-all";
                 }
 
                 btn.onclick = function() {
@@ -2484,14 +2622,14 @@
                 };
 
                 btn.innerHTML = `
-                    <span class="truncate w-full block">${catName}</span>
-                    ${isSelected ? `<span class="text-[8px] bg-pink-600 text-white font-mono px-1 py-0.5 rounded ml-auto">x${count}</span>` : `<span class="text-[8px] font-medium opacity-20 mt-auto">Add</span>`}
+                    <span class="truncate pr-1.5">${catName}</span>
+                    ${isSelected ? `<span class="text-[8px] bg-pink-600 text-white font-mono px-1 py-0.5 rounded shrink-0">x${count}</span>` : `<i class="fa-solid fa-plus text-[8px] opacity-40 shrink-0"></i>`}
                 `;
                 gridContainer.appendChild(btn);
             });
 
             if (itinSelectedCategorySequence.length === 0) {
-                rowBox.innerHTML = `<span class="text-[10px] italic text-slate-600 font-medium p-1">No selection patterns logged. Click categories above.</span>`;
+                rowBox.innerHTML = `<span class="text-[10px] italic text-slate-600 font-medium p-1 w-full text-center mt-2">No selection patterns logged. Click categories above.</span>`;
             } else {
                 itinSelectedCategorySequence.forEach((cat, idx) => {
                     const pill = document.createElement('div');
