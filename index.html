@@ -1045,7 +1045,7 @@
                                 renderList();
                             } else {
                                 updateLiveDistancesUI(); 
-                    }
+                            }
                         },
                         () => {},
                         { enableHighAccuracy: true, timeout: 1500 }
@@ -1127,7 +1127,6 @@
             }
         }
 
-        // Expanded logic models slightly to guarantee stability variables
         function handleGpsBadgeClickAction(event) {
             if(event) event.stopPropagation();
             killLiveSpeechBubbleHUDState();
@@ -1152,6 +1151,26 @@
                 },
                 { enableHighAccuracy: true, timeout: 6000 }
             );
+        }
+
+        // Upgraded with support for two-tier primary maps link routing and automated coordinate precision fallbacks
+        function handleAdaptiveDirectionClick(buttonElement, event) {
+            if (event) event.stopPropagation();
+            const rowId = buttonElement.getAttribute('data-row-id');
+            const targetSpot = travelSpots.find(s => String(s.rowid) === String(rowId));
+            if (!targetSpot) return;
+
+            const mapsUrl = targetSpot.maps_url ? String(targetSpot.maps_url).trim() : "";
+            const lat = targetSpot.latitude ? String(targetSpot.latitude).trim() : "";
+            const lng = targetSpot.longitude ? String(targetSpot.longitude).trim() : "";
+            
+            if (mapsUrl !== "" && mapsUrl !== "N/A") {
+                window.open(mapsUrl, '_blank');
+            } else if (lat !== "" && lat !== "0" && lng !== "" && lng !== "0") {
+                window.open(`https://maps.google.com/?q=${lat},${lng}`, '_blank');
+            } else {
+                triggerCuteSpeechBubbleHUD("No map asset links or coordinate sets available.", buttonElement, event);
+            }
         }
 
         function triggerRecenterToGpsHardwareAction(event) {
@@ -1271,21 +1290,6 @@
                     animate: true,
                     duration: 0.6
                 });
-            }
-        }
-
-        function handleAdaptiveDirectionClick(buttonElement, event) {
-            const rowId = buttonElement.getAttribute('data-row-id');
-            const targetSpot = travelSpots.find(s => String(s.rowid) === String(rowId));
-            if (!targetSpot) return;
-
-            const lat = targetSpot.latitude ? String(targetSpot.latitude).trim() : "";
-            const lng = targetSpot.longitude ? String(targetSpot.longitude).trim() : "";
-            
-            if (lat === "" || lng === "" || lat === "0" || lng === "0") {
-                triggerCuteSpeechBubbleHUD("Database is missing the coordinate data for this spot!", buttonElement, event);
-            } else {
-                window.open(`http://googleusercontent.com/maps.google.com/?q=${lat},${lng}`, '_blank');
             }
         }
 
@@ -1574,6 +1578,7 @@
             mapMarkersLayerGroup.addLayer(leafMarker);
         }
 
+        // Integrated clean validation workflows inside the map tray directions dashboard interface layout parameters
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const blurBg = document.getElementById('dropdownBlurBackdrop');
@@ -1617,8 +1622,12 @@
             const actionBtn = document.getElementById('trayActionBtn');
             actionBtn.setAttribute('data-row-id', spotObj.rowid);
             
+            const directMapsUrl = spotObj.maps_url ? String(spotObj.maps_url).trim() : "";
             const rawLat = spotObj.latitude ? String(spotObj.latitude).trim() : "";
-            if(rawLat === "" || rawLat === "0") {
+            const rawLng = spotObj.longitude ? String(spotObj.longitude).trim() : "";
+            const hasValidMapDestination = (directMapsUrl !== "" && directMapsUrl !== "N/A") || (rawLat !== "" && rawLat !== "0" && rawLng !== "" && rawLng !== "0");
+
+            if (!hasValidMapDestination) {
                 actionBtn.innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i>"; 
                 actionBtn.className = "px-6 bg-slate-950 border border-slate-800 text-amber-400 flex items-center justify-center rounded-xl text-sm font-black h-12 whitespace-nowrap";
             } else {
@@ -1711,12 +1720,12 @@
             }
         }
 
+        // Upgraded lists components cards layout rules to securely integrate multi-tier adaptive map targets
         function renderList() {
             const scrollContainerFrame = document.getElementById('gesture-touch-container');
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
             if(!scrollContainerFrame) return;
 
-            // Updated selection clear queries to safely include the specialized spacer node elements
             const dynamicOldCards = scrollContainerFrame.querySelectorAll('.dynamic-card-node, .dynamic-tailpiece-node, .dynamic-empty-node, .dynamic-spacer-node');
             dynamicOldCards.forEach(el => el.remove());
 
@@ -1736,8 +1745,11 @@
                 const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
                 const ticketLink = spot.ticket_url || "";
                 
+                const directMapsUrl = spot.maps_url ? String(spot.maps_url).trim() : "";
                 const latVal = spot.latitude ? String(spot.latitude).trim() : "";
-                const hasCoordinates = latVal !== "" && latVal !== "0";
+                const lngVal = spot.longitude ? String(spot.longitude).trim() : "";
+                const hasCoordinates = latVal !== "" && latVal !== "0" && lngVal !== "" && lngVal !== "0";
+                const hasValidMapDestination = (directMapsUrl !== "" && directMapsUrl !== "N/A") || hasCoordinates;
 
                 const uniqueCardContainerId = `list-flip-wrapper-node-${idx}`;
 
@@ -1773,8 +1785,8 @@
                             <div class="flex flex-col gap-2 mt-3">
                                 <div class="flex gap-2">
                                     <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
-                                    <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap h-12 ${!hasCoordinates ? 'bg-slate-950 border border-slate-800 text-amber-400 text-sm font-black w-14 shrink-0' : 'bg-slate-950 border border-slate-800 text-slate-300 flex-1'}">
-                                        ${!hasCoordinates ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-map mr-1.5 text-sm"></i> Directions'}
+                                    <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap h-12 ${!hasValidMapDestination ? 'bg-slate-950 border border-slate-800 text-amber-400 text-sm font-black w-14 shrink-0' : 'bg-slate-950 border border-slate-800 text-slate-300 flex-1'}">
+                                        ${!hasValidMapDestination ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-map mr-1.5 text-sm"></i> Directions'}
                                     </button>
                                 </div>
                                 ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
@@ -1817,7 +1829,6 @@
                 scrollContainerFrame.appendChild(cardWrapper);
             });
 
-            // Upgraded minimal thin single-line strip footer block element
             const tailEndLabelDeckNode = document.createElement('div');
             tailEndLabelDeckNode.className = "dynamic-tailpiece-node w-full py-4 flex items-center justify-center gap-4 shrink-0 block px-4";
             tailEndLabelDeckNode.innerHTML = `
@@ -1827,7 +1838,6 @@
             `;
             scrollContainerFrame.appendChild(tailEndLabelDeckNode);
 
-            // Appended hard physical spacer element underneath to bypass mobile render viewport layout clipping completely
             const physicalScrollSpacer = document.createElement('div');
             physicalScrollSpacer.className = "dynamic-spacer-node h-16 shrink-0 block w-full";
             scrollContainerFrame.appendChild(physicalScrollSpacer);
