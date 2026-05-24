@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.26</title>
+    <title>Save2Go V4.0.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -61,7 +61,6 @@
             pointer-events: auto;
         }
 
-        /* Let the map panel flow to the top of the screen to underlap the header deck smoothly */
         #view-map {
             top: 0 !important;
         }
@@ -96,7 +95,6 @@
             position: absolute;
         }
 
-        /* Upgraded structural base for adaptive vector map pins */
         .custom-map-cube {
             border-radius: 10px !important;
             display: flex !important;
@@ -127,6 +125,12 @@
         .nav-tab-transition {
             transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
             will-change: transform, opacity;
+        }
+
+        /* Continuous Hardware Acceleration Smoothness for V4 Map Rotation Layer Container Sheets */
+        .leaflet-map-pane {
+            transition: transform 0.08s ease-out;
+            will-change: transform;
         }
     </style>
 </head>
@@ -231,6 +235,12 @@
         <div id="view-map" class="view-panel active-view">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
+            <div class="absolute top-28 left-4 z-[400] pointer-events-none">
+                <div id="mapZoomDebugHUD" class="px-3 py-2 text-[10px] font-mono font-bold text-slate-400 bg-slate-900/85 border border-slate-800/50 rounded-xl shadow-xl select-none">
+                    Zoom: 16
+                </div>
+            </div>
+
             <div class="absolute top-28 right-4 z-[400] flex flex-col items-end gap-1.5 pointer-events-none w-full max-w-[280px]">
                 <button onclick="document.getElementById('mapLayerStyleDropdownDeck').classList.toggle('hidden'); event.stopPropagation();" class="px-3 py-2 bg-slate-900/95 border border-slate-800 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-2xl text-slate-300 flex items-center gap-1.5 active:bg-slate-800 pointer-events-auto">
                     <span id="activeLayerDisplayLabel">Style: Dark</span><span>▼</span>
@@ -488,7 +498,10 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.26";
+        // MASTER TOGGLE SWITCH FLAG FOR ACTIVE EXPERIMENTAL V4 ROTATION SYSTEM GESTURE ENGINE
+        const ENABLE_MAP_ROTATION = true; 
+
+        const APP_VERSION = "v4.0.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -513,6 +526,7 @@
         let lastGpsSuccessTime = 0; 
         let cachedUserCoords = null; 
         let isCameraLocked = false; 
+        let currentMapBearingAngle = 0;
         
         let hasInitialGpsLockRendered = false;
 
@@ -636,6 +650,7 @@
             setupNetworkListeners(); 
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
+            setupV4TwoFingerRotationListeners();
 
             document.addEventListener('click', (event) => {
                 if (!event.target.closest('#cityHUDDropdownPopupBox') && 
@@ -656,6 +671,56 @@
                 }
             });
         };
+
+        // Implemented non-invasive two-finger touch event pipeline hidden completely behind boolean verification checks
+        function setupV4TwoFingerRotationListeners() {
+            if (!ENABLE_MAP_ROTATION) return;
+            const targetElement = document.getElementById('map-render-element');
+            if (!targetElement) return;
+
+            let initialTouchAngle = 0;
+            let baseBearingAngleOnTouchStart = 0;
+            let processingRotationActive = false;
+
+            targetElement.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    processingRotationActive = true;
+                    baseBearingAngleOnTouchStart = currentMapBearingAngle;
+                    initialTouchAngle = Math.atan2(
+                        e.touches[1].pageY - e.touches[0].pageY,
+                        e.touches[1].pageX - e.touches[0].pageX
+                    ) * 180 / Math.PI;
+                }
+            }, { passive: true });
+
+            targetElement.addEventListener('touchmove', (e) => {
+                if (processingRotationActive && e.touches.length === 2) {
+                    const currentTouchAngle = Math.atan2(
+                        e.touches[1].pageY - e.touches[0].pageY,
+                        e.touches[1].pageX - e.touches[0].pageX
+                    ) * 180 / Math.PI;
+                    
+                    const angleDelta = currentTouchAngle - initialTouchAngle;
+                    currentMapBearingAngle = (baseBearingAngleOnTouchStart + angleDelta) % 360;
+                    
+                    const pane = document.querySelector('.leaflet-map-pane');
+                    if (pane) {
+                        pane.style.transform = `rotate(${currentMapBearingAngle}deg)`;
+                    }
+
+                    const innerCompassIcon = document.getElementById('innerCompassEmojiSpinnerSpan');
+                    if (innerCompassIcon) {
+                        innerCompassIcon.style.transform = `rotate(${-currentMapBearingAngle}deg)`;
+                    }
+                }
+            }, { passive: true });
+
+            targetElement.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) {
+                    processingRotationActive = false;
+                }
+            }, { passive: true });
+        }
 
         async function fetchRegisteredDatabaseUsers() {
             try {
@@ -717,6 +782,10 @@
 
             leafletMapInstance.on('moveend zoomend viewreset animationend', () => {
                 if (leafletMapInstance) {
+                    const currentZoomLevel = leafletMapInstance.getZoom();
+                    const debugNode = document.getElementById('mapZoomDebugHUD');
+                    if (debugNode) debugNode.innerText = `Zoom: ${currentZoomLevel}`;
+
                     const center = leafletMapInstance.getCenter();
                     localStorage.setItem('compass_map_state_lat', center.lat);
                     localStorage.setItem('compass_map_state_lng', center.lng);
@@ -735,6 +804,10 @@
             if (savedLat && savedLng) {
                 leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 16);
             }
+            
+            const initialZoomLevel = leafletMapInstance.getZoom();
+            const debugNode = document.getElementById('mapZoomDebugHUD');
+            if (debugNode) debugNode.innerText = `Zoom: ${initialZoomLevel}`;
         }
 
         function killLiveSpeechBubbleHUDState() {
@@ -1153,7 +1226,7 @@
             );
         }
 
-        // Upgraded with support for two-tier primary maps link routing and automated coordinate precision fallbacks
+        // Updated copy alert validation warning to output requested string fallback message precisely
         function handleAdaptiveDirectionClick(buttonElement, event) {
             if (event) event.stopPropagation();
             const rowId = buttonElement.getAttribute('data-row-id');
@@ -1167,9 +1240,9 @@
             if (mapsUrl !== "" && mapsUrl !== "N/A") {
                 window.open(mapsUrl, '_blank');
             } else if (lat !== "" && lat !== "0" && lng !== "" && lng !== "0") {
-                window.open(`https://maps.google.com/?q=${lat},${lng}`, '_blank');
+                window.open(`http://googleusercontent.com/maps.google.com/?q=${lat},${lng}`, '_blank');
             } else {
-                triggerCuteSpeechBubbleHUD("No map asset links or coordinate sets available.", buttonElement, event);
+                triggerCuteSpeechBubbleHUD("Map Data Missing in database", buttonElement, event);
             }
         }
 
@@ -1178,10 +1251,16 @@
             killLiveSpeechBubbleHUDState();
             if (!leafletMapInstance) return;
 
+            // Reset custom rotation tracking states upon recentering back to absolute north alignment vectors
+            if (ENABLE_MAP_ROTATION) {
+                currentMapBearingAngle = 0;
+                const pane = document.querySelector('.leaflet-map-pane');
+                if (pane) pane.style.transform = 'rotate(0deg)';
+            }
+
             const emojiSpinnerNode = document.getElementById('innerCompassEmojiSpinnerSpan');
             if (emojiSpinnerNode) {
-                emojiSpinnerNode.style.transform = 'rotate(180deg) scale(0.85)';
-                setTimeout(() => { emojiSpinnerNode.style.transform = 'rotate(0deg) scale(1)'; }, 500);
+                emojiSpinnerNode.style.transform = 'rotate(0deg) scale(1)';
             }
 
             isCameraLocked = true;
@@ -1453,7 +1532,6 @@
 
             const dataset = getFilteredDatasetRows();
             const currentZoom = leafletMapInstance.getZoom();
-            const maxZoomPossible = leafletMapInstance.getMaxZoom();
             
             let overlapPixelRadiusThreshold = 28;
             if (currentZoom >= 14 && currentZoom <= 15) {
@@ -1516,6 +1594,7 @@
                         
                         clusterMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
+                            const maxZoomPossible = leafletMapInstance.getMaxZoom();
                             const targetZoomLevel = Math.min(leafletMapInstance.getZoom() + 2, maxZoomPossible);
                             leafletMapInstance.setView([cluster.leadLatLng.lat, cluster.leadLatLng.lng], targetZoomLevel, { animate: true });
                         });
@@ -1578,7 +1657,6 @@
             mapMarkersLayerGroup.addLayer(leafMarker);
         }
 
-        // Integrated clean validation workflows inside the map tray directions dashboard interface layout parameters
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
             const blurBg = document.getElementById('dropdownBlurBackdrop');
@@ -1720,7 +1798,7 @@
             }
         }
 
-        // Upgraded lists components cards layout rules to securely integrate multi-tier adaptive map targets
+        // Updated copy footer label component variables to cleanly output the exact "End of filtered list" target string
         function renderList() {
             const scrollContainerFrame = document.getElementById('gesture-touch-container');
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
@@ -1833,7 +1911,7 @@
             tailEndLabelDeckNode.className = "dynamic-tailpiece-node w-full py-4 flex items-center justify-center gap-4 shrink-0 block px-4";
             tailEndLabelDeckNode.innerHTML = `
                 <div class="flex-grow border-t border-slate-900 max-w-[40px]"></div>
-                <span class="text-[9px] font-bold tracking-[0.15em] uppercase text-slate-600 whitespace-nowrap">End of Filtered List View</span>
+                <span class="text-[9px] font-bold tracking-[0.15em] uppercase text-slate-600 whitespace-nowrap">End of filtered list</span>
                 <div class="flex-grow border-t border-slate-900 max-w-[40px]"></div>
             `;
             scrollContainerFrame.appendChild(tailEndLabelDeckNode);
