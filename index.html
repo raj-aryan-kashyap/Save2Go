@@ -127,7 +127,6 @@
             will-change: transform, opacity;
         }
 
-        /* Continuous Hardware Acceleration Smoothness for V4 Map Rotation Layer Container Sheets */
         .leaflet-map-pane {
             transition: transform 0.08s ease-out;
             will-change: transform;
@@ -235,10 +234,8 @@
         <div id="view-map" class="view-panel active-view">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
-            <div class="absolute top-28 left-4 z-[400] pointer-events-none">
-                <div id="mapZoomDebugHUD" class="px-3 py-2 text-[10px] font-mono font-bold text-slate-400 bg-slate-900/85 border border-slate-800/50 rounded-xl shadow-xl select-none">
-                    Zoom: 16
-                </div>
+            <div class="absolute top-28 left-4 z-[400] pointer-events-none select-none">
+                <span id="mapZoomDebugHUD" class="text-[10px] font-mono font-bold text-slate-500/80 tracking-wide">Zoom: 18</span>
             </div>
 
             <div class="absolute top-28 right-4 z-[400] flex flex-col items-end gap-1.5 pointer-events-none w-full max-w-[280px]">
@@ -498,8 +495,8 @@
     </div>
 
     <script>
-        // MASTER TOGGLE SWITCH FLAG FOR ACTIVE EXPERIMENTAL V4 ROTATION SYSTEM GESTURE ENGINE
-        const ENABLE_MAP_ROTATION = true; 
+        // MASTER TOGGLE SWITCH FLAG SET TO FALSE AS REQUESTED FOR THE REVISIT STAGING PERIOD
+        const ENABLE_MAP_ROTATION = false; 
 
         const APP_VERSION = "v4.0.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
@@ -527,6 +524,7 @@
         let cachedUserCoords = null; 
         let isCameraLocked = false; 
         let currentMapBearingAngle = 0;
+        let mapTileCleanupTimerId = null;
         
         let hasInitialGpsLockRendered = false;
 
@@ -612,7 +610,7 @@
         function handleNoteMouseUpEvent(e) { killNoteGestureEngine(); }
 
         window.onload = function() {
-            localStorage.setItem('compass_map_state_zoom', '16');
+            localStorage.setItem('compass_map_state_zoom', '18');
 
             cachedHardwareString = parseReadableDeviceHardware();
             document.getElementById('meta-id').innerText = `Device ID: ${deviceId}`;
@@ -672,7 +670,6 @@
             });
         };
 
-        // Implemented non-invasive two-finger touch event pipeline hidden completely behind boolean verification checks
         function setupV4TwoFingerRotationListeners() {
             if (!ENABLE_MAP_ROTATION) return;
             const targetElement = document.getElementById('map-render-element');
@@ -762,13 +759,14 @@
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
             
+            // Initialized default zoom level baseline parameters explicitly to 18
             leafletMapInstance = L.map('map-render-element', { 
                 zoomControl: false, 
                 attributionControl: false,
                 touchRotate: true,
                 rotate: true,
                 bounceAtZoomLimits: false
-            }).setView([userLat, userLon], 16);
+            }).setView([userLat, userLon], 18);
             
             setMapBaseLayerProviderSource(currentMapStyleKey);
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
@@ -777,6 +775,11 @@
                 if (leafletMapInstance && e.target && isCameraLocked) {
                     isCameraLocked = false;
                     syncCameraLockVisualUIState();
+                }
+                // Cleared the open-world tile lifecycle timers upon detection of physical map movement
+                if (mapTileCleanupTimerId) {
+                    clearTimeout(mapTileCleanupTimerId);
+                    mapTileCleanupTimerId = null;
                 }
             });
 
@@ -789,20 +792,28 @@
                     const center = leafletMapInstance.getCenter();
                     localStorage.setItem('compass_map_state_lat', center.lat);
                     localStorage.setItem('compass_map_state_lng', center.lng);
-                    localStorage.setItem('compass_map_state_zoom', '16');
+                    localStorage.setItem('compass_map_state_zoom', '18');
                     
                     if (travelSpots.length > 0) {
                         window.requestAnimationFrame(() => {
                             plotDynamicMarkersOnCanvasMap();
                         });
                     }
+
+                    // Enforced 10 second memory optimization loop routine for active distant tile memory reduction management
+                    if (mapTileCleanupTimerId) clearTimeout(mapTileCleanupTimerId);
+                    mapTileCleanupTimerId = setTimeout(() => {
+                        if (activeBaseTileLayer && typeof activeBaseTileLayer._pruneTiles === 'function') {
+                            activeBaseTileLayer._pruneTiles();
+                        }
+                    }, 10000);
                 }
             });
 
             const savedLat = localStorage.getItem('compass_map_state_lat');
             const savedLng = localStorage.getItem('compass_map_state_lng');
             if (savedLat && savedLng) {
-                leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 16);
+                leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 18);
             }
             
             const initialZoomLevel = leafletMapInstance.getZoom();
@@ -863,11 +874,12 @@
 
             let providerUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
             
+            // Introduced Open-World Game Architecture engine tile parameters (+4 loading buffers and tile popping deactivation options)
             let attributionMeta = { 
                 maxZoom: 20,
                 preload: true,
-                keepBuffer: 12,
-                updateWhenIdle: false,
+                keepBuffer: 4, 
+                updateWhenIdle: false, 
                 updateWhenZooming: false
             };
             let visibleLabel = "Style: Dark";
@@ -1110,7 +1122,7 @@
                             userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                             
                             if (isCameraLocked && leafletMapInstance) {
-                                leafletMapInstance.setView([userLat, userLon], 16);
+                                leafletMapInstance.setView([userLat, userLon], 18);
                             }
                             
                             if (!hasInitialGpsLockRendered) {
@@ -1149,9 +1161,9 @@
                     const savedLat = localStorage.getItem('compass_map_state_lat');
                     const savedLng = localStorage.getItem('compass_map_state_lng');
                     if (savedLat && savedLng) {
-                        leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 16, { animate: false });
+                        leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 18, { animate: false });
                     } else if(gpsStatusCachedBool) {
-                        leafletMapInstance.setView([userLat, userLon], 16, { animate: false });
+                        leafletMapInstance.setView([userLat, userLon], 18, { animate: false });
                     }
                 }, 50); 
             }
@@ -1214,7 +1226,7 @@
                     updateGpsHudStatus('active', "GPS Active");
                     isCameraLocked = true;
                     syncCameraLockVisualUIState();
-                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 16); 
+                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18); 
                     startLiveHardwareGPSTracking();
                 },
                 (err) => {
@@ -1226,7 +1238,7 @@
             );
         }
 
-        // Updated copy alert validation warning to output requested string fallback message precisely
+        // Updated alert warning message text exactly to the custom database missing token string value pattern
         function handleAdaptiveDirectionClick(buttonElement, event) {
             if (event) event.stopPropagation();
             const rowId = buttonElement.getAttribute('data-row-id');
@@ -1251,7 +1263,6 @@
             killLiveSpeechBubbleHUDState();
             if (!leafletMapInstance) return;
 
-            // Reset custom rotation tracking states upon recentering back to absolute north alignment vectors
             if (ENABLE_MAP_ROTATION) {
                 currentMapBearingAngle = 0;
                 const pane = document.querySelector('.leaflet-map-pane');
@@ -1267,7 +1278,7 @@
             syncCameraLockVisualUIState();
 
             if (cachedUserCoords) {
-                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 16, { animate: true }); 
+                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 18, { animate: true }); 
             }
 
             const executeHardwareQuery = () => {
@@ -1292,7 +1303,7 @@
                         }
                         
                         if (isCameraLocked) {
-                            leafletMapInstance.setView([userLat, userLon], 16, { animate: true }); 
+                            leafletMapInstance.setView([userLat, userLon], 18, { animate: true }); 
                         }
                     },
                     (err) => {
@@ -1357,7 +1368,7 @@
             syncCameraLockVisualUIState();
 
             if (activeCityPins.length === 1) {
-                leafletMapInstance.setView([parseFloat(activeCityPins[0].latitude), parseFloat(activeCityPins[0].longitude)], 16, { animate: true });
+                leafletMapInstance.setView([parseFloat(activeCityPins[0].latitude), parseFloat(activeCityPins[0].longitude)], 18, { animate: true });
             } else {
                 let boundsContainer = L.latLngBounds();
                 activeCityPins.forEach(spot => {
@@ -1798,7 +1809,7 @@
             }
         }
 
-        // Updated copy footer label component variables to cleanly output the exact "End of filtered list" target string
+        // Updated copy metrics exactly to read "End of filtered list" down within tailpiece layout engine parameters
         function renderList() {
             const scrollContainerFrame = document.getElementById('gesture-touch-container');
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
