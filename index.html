@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.17</title>
+    <title>Save2Go V3.9.18</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -45,7 +45,7 @@
 
         .view-panel {
             position: absolute;
-            top: 92px; /* Perfect mathematical alignment with tightened header */
+            top: 104px; /* Restored to accommodate intact header */
             bottom: 76px; 
             left: 0;
             right: 0;
@@ -158,8 +158,8 @@
         </div>
     </div>
 
-    <div id="masterGlobalControlHeaderDeck" class="fixed top-0 left-0 right-0 h-[92px] bg-slate-900 border-b border-slate-800/80 px-4 pt-3 shadow-2xl z-50 rounded-b-2xl overflow-hidden">
-        <div class="flex justify-between items-center mb-2">
+    <div id="masterGlobalControlHeaderDeck" class="fixed top-0 left-0 right-0 h-[104px] bg-slate-900 border-b border-slate-800/80 px-4 pt-3.5 shadow-2xl z-50 rounded-b-2xl overflow-hidden">
+        <div class="flex justify-between items-center mb-2.5">
             <div class="flex flex-col items-start pl-1">
                 <h1 class="text-lg font-black flex items-center gap-2 select-none">
                     <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] rotate-12 transform origin-bottom-left"></i>
@@ -201,7 +201,7 @@
         </div>
     </div>
 
-    <div class="fixed top-[88px] left-0 right-0 px-4 pointer-events-none z-[600]">
+    <div class="fixed top-[100px] left-0 right-0 px-4 pointer-events-none z-[600]">
         <div class="max-w-md mx-auto relative w-full h-0">
             <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
                 <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1"></div>
@@ -335,7 +335,7 @@
         </div>
 
         <div id="view-list" class="view-panel w-full h-full bg-slate-950">
-            <div id="gesture-touch-container" class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto w-full h-full subtle-scrollbar px-4 pt-3 flex flex-col gap-3 select-none">
+            <div id="gesture-touch-container" class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto w-full h-full subtle-scrollbar px-4 pt-0 flex flex-col gap-3 select-none">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0">
                     <span class="animate-pulse">Refresh...</span>
                 </div>
@@ -481,7 +481,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.17";
+        const APP_VERSION = "v3.9.18";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
