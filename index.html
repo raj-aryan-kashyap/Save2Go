@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.0</title>
+    <title>Save2Go V3.9.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -122,23 +122,11 @@
             width: 40px !important;
             height: 40px !important;
         }
+        
+        /* UNIFIED PREMIUM NAVIGATION SELECTION LAYER TRANSITIONS */
         .nav-tab-transition {
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
-        }
-
-        @keyframes popupSpringIn {
-            0% { transform: scale(0.85); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes popdownSpringOut {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(0.85); opacity: 0; }
-        }
-        .note-zoom-active {
-            animation: popupSpringIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        .note-zoom-closing {
-            animation: popdownSpringOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
+            will-change: transform, opacity;
         }
     </style>
 </head>
@@ -179,7 +167,7 @@
         <div class="flex justify-between items-center mb-2.5">
             <div class="flex flex-col items-start pl-1">
                 <h1 class="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500 flex items-center gap-1">
-                    <span>📍</span><span class="tracking-tight">Save2Go</span>
+                    <span>🎯</span><span class="tracking-tight">Save2Go</span>
                 </h1>
                 <div class="flex items-center gap-1.5 mt-0.5 pl-0.5">
                     <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
@@ -347,18 +335,19 @@
         </div>
 
         <div id="view-list" class="view-panel w-full h-full bg-slate-950">
-            <div id="gesture-touch-container" class="absolute inset-0 overflow-y-auto w-full h-full subtle-scrollbar p-4 space-y-4 select-none">
-                <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0">
+            <div id="gesture-touch-container" class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto w-full h-full subtle-scrollbar p-4 flex flex-col select-none">
+                <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0 mb-4">
                     <span class="animate-pulse">Refresh...</span>
                 </div>
                 
-                <div class="w-full shrink-0">
+                <div class="w-full shrink-0 mb-4">
                     <div class="bg-slate-900 border border-slate-800/80 px-3.5 py-2 rounded-xl flex justify-between items-center shadow-inner">
                         <span class="text-[10px] uppercase font-black tracking-widest text-slate-400">Database Summary</span>
                         <span id="vaultDensityHUDLabelCounter" class="text-xs font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
                     </div>
                 </div>
-            </div>
+
+                </div>
         </div>
 
         <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
@@ -371,14 +360,14 @@
     </div>
 
     <div id="masterGlobalNavigationBarDeck" class="fixed bottom-0 left-0 right-0 h-[76px] bg-slate-900/90 backdrop-blur-xl border-t border-slate-800/80 px-6 py-4 flex justify-around items-center shrink-0 z-[490] rounded-t-2xl shadow-2xl">
-        <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="nav-tab-transition flex flex-col items-center gap-1 text-pink-500 scale-115 font-black">
-            <span class="text-xl">🗺️</span><span class="text-[10px] tracking-wide">Map</span>
+        <button onclick="switchMasterMenuDashboardTab('map')" id="nav-tab-map" class="nav-tab-transition flex flex-col items-center gap-0.5 text-pink-500 scale-110 font-black tracking-wide translate-y-[-2px] brightness-125">
+            <span class="text-xl">🎯</span><span class="text-[10px]">Map</span>
         </button>
-        <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="nav-tab-transition flex flex-col items-center gap-1 text-slate-500 opacity-60">
-            <span class="text-xl">🗂️</span><span class="text-[10px] tracking-wide">Saved Spots</span>
+        <button onclick="switchMasterMenuDashboardTab('list')" id="nav-tab-list" class="nav-tab-transition flex flex-col items-center gap-0.5 text-slate-500 opacity-50 scale-100 font-medium">
+            <span class="text-xl">🗂️</span><span class="text-[10px]">Saved Spots</span>
         </button>
-        <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="nav-tab-transition flex flex-col items-center gap-1 text-slate-500 opacity-60">
-            <span class="text-xl">⏳</span><span class="text-[10px] tracking-wide">Itinerary</span>
+        <button onclick="switchMasterMenuDashboardTab('itinerary')" id="nav-tab-itinerary" class="nav-tab-transition flex flex-col items-center gap-0.5 text-slate-500 opacity-50 scale-100 font-medium">
+            <span class="text-xl">📅</span><span class="text-[10px]">Itinerary</span>
         </button>
     </div>
 
@@ -488,7 +477,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.0";
+        const APP_VERSION = "v3.9.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -592,7 +581,7 @@
             document.getElementById('meta-version').innerText = `Version: ${APP_VERSION}`;
             
             initLeafletMapEngineCanvas();
-            fetchRegisteredDatabaseUsers(); // AUTOMATED USERNAMES LOADER INTEGRATED
+            fetchRegisteredDatabaseUsers(); 
             syncPriorityFilterViewModeUI();
             
             document.getElementById('trayFlipToBackBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.add('flipped'); });
@@ -640,7 +629,6 @@
             });
         };
 
-        // NEW METHOD: DYNAMIC REGISTRATION EXTRACTOR LINKED TO GOOGLE SHEET
         async function fetchRegisteredDatabaseUsers() {
             try {
                 const response = await fetch(`${API_URL}?action=get_users`);
@@ -978,6 +966,7 @@
             }, 2000);
         }
 
+        // SCALING ATTRIBUTES INJECTED DYNAMICALLY INTO THE NAVIGATION MATRIX 
         function switchMasterMenuDashboardTab(targetTabID) {
             killLiveSpeechBubbleHUDState();
             dismissMapDetailTrayHUDCard();
@@ -985,11 +974,11 @@
             if(targetTabID === activeTabID) return;
             
             const currentTabBtn = document.getElementById(`nav-tab-${activeTabID}`);
-            currentTabBtn.className = "nav-tab-transition flex flex-col items-center gap-1 text-slate-500 opacity-60 scale-100 font-medium";
+            currentTabBtn.className = "nav-tab-transition flex flex-col items-center gap-0.5 text-slate-500 opacity-50 scale-100 font-medium translate-y-0 brightness-100";
             document.getElementById(`view-${activeTabID}`).classList.remove('active-view');
             
             const nextTabBtn = document.getElementById(`nav-tab-${targetTabID}`);
-            nextTabBtn.className = "nav-tab-transition flex flex-col items-center gap-1 text-pink-500 scale-115 font-black";
+            nextTabBtn.className = "nav-tab-transition flex flex-col items-center gap-0.5 text-pink-500 scale-110 font-black tracking-wide translate-y-[-2px] brightness-125";
             document.getElementById(`view-${targetTabID}`).classList.add('active-view');
             
             activeTabID = targetTabID;
@@ -1630,7 +1619,7 @@
 
                 const cardWrapper = document.createElement('div');
                 cardWrapper.id = uniqueCardContainerId;
-                cardWrapper.className = "dynamic-card-node w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200 shrink-0 block";
+                cardWrapper.className = "dynamic-card-node w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200 mt-4 shrink-0 block";
 
                 cardWrapper.innerHTML = `
                     <div class="flip-card-inner-rotator w-full h-full">
@@ -1695,12 +1684,12 @@
                 scrollContainerFrame.appendChild(cardWrapper);
             });
 
-            // TAILPIECE APPEND RE-ANCHORED TO PHYSICAL CONTAINER BASES FOR PERFECT HARDWARE OVERLAY EXCLUSIONS
+            // FIXED FOOTER BUFFER HEIGHT: ADDS ENTIRE VERTICAL OVERFLOW MATRIX SECURITY FOR NAVIGATION CODES
             const tailEndLabelDeckNode = document.createElement('div');
-            tailEndLabelDeckNode.className = "dynamic-tailpiece-node w-full pt-4 pb-32 flex items-center justify-center shrink-0 block";
+            tailEndLabelDeckNode.className = "dynamic-tailpiece-node w-full pt-6 pb-40 flex items-center justify-center shrink-0 block";
             tailEndLabelDeckNode.innerHTML = `
-                <div class="px-5 py-2.5 bg-slate-900/40 border border-slate-800/40 rounded-full text-center max-w-[180px] w-full pointer-events-none">
-                    <span class="text-[10px] uppercase font-black tracking-widest text-slate-600 block">End of List View</span>
+                <div class="px-5 py-2.5 bg-slate-900/50 border border-slate-800/60 rounded-full text-center max-w-[190px] w-full pointer-events-none shadow-xl">
+                    <span class="text-[10px] uppercase font-black tracking-widest text-slate-500 block">End of List View</span>
                 </div>
             `;
             scrollContainerFrame.appendChild(tailEndLabelDeckNode);
