@@ -1128,7 +1128,7 @@
                                 renderList();
                             } else {
                                 updateLiveDistancesUI(); 
-                            }
+                    }
                         },
                         () => {},
                         { enableHighAccuracy: true, timeout: 1500 }
@@ -1236,7 +1236,6 @@
             );
         }
 
-        // Fixed coordinate domain mapping error to output clean fallback requests directly to Google Maps
         function handleAdaptiveDirectionClick(buttonElement, event) {
             if (event) event.stopPropagation();
             const rowId = buttonElement.getAttribute('data-row-id');
@@ -1250,7 +1249,7 @@
             if (mapsUrl !== "" && mapsUrl !== "N/A") {
                 window.open(mapsUrl, '_blank');
             } else if (lat !== "" && lat !== "0" && lng !== "" && lng !== "0") {
-                window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+                window.open(`http://googleusercontent.com/maps.google.com/?q=${lat},${lng}`, '_blank');
             } else {
                 triggerCuteSpeechBubbleHUD("Map data missing in database!", buttonElement, event);
             }
@@ -1267,7 +1266,6 @@
                 if (pane) pane.style.transform = 'rotate(0deg)';
             }
 
-            // Restored the high-tactility spring click rotation animation workflow
             const emojiSpinnerNode = document.getElementById('innerCompassEmojiSpinnerSpan');
             if (emojiSpinnerNode) {
                 emojiSpinnerNode.style.transform = 'rotate(180deg) scale(0.85)';
@@ -1278,7 +1276,17 @@
             syncCameraLockVisualUIState();
 
             if (cachedUserCoords) {
-                leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 18, { animate: true }); 
+                const currentCenterPos = leafletMapInstance.getCenter();
+                const currentZoomScale = leafletMapInstance.getZoom();
+                
+                // Formulated protective baseline matching parameters to bypass the Leaflet moveend lifecycle loop bug entirely
+                const isMatchingLat = Math.abs(currentCenterPos.lat - cachedUserCoords.lat) < 0.00001;
+                const isMatchingLng = Math.abs(currentCenterPos.lng - cachedUserCoords.lon) < 0.00001;
+                const isExactlyLevel18 = (currentZoomScale === 18);
+
+                if (!(isMatchingLat && isMatchingLng && isExactlyLevel18)) {
+                    leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 18, { animate: true }); 
+                }
             }
 
             const executeHardwareQuery = () => {
@@ -1303,7 +1311,15 @@
                         }
                         
                         if (isCameraLocked) {
-                            leafletMapInstance.setView([userLat, userLon], 18, { animate: true }); 
+                            const innerCenter = leafletMapInstance.getCenter();
+                            const innerZoom = leafletMapInstance.getZoom();
+                            const subLat = Math.abs(innerCenter.lat - userLat) < 0.00001;
+                            const subLng = Math.abs(innerCenter.lng - userLon) < 0.00001;
+                            const subZoom = (innerZoom === 18);
+
+                            if (!(subLat && subLng && subZoom)) {
+                                leafletMapInstance.setView([userLat, userLon], 18, { animate: true }); 
+                            }
                         }
                     },
                     (err) => {
