@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V4.7.3 - Integrated Matrix Engine Production Baseline</title>
+    <title>Save2Go V4.7.4 - Integrated Matrix Engine Production Baseline</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -585,12 +585,12 @@
                 </div>
 
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Categories Sequence for Itinerary Building</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Categories Sequence</label>
                     <div id="itinModalCategoryGridContainer" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto subtle-scrollbar p-2.5 bg-slate-950/40 rounded-xl border border-slate-900/60 w-full"></div>
                 </div>
 
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Active Query Sequence Tracker</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Selected Categories Sequence</label>
                     <div id="itinModalSequenceQueryRowBox" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 min-h-[80px] flex gap-1.5 items-center flex-wrap subtle-scrollbar shadow-inner items-start content-start"></div>
                 </div>
 
@@ -623,7 +623,7 @@
     <script>
         const ENABLE_MAP_ROTATION = false; 
 
-        const APP_VERSION = "v4.7.3";
+        const APP_VERSION = "v4.7.4";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -2470,6 +2470,20 @@
             toggleItineraryCreationDrawerForm(true);
             itinSelectedCategorySequence = [];
             
+            // Auto-select a food category as a baseline default
+            let defaultFoodCategory = 'Food Spot'; 
+            if (travelSpots && travelSpots.length > 0) {
+                let uniqueCategories = new Set();
+                travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
+                for (let cat of uniqueCategories) {
+                    if (cat.toLowerCase().includes('food')) {
+                        defaultFoodCategory = cat;
+                        break;
+                    }
+                }
+            }
+            itinSelectedCategorySequence = [defaultFoodCategory];
+            
             const selectCity = document.getElementById('itin-new-city');
             if (selectCity) {
                 selectCity.innerHTML = '';
@@ -2631,7 +2645,7 @@
             });
 
             if (itinSelectedCategorySequence.length === 0) {
-                rowBox.innerHTML = `<span class="text-[10px] italic text-slate-600 font-medium p-1 w-full text-center mt-2">No selection patterns logged. Click categories above.</span>`;
+                rowBox.innerHTML = ''; 
             } else {
                 itinSelectedCategorySequence.forEach((cat, idx) => {
                     const pill = document.createElement('div');
@@ -2710,7 +2724,7 @@
                         <div class="space-y-1.5">
                             <h2 class="text-base font-black uppercase tracking-wider text-slate-200">Build Your First Itinerary</h2>
                             <p class="text-xs text-slate-400 leading-relaxed font-medium">
-                                Uses past trip data to create a daily schedule without overlaps, based on previous itinerary data.
+                                Create daily schedules using saved spots and notes from your database.
                             </p>
                         </div>
                         <button onclick="openItineraryCreationDrawerForm()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-pink-600/20 active:scale-98 transform transition-all duration-150 mt-2">
