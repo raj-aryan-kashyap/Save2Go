@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.7.0</title>
+    <title>Save2Go V3.7.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -21,6 +21,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
         
+        /* FORCED VISIBLE SUBTLE SCROLLBAR MATRIX */
         .subtle-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; display: block !important; }
         .subtle-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
         .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(236, 72, 153, 0.3); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
@@ -143,12 +144,12 @@
         </div>
     </div>
 
-    <div id="noteExpandedOverlayHUD" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[99999] flex items-center justify-center p-6 hidden transition-all duration-200">
-        <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
-            <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
+    <div id="noteExpandedOverlayHUD" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[99999] flex items-center justify-center p-6 hidden transition-all duration-200 pointer-events-none">
+        <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3 pointer-events-auto select-text">
+            <div class="flex justify-between items-center border-b border-slate-800/60 pb-2 pointer-events-none">
                 <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded View</span>
             </div>
-            <div class="max-h-[60vh] overflow-y-auto subtle-scrollbar pr-1">
+            <div id="noteExpandedOverlayScrollBox" class="max-h-[50vh] overflow-y-auto subtle-scrollbar pr-1">
                 <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap"></p>
             </div>
         </div>
@@ -281,7 +282,7 @@
                         </div>
                         
                         <div class="flex-1 my-3 bg-slate-950/40 border border-slate-900/60 p-3 rounded-xl overflow-hidden">
-                            <p id="traySpotNotes" class="text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[220px] pr-1" ontouchstart="handleNoteGestureStart(event, this.innerText)" ontouchend="handleNoteGestureEnd(event)" onmousedown="handleNoteGestureStart(event, this.innerText)" onmouseup="handleNoteGestureEnd(event)"></p>
+                            <p id="traySpotNotes" class="text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[220px] pr-1" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmouseup="handleNoteMouseUpEvent(event)"></p>
                         </div>
                         
                         <div class="flex flex-col gap-2 shrink-0">
@@ -337,7 +338,7 @@
         </div>
 
         <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
-            <div id="gesture-touch-container" class="flex-1 overflow-y-auto subtle-scrollbar relative w-full h-full">
+            <div id="gesture-touch-container" class="w-full h-full overflow-y-auto subtle-scrollbar">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950">
                     <span class="animate-pulse">Refresh...</span>
                 </div>
@@ -479,7 +480,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.7.0";
+        const APP_VERSION = "v3.7.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -507,30 +508,53 @@
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
         const PULL_INDICATOR = document.getElementById('pullToRefreshIndicatorHUD');
 
+        // RE-ENGINEERED ADVANCED GESTURE FILTER MATRIX (PREVENTS ACCIDENTAL SCROLL CLIPPING)
         let noteGestureTimerId = null;
         let isNoteZoomActive = false;
+        let noteGestureStartX = 0;
+        let noteGestureStartY = 0;
 
-        function handleNoteGestureStart(event, longTextString) {
-            if (!longTextString || longTextString.trim() === "") return;
-            if (noteGestureTimerId) clearTimeout(noteGestureTimerId);
+        function initializeNoteGestureEngine(clientX, clientY, textContent) {
+            if (!textContent || textContent.trim() === "") return;
+            killNoteGestureEngine();
+            
+            noteGestureStartX = clientX;
+            noteGestureDocStartY = clientY;
             
             noteGestureTimerId = setTimeout(() => {
                 isNoteZoomActive = true;
                 const overlay = document.getElementById('noteExpandedOverlayHUD');
                 const overlayCard = document.getElementById('noteExpandedOverlayCard');
                 const overlayText = document.getElementById('noteExpandedOverlayText');
+                const scrollBox = document.getElementById('noteExpandedOverlayScrollBox');
                 
-                overlayText.innerText = longTextString;
+                overlayText.innerText = textContent;
+                if(scrollBox) scrollBox.scrollTop = 0;
+                
                 overlay.classList.remove('hidden');
                 overlayCard.classList.remove('note-zoom-closing');
                 overlayCard.classList.add('note-zoom-active');
                 
                 if(navigator.vibrate) navigator.vibrate(15);
-            }, 500); 
+            }, 500);
         }
 
-        function handleNoteGestureEnd(event) {
-            if (noteGestureTimerId) clearTimeout(noteGestureTimerId);
+        function evaluateNoteGestureMovement(currentX, currentY) {
+            if (!noteGestureTimerId || isNoteZoomActive) return;
+            const deltaX = Math.abs(currentX - noteGestureStartX);
+            const deltaY = Math.abs(currentY - noteGestureDocStartY);
+            
+            // IF CONTENT MOVES SIGNIFICANTLY BEFORE HYPERHOLD TIME GAP, ABORT IMMEDIATELY
+            if (deltaX > 5 || deltaY > 5) {
+                killNoteGestureEngine();
+            }
+        }
+
+        function killNoteGestureEngine() {
+            if (noteGestureTimerId) {
+                clearTimeout(noteGestureTimerId);
+                noteGestureTimerId = null;
+            }
             if (isNoteZoomActive) {
                 isNoteZoomActive = false;
                 const overlay = document.getElementById('noteExpandedOverlayHUD');
@@ -544,6 +568,16 @@
                 }, 180);
             }
         }
+
+        // TOUCH SURFACE LISTENER ATTACHMENTS
+        function handleNoteTouchStartEvent(e, text) { initializeNoteGestureEngine(e.touches[0].clientX, e.touches[0].clientY, text); }
+        function handleNoteTouchMoveEvent(e) { evaluateNoteGestureMovement(e.touches[0].clientX, e.touches[0].clientY); }
+        function handleNoteTouchEndEvent(e) { killNoteGestureEngine(); }
+
+        // MOUSE SURFACE LISTENER ATTACHMENTS
+        function handleNoteMouseDownEvent(e, text) { initializeNoteGestureEngine(e.clientX, e.clientY, text); }
+        function handleNoteMouseMoveEvent(e) { evaluateNoteGestureMovement(e.clientX, e.clientY); }
+        function handleNoteMouseUpEvent(e) { killNoteGestureEngine(); }
 
         window.onload = function() {
             localStorage.setItem('compass_map_state_zoom', '16');
@@ -579,6 +613,11 @@
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
             
+            // CONTINUOUS TOUCH/MOUSE INTERRUPT WRAPPERS FOR EXPANSIBLE BOX OVERRIDES
+            document.addEventListener('touchmove', function(e) { if(isNoteZoomActive) e.stopPropagation(); }, { passive: false });
+            document.addEventListener('touchend', function() { killNoteGestureEngine(); });
+            document.addEventListener('mouseup', function() { killNoteGestureEngine(); });
+
             document.addEventListener('click', (event) => {
                 if (!event.target.closest('#cityHUDDropdownPopupBox') && 
                     !event.target.closest('#filterCategoryDropdownPopupBox') && 
@@ -757,6 +796,7 @@
             return `${os}${modelEstimate}`;
         }
 
+        // DEVICE PING SHORT ID GENERATOR
         function generateAndSaveDeviceId() {
             const newId = "DEV-" + Math.random().toString(36).substring(2, 7).toUpperCase();
             localStorage.setItem('compass_device_id', newId); return newId;
@@ -792,7 +832,6 @@
 
             GESTURE_CONTAINER.addEventListener('touchend', () => {
                 if (!isPulling) return; isPulling = false;
-                // EXPLICIT SPRING RECOIL STATE CONSTRAINED DIRECTLY
                 PULL_INDICATOR.style.height = '0px';
                 syncData(true);
             }, { passive: true });
@@ -1390,7 +1429,6 @@
             const distHUD = document.getElementById('trayDistanceBadge');
             distHUD.innerText = spotObj.distStr;
             
-            // DYNAMIC CLASSIFICATION UPDATES MATCHING THE UNIFIED SYSTEM STYLE SPEC
             if(spotObj.distStr === "Missing Location") {
                 distHUD.className = "text-xs font-mono font-bold bg-amber-500/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-500/20 shrink-0 h-fit";
             } else {
@@ -1493,6 +1531,7 @@
                 return;
             }
 
+            // CRITICAL MECHANICAL CLEANUP: HARD FLATTENED EXTRA CLIPPING ELEMENT ERRORS
             processed.forEach((spot, idx) => {
                 const isDone = (spot.status || "").toLowerCase().trim() === "done";
                 const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
@@ -1529,7 +1568,7 @@
                                     <span class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
                                 </div>
                                 <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px] overflow-hidden">
-                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar" ontouchstart="handleNoteGestureStart(event, this.innerText)" ontouchend="handleNoteGestureEnd(event)" onmousedown="handleNoteGestureStart(event, this.innerText)" onmouseup="handleNoteGestureEnd(event)">${spot.notes || 'No custom notes.'}</p>
+                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-2 mt-3">
@@ -1579,9 +1618,9 @@
                 container.appendChild(cardWrapper);
             });
 
-            // FIXED TAILPIECE APPEND CONTEXT (Bypasses parent collection interrupts perfectly)
+            // UNIFIED NATIVE FLUID FOOTER - PREVENTS SCROLLBAR CLIPPING SYSTEM FAULTS GONE PAST CARD INDEX
             const tailEndLabelDeckNode = document.createElement('div');
-            tailEndLabelDeckNode.className = "w-full pt-4 pb-14 flex items-center justify-center shrink-0 block";
+            tailEndLabelDeckNode.className = "w-full pt-4 pb-[120px] flex items-center justify-center shrink-0 block";
             tailEndLabelDeckNode.innerHTML = `
                 <div class="px-5 py-2.5 bg-slate-900/40 border border-slate-800/40 rounded-full text-center max-w-[180px] w-full">
                     <span class="text-[10px] uppercase font-black tracking-widest text-slate-600">End of List View</span>
