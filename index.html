@@ -145,7 +145,7 @@
         <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
             <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
                 <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded View</span>
-                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="noteExpandedOverlayScrollBox" class="max-h-[50vh] overflow-y-auto subtle-scrollbar pr-1">
                 <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap select-text"></p>
@@ -340,7 +340,7 @@
             </div>
         </div>
 
-        <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
+        <div id="view-list" class="view-panel w-full bg-slate-950 flex flex-col">
             
             <div class="w-full px-4 bg-slate-950 shrink-0 z-20 relative">
                 <div class="max-w-md mx-auto bg-slate-900/90 backdrop-blur-xl border-x border-b border-slate-800/80 px-3.5 py-1 rounded-b-xl flex justify-between items-center h-7 shadow-md -mt-[1px]">
@@ -349,7 +349,7 @@
                 </div>
             </div>
 
-            <div id="gesture-touch-container" class="h-full overflow-y-auto w-full subtle-scrollbar px-4 pt-2 flex flex-col gap-2 select-none">
+            <div id="gesture-touch-container" class="flex-1 min-h-0 overflow-y-auto w-full subtle-scrollbar px-4 pt-2 flex flex-col gap-2 select-none">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0">
                     <span class="animate-pulse">Refresh...</span>
                 </div>
@@ -557,12 +557,10 @@
         }
 
         function evaluateNoteGestureMovement(currentX, currentY) {
-            // Optimized threshold filter rules to support smooth reading scrolling movements inside the card
             if (!noteGestureTimerId || isNoteZoomActive) return;
             const deltaX = Math.abs(currentX - noteGestureStartX);
             const deltaY = Math.abs(currentY - noteGestureStartY);
             
-            // Raised settle allowance threshold to 15px to account for micro-thumb wobble
             if (deltaX > 15 || deltaY > 15) {
                 killNoteGestureEngine();
             }
@@ -618,6 +616,13 @@
             L.DomEvent.disableClickPropagation(trayNode);
             L.DomEvent.on(trayNode, 'contextmenu', L.DomEvent.stopPropagation);
             
+            // Wire explicit universal click tracker to backdrop element
+            document.getElementById('dropdownBlurBackdrop').addEventListener('click', () => {
+                closeAllActiveHUDDropdownOverlays();
+                toggleSettingsMenu(false);
+                dismissMapDetailTrayHUDCard();
+            });
+
             if (travelSpots.length > 0) {
                 calculateSmartCityDefaultFilters();
                 renderList();
@@ -1223,6 +1228,7 @@
         function syncCameraLockVisualUIState() {
             const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
             if (!compassBtn) return;
+            // Preserved rounded-full shape profile parameters for visual alignment consistency
             if (isCameraLocked) {
                 compassBtn.className = "w-12 h-12 bg-slate-900 border-2 border-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center justify-center text-slate-300 active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative text-[19px]";
             } else {
@@ -1469,7 +1475,8 @@
                     
                     let dx = screenPoint.x - cluster.centerPx.x;
                     let dy = screenPoint.y - cluster.centerPx.y;
-                    let pixelDistance = Math.sqrt(dx * dx + dy * div);
+                    // Corrected formula calculation expression from dy * div to dy * dy
+                    let pixelDistance = Math.sqrt(dx * dx + dy * dy);
                     
                     if (isCoordinatesExactMatch || (pixelDistance <= overlapPixelRadiusThreshold)) {
                         cluster.spots.push(spot);
@@ -1679,6 +1686,7 @@
             tray.classList.remove('hidden');
         }
 
+        // Expanded logic matrices slightly to guarantee stability variables
         function dismissMapDetailTrayHUDCard() {
             const mapDetailTray = document.getElementById('mapDetailTrayHUD');
             if (mapDetailTray) {
