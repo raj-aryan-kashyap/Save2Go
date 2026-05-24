@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.24</title>
+    <title>Save2Go V3.9.25</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -45,7 +45,7 @@
 
         .view-panel {
             position: absolute;
-            top: 140px; /* Shifted down to match the new 140px structural footprint of the extended header + notch */
+            top: 108px; /* Restored back to pristine 108px constraint footprint */
             bottom: 76px; 
             left: 0;
             right: 0;
@@ -158,59 +158,50 @@
         </div>
     </div>
 
-    <div id="masterGlobalControlHeaderDeck" class="fixed top-0 left-0 right-0 h-[140px] bg-slate-900 border-b border-slate-800/80 px-4 pt-4 shadow-xl z-50 rounded-b-2xl overflow-hidden flex flex-col justify-between pb-0">
-        <div>
-            <div class="flex justify-between items-center mb-1">
-                <div class="flex flex-col items-start pl-1">
-                    <h1 class="text-lg font-black flex items-center gap-2 select-none">
-                        <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] rotate-12 transform origin-bottom-left"></i>
-                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500 tracking-tight">Save2Go</span>
-                    </h1>
-                    <div class="flex items-center gap-1.5 mt-0.5 pl-0.5">
-                        <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                        <span id="syncText" class="text-[9px] font-mono text-slate-500 whitespace-nowrap">Cache Loading...</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer relative z-[60]">
-                        <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> <span id="gpsBadgeText">GPS Off</span>
-                    </button>
-                    <button id="manualSyncCloudBtn" onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs transition-transform duration-200 active:scale-95 relative z-[60]">
-                        <div id="syncButtonIconFrame" class="inline-block"><i class="fa-solid fa-arrows-rotate"></i></div>
-                    </button>
-                    <button onclick="toggleSettingsMenu(true)" class="p-2 w-8 h-8 flex items-center justify-center rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs relative z-[60]">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
+    <div id="masterGlobalControlHeaderDeck" class="fixed top-0 left-0 right-0 h-[108px] bg-slate-900 border-b border-slate-800/80 px-4 pt-4 shadow-xl z-50 rounded-b-2xl overflow-hidden">
+        <div class="flex justify-between items-center mb-1">
+            <div class="flex flex-col items-start pl-1">
+                <h1 class="text-lg font-black flex items-center gap-2 select-none">
+                    <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] rotate-12 transform origin-bottom-left"></i>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500 tracking-tight">Save2Go</span>
+                </h1>
+                <div class="flex items-center gap-1.5 mt-0.5 pl-0.5">
+                    <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span id="syncText" class="text-[9px] font-mono text-slate-500 whitespace-nowrap">Cache Loading...</span>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-12 gap-2 items-center relative">
-                <div class="col-span-5 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden">
-                    <button onclick="setPriorityFilterState(false)" id="toggleOptionShowAll" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10">Show All</button>
-                    <button onclick="setPriorityFilterState(true)" id="toggleOptionStarred" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500">Starred</button>
-                </div>
-                <div class="col-span-4 relative">
-                    <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 truncate shadow-inner">
-                        <span id="cityHUDTriggerText" class="truncate">All Cities</span><span>▼</span>
-                    </button>
-                </div>
-                <div class="col-span-3 relative">
-                    <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
-                        <span>Type</span><span>▼</span><span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
-                    </button>
-                </div>
+            <div class="flex items-center gap-2">
+                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer relative z-[60]">
+                    <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> <span id="gpsBadgeText">GPS Off</span>
+                </button>
+                <button id="manualSyncCloudBtn" onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs transition-transform duration-200 active:scale-95 relative z-[60]">
+                    <div id="syncButtonIconFrame" class="inline-block"><i class="fa-solid fa-arrows-rotate"></i></div>
+                </button>
+                <button onclick="toggleSettingsMenu(true)" class="p-2 w-8 h-8 flex items-center justify-center rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs relative z-[60]">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
             </div>
         </div>
-
-        <div id="headerAttachedNotchArea" class="w-full px-2 shrink-0 transition-all duration-200 block">
-            <div class="bg-slate-900 border-x border-t border-slate-800/60 px-3.5 py-1.5 rounded-t-xl flex justify-between items-center h-8">
-                <span class="text-[9px] uppercase font-black tracking-widest text-slate-400">Summary</span>
-                <span id="vaultDensityHUDLabelCounter" class="text-[10px] font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
+        
+        <div class="grid grid-cols-12 gap-2 items-center relative">
+            <div class="col-span-5 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden">
+                <button onclick="setPriorityFilterState(false)" id="toggleOptionShowAll" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10">Show All</button>
+                <button onclick="setPriorityFilterState(true)" id="toggleOptionStarred" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500">Starred</button>
+            </div>
+            <div class="col-span-4 relative">
+                <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 truncate shadow-inner">
+                    <span id="cityHUDTriggerText" class="truncate">All Cities</span><span>▼</span>
+                </button>
+            </div>
+            <div class="col-span-3 relative">
+                <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
+                    <span>Type</span><span>▼</span><span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="fixed top-[148px] left-0 right-0 px-4 pointer-events-none z-[600]">
+    <div class="fixed top-[116px] left-0 right-0 px-4 pointer-events-none z-[600]">
         <div class="max-w-md mx-auto relative w-full h-0">
             <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
                 <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1"></div>
@@ -343,13 +334,19 @@
             </div>
         </div>
 
-        <div id="view-list" class="view-panel w-full h-full bg-slate-950">
-            <div id="gesture-touch-container" class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto w-full h-full subtle-scrollbar px-4 pt-2 flex flex-col gap-2 select-none">
-                
+        <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
+            
+            <div class="w-full px-4 bg-slate-950 shrink-0 z-20">
+                <div class="max-w-md mx-auto bg-slate-900 border-x border-b border-slate-800/50 px-3.5 py-1 rounded-b-xl flex justify-between items-center h-7 shadow-md">
+                    <span class="text-[9px] uppercase font-black tracking-widest text-slate-400">Summary</span>
+                    <span id="vaultDensityHUDLabelCounter" class="text-[10px] font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
+                </div>
+            </div>
+
+            <div id="gesture-touch-container" class="flex-1 overflow-y-auto w-full subtle-scrollbar px-4 pt-2 flex flex-col gap-2 select-none">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0">
                     <span class="animate-pulse">Refresh...</span>
                 </div>
-                
                 </div>
         </div>
 
@@ -441,7 +438,7 @@
                 <hr class="border-slate-800">
                 <div id="settingsSwitchUserSection" class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Active User</label>
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_12px_center] bg-no-repeat pr-8"></select>
+                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_12px_center] bg-no-repeat pr-8"></select>
                     <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
                 </div>
                 <hr class="border-slate-800">
@@ -485,7 +482,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.24";
+        const APP_VERSION = "v3.9.25";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -1039,7 +1036,7 @@
                                 renderList();
                             } else {
                                 updateLiveDistancesUI(); 
-                            }
+                    }
                         },
                         () => {},
                         { enableHighAccuracy: true, timeout: 1500 }
@@ -1063,23 +1060,6 @@
             document.getElementById(`view-${targetTabID}`).classList.add('active-view');
             
             activeTabID = targetTabID;
-
-            // Notch Visibility Management Layer
-            const notchAreaNode = document.getElementById('headerAttachedNotchArea');
-            const headerShellDeck = document.getElementById('masterGlobalControlHeaderDeck');
-            if (notchAreaNode && headerShellDeck) {
-                if (targetTabID === 'list') {
-                    notchAreaNode.classList.remove('opacity-0', 'pointer-events-none');
-                    headerShellDeck.style.height = '140px';
-                    // Restore panels to sit beneath notch bounding limits
-                    document.querySelectorAll('.view-panel').forEach(p => p.style.top = '140px');
-                } else {
-                    notchAreaNode.classList.add('opacity-0', 'pointer-events-none');
-                    headerShellDeck.style.height = '108px';
-                    // Revert viewport constraints so map fills the negative space left behind
-                    document.querySelectorAll('.view-panel').forEach(p => p.style.top = '108px');
-                }
-            }
 
             if(targetTabID === 'map' && leafletMapInstance) { 
                 setTimeout(() => { 
