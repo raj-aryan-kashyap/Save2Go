@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.9</title>
+    <title>Save2Go V3.9.10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -482,7 +482,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.9";
+        const APP_VERSION = "v3.9.10";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -502,6 +502,9 @@
         let lastGpsSuccessTime = 0; 
         let cachedUserCoords = null; 
         let isCameraLocked = false; 
+        
+        // NEW STATE TRACKER FOR SURGICAL GPS UPDATES
+        let hasInitialGpsLockRendered = false;
 
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; 
         let userPositionPulseCircle = null; let userAccuracyRadiusCircle = null;
@@ -897,6 +900,28 @@
             updateNetworkStatusHUD(); 
         }
 
+        // --- NEW SURGICAL DISTANCE UPDATER ENGINE ---
+        function updateLiveDistancesUI() {
+            if (activeTabID !== 'list') return; 
+            const processed = getFilteredDatasetRows();
+            
+            processed.forEach(spot => {
+                const distHUD = document.getElementById(`dist-badge-${spot.rowid}`);
+                if (distHUD) {
+                    distHUD.innerText = spot.distStr;
+                    
+                    const latVal = spot.latitude ? String(spot.latitude).trim() : "";
+                    const hasCoordinates = latVal !== "" && latVal !== "0";
+                    
+                    if (!hasCoordinates) {
+                        distHUD.className = "text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                    } else {
+                        distHUD.className = "text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400";
+                    }
+                }
+            });
+        }
+
         function startLiveHardwareGPSTracking() {
             if (!navigator.geolocation) {
                 gpsStatusCachedBool = false;
@@ -941,7 +966,14 @@
                             leafletMapInstance.panTo([userLat, userLon], { animate: true });
                         }
                     }
-                    renderList();
+                    
+                    // THE FIX: Decoupling GPS live tracker from DOM list destruction
+                    if (!hasInitialGpsLockRendered) {
+                        hasInitialGpsLockRendered = true;
+                        renderList(); // First lock generates the cards
+                    } else {
+                        updateLiveDistancesUI(); // Subsequent locks surgically update numbers ONLY
+                    }
                 },
                 (err) => {
                     if (Date.now() - lastGpsSuccessTime > 6000) {
@@ -972,7 +1004,7 @@
                             leafletMapInstance.removeLayer(userAccuracyRadiusCircle);
                             userAccuracyRadiusCircle = null;
                         }
-                        renderList();
+                        updateLiveDistancesUI(); // Surgical update
                     }
                     
                     navigator.geolocation.getCurrentPosition(
@@ -984,6 +1016,14 @@
                             
                             if (isCameraLocked && leafletMapInstance) {
                                 leafletMapInstance.setView([userLat, userLon], 16);
+                            }
+                            
+                            // Prevent Failsafe from destroying DOM
+                            if (!hasInitialGpsLockRendered) {
+                                hasInitialGpsLockRendered = true;
+                                renderList();
+                            } else {
+                                updateLiveDistancesUI(); 
                             }
                         },
                         () => {},
@@ -1672,7 +1712,7 @@
                                         <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
                                         <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
                                     </div>
-                                    <span class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
+                                    <span id="dist-badge-${spot.rowid}" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
                                 </div>
                                 <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px] overflow-hidden">
                                     <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar select-none" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
