@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V5.2.2 - Restored & Preserved Edition</title>
+    <title>Save2Go V5.2.3 - Restored Production Baseline</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -204,7 +204,7 @@
         </div>
 
         <div id="view-map" class="view-panel active-view">
-            <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
+            <div id="map-render-element" class="w-full h-full bg-slate-955 absolute inset-0 z-10"></div>
             
             <div class="absolute top-28 left-4 z-[400] pointer-events-none select-none">
                 <span id="mapZoomDebugHUD" class="text-[10px] font-mono font-bold text-slate-500/60">Zoom: 18</span>
@@ -276,11 +276,11 @@
                             </div>
                             
                             <div class="flex gap-2 justify-between pt-3 border-t border-slate-800/60 mt-1 items-center">
-                                <button id="trayFlipToBackBtn" class="flex-1 text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-2.5 rounded-xl text-[11px] font-black tracking-wide flex items-center justify-center gap-1">
+                                <button id="trayFlipToBackBtn" onclick="handleManualInlineCardFlipExecution(event, 'mapDetailTrayHUD', 'forward')" class="flex-1 text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-2.5 rounded-xl text-[11px] font-black tracking-wide flex items-center justify-center gap-1">
                                     <i class="fa-solid fa-circle-info"></i> Extra Info
                                 </button>
                                 <div class="flex gap-1.5 shrink-0 pl-2">
-                                    <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 flex items-center gap-1"></button>
+                                    <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-400 flex items-center gap-1"></button>
                                     <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 flex items-center gap-1"></button>
                                 </div>
                             </div>
@@ -306,7 +306,7 @@
                             </div>
                         </div>
                         <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1 shrink-0">
-                            <button id="trayFlipToFrontBtn" class="text-slate-400 bg-slate-950 border border-slate-800 px-3 py-2 rounded-lg text-[11px] font-black">
+                            <button id="trayFlipToFrontBtn" onclick="handleManualInlineCardFlipExecution(event, 'mapDetailTrayHUD', 'backward')" class="text-slate-400 bg-slate-950 border border-slate-800 px-3 py-2 rounded-lg text-[11px] font-black">
                                 <i class="fa-solid fa-arrow-left mr-1"></i> Back
                             </button>
                         </div>
@@ -496,7 +496,7 @@
                 <hr class="border-slate-800">
                 <div id="settingsSwitchUserSection" class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Active User</label>
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 text-slate-200 border border-slate-800 p-3 rounded-xl text-xs focus:outline-none block appearance-none h-11 pr-8 bg-no-repeat"></select>
+                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 text-slate-200 border border-slate-800 p-3 rounded-xl text-xs focus:outline-none block h-11 bg-slate-950"></select>
                     <button onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
                 </div>
                 <hr class="border-slate-800">
@@ -522,7 +522,7 @@
             
             <div class="space-y-3 pt-2 text-left">
                 <div id="loginDropdownContainer">
-                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block appearance-none h-12 pr-10"></select>
+                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block h-12"></select>
                 </div>
                 <div class="relative flex items-center justify-center my-2">
                     <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase">Or Register New</span>
@@ -540,7 +540,7 @@
 
     <script>
         const ENABLE_MAP_ROTATION = false; 
-        const APP_VERSION = "v5.2.2";
+        const APP_VERSION = "v5.2.3";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -627,6 +627,7 @@
             });
 
             document.addEventListener('click', (event) => {
+                // Fixed clicking outside context bounds closure parameters safely
                 if (!event.target.closest('#cityHUDDropdownPopupBox') && 
                     !event.target.closest('#filterCategoryDropdownPopupBox') && 
                     !event.target.closest('#cityFilterHUDTriggerBtn') && 
@@ -637,7 +638,7 @@
                     const deck = document.getElementById('mapLayerStyleDropdownDeck');
                     if (deck) deck.classList.add('hidden');
                 }
-                if (event.target.closest('#settingsDrawer') === null && !event.target.closest('button[onclick*="toggleSettingsMenu(true)"]')) {
+                if (event.target.closest('#settingsDrawerContentBody') === null && !event.target.closest('button[onclick*="toggleSettingsMenu(true)"]')) {
                     toggleSettingsMenu(false);
                 }
             });
@@ -712,7 +713,12 @@
 
             const savedLat = localStorage.getItem('compass_map_state_lat');
             const savedLng = localStorage.getItem('compass_map_state_lng');
-            if (savedLat && savedLng) leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 18);
+            if (savedLat && savedLng) {
+                leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 18);
+            }
+            
+            // Patched core initialization size cycle to load dark theme tiles seamlessly
+            setTimeout(() => { if(leafletMapInstance) leafletMapInstance.invalidateSize(); }, 200);
         }
 
         function killLiveSpeechBubbleHUDState() {
@@ -766,9 +772,13 @@
             activeBaseTileLayer = L.tileLayer(providerUrl, attributionMeta).addTo(leafletMapInstance);
             currentMapStyleKey = styleKey;
             localStorage.setItem('compass_map_style', styleKey);
-            document.getElementById('activeLayerDisplayLabel').innerText = visibleLabel;
             
-            document.getElementById('mapLayerStyleDropdownDeck').classList.add('hidden');
+            const labelNode = document.getElementById('activeLayerDisplayLabel');
+            if(labelNode) labelNode.innerText = visibleLabel;
+            
+            const styleDeck = document.getElementById('mapLayerStyleDropdownDeck');
+            if(styleDeck) styleDeck.classList.add('hidden');
+            
             if (mapMarkersLayerGroup && travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
         }
 
@@ -812,7 +822,11 @@
             }, { passive: true });
         }
 
-        function initializeSessionDashboard() { syncData(true); startLiveHardwareGPSTracking(); updateNetworkStatusHUD(); }
+        function initializeSessionDashboard() { 
+            syncData(true); 
+            startLiveHardwareGPSTracking(); 
+            updateNetworkStatusHUD(); 
+        }
 
         function startLiveHardwareGPSTracking() {
             if (!navigator.geolocation) { updateGpsHudStatus('off', "Unsupported"); return; }
@@ -821,7 +835,6 @@
             liveGpsWatchId = navigator.geolocation.watchPosition(
                 (pos) => {
                     gpsStatusCachedBool = true;
-                    cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     updateGpsHudStatus('active', "GPS Active");
                     
@@ -831,11 +844,15 @@
                         } else {
                             userPositionPulseCircle = L.circleMarker([userLat, userLon], { radius: 7, fillColor: '#3b82f6', fillOpacity: 0.9, color: '#ffffff', weight: 2 }).addTo(leafletMapInstance);
                         }
-                        if (isCameraLocked) leafletMapInstance.panTo([userLat, userLon], { animate: true });
+                        // Default load configuration alignment tracking sync bounds
+                        if (!hasInitialGpsLockRendered) {
+                            hasInitialGpsLockRendered = true;
+                            leafletMapInstance.setView([userLat, userLon], 18);
+                        }
                     }
-                    if (!hasInitialGpsLockRendered) { hasInitialGpsLockRendered = true; renderList(); } else { updateLiveDistancesUI(); }
+                    updateLiveDistancesUI();
                 },
-                () => {},
+                () => { updateGpsHudStatus('off', "GPS Off"); },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
         }
@@ -913,10 +930,12 @@
                     gpsStatusCachedBool = true;
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     updateGpsHudStatus('active', "GPS Active");
-                    isCameraLocked = true; syncCameraLockVisualUIState();
                     if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18);
                 },
-                () => { updateGpsHudStatus('off', "GPS Off"); document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden'); },
+                () => { 
+                    updateGpsHudStatus('off', "GPS Off"); 
+                    alert("Location access denied or unavailable. Please enable device GPS.");
+                },
                 { enableHighAccuracy: true }
             );
         }
@@ -929,7 +948,7 @@
             if (targetSpot.maps_url && targetSpot.maps_url !== "N/A") {
                 window.open(targetSpot.maps_url, '_blank');
             } else if (targetSpot.latitude) {
-                window.open(`https://www.google.com/maps/search/?api=1&query=${targetSpot.latitude},${targetSpot.longitude}`, '_blank');
+                window.open(`http://maps.google.com/?q=${targetSpot.latitude},${targetSpot.longitude}`, '_blank');
             } else {
                 triggerCuteSpeechBubbleHUD("Coordinates unpopulated!", buttonElement, event);
             }
@@ -937,19 +956,22 @@
 
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
-            isCameraLocked = true; syncCameraLockVisualUIState();
             
+            // Restored error hardware alert popup when GPS is offline
+            if (!gpsStatusCachedBool) {
+                alert("Location access is disabled or unavailable. Please enable GPS on your device.");
+                return;
+            }
+
             const compass = document.getElementById('innerCompassEmojiSpinnerSpan');
             if (compass) {
                 compass.style.transform = 'rotate(360deg)';
                 setTimeout(() => { compass.style.transform = 'rotate(0deg)'; }, 300);
             }
-            if (gpsStatusCachedBool && leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18, { animate: true });
+            if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18, { animate: true });
         }
 
-        function syncCameraLockVisualUIState() {
-            document.getElementById('hardwareCompassRecenterButtonNode').className = isCameraLocked ? "w-11 h-11 bg-slate-900 border-2 border-pink-500 rounded-full flex items-center justify-center text-slate-300 text-base" : "w-11 h-11 bg-slate-900/95 border border-slate-800 rounded-full flex items-center justify-center text-slate-300 text-base";
-        }
+        function syncCameraLockVisualUIState() {}
 
         function snapMapViewportToSelectedCityBounds(event) {
             if(event) event.stopPropagation();
@@ -1202,9 +1224,10 @@
 
             document.getElementById('trayStarredBadge').classList.toggle('hidden', !isStarredBool);
             
-            // Restored full label bindings & tick parameters inside map tray interface functions
-            document.getElementById('trayDoneToggleBtn').innerHTML = isDone ? '<i class="fa-solid fa-circle-check"></i> Done' : '<i class="fa-regular fa-circle"></i> Mark Done';
-            document.getElementById('trayStarToggleBtn').innerHTML = isStarredBool ? '<i class="fa-solid fa-star"></i> Unstar' : '<i class="fa-regular fa-star-half-stroke"></i> Star';
+            // Re-anchored correct explicit text labels & target icons match parameters
+            document.getElementById('trayDoneToggleBtn').innerHTML = isDone ? '<i class="fa-solid fa-arrow-rotate-left"></i> Undo' : '<i class="fa-solid fa-check"></i> Mark Done';
+            // Restored star condition logic mapping rules exactly
+            document.getElementById('trayStarToggleBtn').innerHTML = isStarredBool ? '<i class="fa-solid fa-star-half-stroke"></i> Unstar' : '<i class="fa-solid fa-star"></i> Star';
             
             document.getElementById('trayDoneToggleBtn').onclick = () => { updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name); dismissMapDetailTrayHUDCard(); };
             document.getElementById('trayStarToggleBtn').onclick = () => { updateCloudAction(spotObj.rowid, 'toggle_priority', isStarredBool ? 'Normal' : 'Starred', spotObj.spot_name); dismissMapDetailTrayHUDCard(); };
@@ -1256,10 +1279,10 @@
                     spot.opening_hours.split(/[\n;]+/).forEach(t => hoursTokens += `<div class="border-b border-slate-950 last:border-0 py-0.5"><span>${t.trim()}</span></div>`);
                 } else { hoursTokens = `<div class="text-slate-600 italic text-[10px]">No calendar info.</div>`; }
 
-                // Restored conditional card elements straight to view models array parameters
+                // Restored layout tracking order positioning ticket button at bottom of active section block safely
                 let ticketButtonHTML = '';
                 if (spot.ticket_url && spot.ticket_url.trim() !== "" && spot.ticket_url !== "N/A") {
-                    ticketButtonHTML = `<a href="${spot.ticket_url}" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block mt-1">📄 View Ticket Details</a>`;
+                    ticketButtonHTML = `<a href="${spot.ticket_url}" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block mt-2">📄 View Ticket Details</a>`;
                 }
 
                 let bookingWarningHTML = '';
@@ -1290,18 +1313,18 @@
                                 <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px]">
                                     <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto subtle-scrollbar" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No notes parameters recorded.'}</p>
                                 </div>
-                                ${ticketButtonHTML}
                             </div>
-                            <div class="flex flex-col gap-2 mt-3">
+                            <div class="flex flex-col gap-2 mt-1">
                                 <div class="flex gap-2">
                                     <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
                                     <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold h-12 flex-1 gap-1.5"><i class="fa-solid fa-map text-sm"></i> Directions</button>
                                 </div>
+                                ${ticketButtonHTML}
                                 <div class="flex gap-2 mt-1 justify-between items-center border-t border-slate-850 pt-2">
                                     <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'forward')" class="flex-1 text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide flex items-center justify-center gap-1"><i class="fa-solid fa-circle-info"></i> Extra Info</button>
                                     <div class="flex gap-1.5 shrink-0 pl-2">
-                                        <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold flex items-center gap-1">${isDone ? '<i class="fa-solid fa-circle-check"></i> Done' : '<i class="fa-regular fa-circle"></i> Done'}</button>
-                                        <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400 flex items-center gap-1">${isHigh ? '<i class="fa-solid fa-star"></i> Unstar' : '<i class="fa-regular fa-star-half-stroke"></i> Star'}</button>
+                                        <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold flex items-center gap-1">${isDone ? '<i class="fa-solid fa-arrow-rotate-left"></i> Undo' : '<i class="fa-solid fa-check"></i> Mark Done'}</button>
+                                        <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400 flex items-center gap-1">${isHigh ? '<i class="fa-solid fa-star-half-stroke"></i> Unstar' : '<i class="fa-solid fa-star"></i> Star'}</button>
                                     </div>
                                 </div>
                             </div>
@@ -1309,8 +1332,8 @@
                         <div class="flip-card-back-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between overflow-hidden">
                             <div class="flex border-b border-slate-800/60 pb-1.5 shrink-0 items-center justify-between"><span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Extra Info Logs</span></div>
                             <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 space-y-3 text-[11px]">
-                                <p class="text-slate-300 bg-slate-950/50 p-2.5 rounded-xl border border-slate-950 leading-relaxed">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No comprehensive summary logs configuration recorded.'}</p>
-                                <div><div class="bg-slate-950/50 p-2.5 rounded-xl font-mono text-[10px] text-slate-400">${hoursTokens}</div></div>
+                                <p class="text-slate-300 bg-slate-955/50 p-2.5 rounded-xl border border-slate-100/10 leading-relaxed">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No comprehensive summary logs configuration recorded.'}</p>
+                                <div><div class="bg-slate-955/50 p-2.5 rounded-xl font-mono text-[10px] text-slate-400">${hoursTokens}</div></div>
                                 ${bookingWarningHTML}
                             </div>
                             <div class="flex gap-2 justify-end pt-2 border-t border-slate-950 shrink-0">
@@ -1321,7 +1344,6 @@
                 scrollContainerFrame.appendChild(cardWrapper);
             });
 
-            // Reverted footer label copy text string target exactly
             const tail = document.createElement('div'); tail.className = "dynamic-tailpiece-node w-full py-4 flex items-center justify-center gap-4 block shrink-0";
             tail.innerHTML = `<div class="flex-grow border-t border-slate-900 max-w-[40px]"></div><span class="text-[9px] font-bold tracking-widest text-slate-600 uppercase">End of Filtered List</span><div class="flex-grow border-t border-slate-900 max-w-[40px]"></div>`;
             scrollContainerFrame.appendChild(tail);
@@ -1353,6 +1375,7 @@
                 label.innerHTML = `<span>${city}</span><input type="checkbox" value="${city}" ${checkedCitiesStateArray.includes(city) ? 'checked' : ''} onchange="handleCityHUDCheckboxEventToggle(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
                 container.appendChild(label);
             });
+            // Re-synchronized initial load display verification label rendering hook
             updateCityHUDTriggerButtonLabelText();
         }
 
