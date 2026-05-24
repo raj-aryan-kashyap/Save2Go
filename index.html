@@ -141,13 +141,14 @@
         </div>
     </div>
 
-    <div id="noteExpandedOverlayHUD" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[99999] flex items-center justify-center p-6 hidden transition-all duration-200 pointer-events-none">
-        <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3 pointer-events-auto">
-            <div class="flex justify-between items-center border-b border-slate-800/60 pb-2 pointer-events-none">
+    <div id="noteExpandedOverlayHUD" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[99999] flex items-center justify-center p-6 hidden transition-all duration-200">
+        <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
                 <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded View</span>
+                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-6 h-6 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="noteExpandedOverlayScrollBox" class="max-h-[50vh] overflow-y-auto subtle-scrollbar pr-1 select-none">
-                <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap select-none"></p>
+            <div id="noteExpandedOverlayScrollBox" class="max-h-[50vh] overflow-y-auto subtle-scrollbar pr-1">
+                <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap select-text"></p>
             </div>
         </div>
     </div>
@@ -556,11 +557,13 @@
         }
 
         function evaluateNoteGestureMovement(currentX, currentY) {
+            // Optimized threshold filter rules to support smooth reading scrolling movements inside the card
             if (!noteGestureTimerId || isNoteZoomActive) return;
             const deltaX = Math.abs(currentX - noteGestureStartX);
             const deltaY = Math.abs(currentY - noteGestureStartY);
             
-            if (deltaX > 5 || deltaY > 5) {
+            // Raised settle allowance threshold to 15px to account for micro-thumb wobble
+            if (deltaX > 15 || deltaY > 15) {
                 killNoteGestureEngine();
             }
         }
@@ -570,18 +573,19 @@
                 clearTimeout(noteGestureTimerId);
                 noteGestureTimerId = null;
             }
-            if (isNoteZoomActive) {
-                isNoteZoomActive = false;
-                const overlay = document.getElementById('noteExpandedOverlayHUD');
-                const overlayCard = document.getElementById('noteExpandedOverlayCard');
-                
-                overlayCard.classList.remove('note-zoom-active');
-                overlayCard.classList.add('note-zoom-closing');
-                
-                setTimeout(() => {
-                    if(!isNoteZoomActive) overlay.classList.add('hidden');
-                }, 180);
-            }
+        }
+
+        function manuallyCloseNoteOverlayHUD() {
+            isNoteZoomActive = false;
+            const overlay = document.getElementById('noteExpandedOverlayHUD');
+            const overlayCard = document.getElementById('noteExpandedOverlayCard');
+            
+            overlayCard.classList.remove('note-zoom-active');
+            overlayCard.classList.add('note-zoom-closing');
+            
+            setTimeout(() => {
+                if(!isNoteZoomActive) overlay.classList.add('hidden');
+            }, 180);
         }
 
         function handleNoteTouchStartEvent(e, text) { 
@@ -628,9 +632,6 @@
             setupNetworkListeners(); 
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
-            
-            document.addEventListener('touchend', function() { killNoteGestureEngine(); });
-            document.addEventListener('mouseup', function() { killNoteGestureEngine(); });
 
             document.addEventListener('click', (event) => {
                 if (!event.target.closest('#cityHUDDropdownPopupBox') && 
@@ -851,7 +852,6 @@
             return `${os}${modelEstimate}`;
         }
 
-        // Renamed framework elements inside logic matrices for consistency
         function generateAndSaveDeviceId() {
             const newId = "DEV-" + Math.random().toString(36).substring(2, 7).toUpperCase();
             localStorage.setItem('compass_device_id', newId); return newId;
@@ -1356,7 +1356,6 @@
             renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
-        // Expanded logic models slightly to guarantee stability variables
         function clearAllFilterCheckboxes() {
             checkedFilterStateArray = []; 
             localStorage.setItem('compass_active_filters', JSON.stringify([]));
@@ -1470,7 +1469,7 @@
                     
                     let dx = screenPoint.x - cluster.centerPx.x;
                     let dy = screenPoint.y - cluster.centerPx.y;
-                    let pixelDistance = Math.sqrt(dx * dx + dy * dy);
+                    let pixelDistance = Math.sqrt(dx * dx + dy * div);
                     
                     if (isCoordinatesExactMatch || (pixelDistance <= overlapPixelRadiusThreshold)) {
                         cluster.spots.push(spot);
@@ -1762,14 +1761,14 @@
                                     <span id="dist-badge-${spot.rowid}" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
                                 </div>
                                 <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px] overflow-hidden">
-                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar select-none" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
+                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-2 mt-3">
                                 <div class="flex gap-2">
                                     <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
                                     <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap h-12 ${!hasCoordinates ? 'bg-slate-950 border border-slate-800 text-amber-400 text-sm font-black w-14 shrink-0' : 'bg-slate-950 border border-slate-800 text-slate-300 flex-1'}">
-                                        ${!hasCoordinates ? '<i class="fa-solid fa-triangle-exclamation'></i>' : '<i class="fa-solid fa-map mr-1.5 text-sm'></i> Directions'}
+                                        ${!hasCoordinates ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-map mr-1.5 text-sm"></i> Directions'}
                                     </button>
                                 </div>
                                 ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
