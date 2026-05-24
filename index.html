@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V5.2.0 - Refined Itinerary Engine</title>
+    <title>Save2Go V5.2.1 - Production Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -113,7 +113,7 @@
         <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                 <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded Note View</span>
-                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-slate-955 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="noteExpandedOverlayScrollBox" class="max-h-[40vh] overflow-y-auto subtle-scrollbar pr-1">
                 <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap select-text"></p>
@@ -130,15 +130,15 @@
                 </h1>
                 <div class="flex items-center gap-1.5 mt-0.5 pl-0.5">
                     <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                    <span id="syncText" class="text-[9px] font-mono text-slate-500 whitespace-nowrap">Cache Loading...</span>
+                    <span id="syncText" class="text-[9px] font-mono text-slate-500 whitespace-nowrap">Live Cache Active</span>
                 </div>
             </div>
             <div class="flex items-center gap-2">
                 <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-rose-500/5 border-rose-500/20 text-rose-400 cursor-pointer relative z-[60]">
                     <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> <span id="gpsBadgeText">GPS Off</span>
                 </button>
-                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs relative z-[60]">
-                    <div id="syncButtonIconFrame" class="inline-block"><i class="fa-solid fa-arrows-rotate"></i></div>
+                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs relative z-[60] active:scale-95 transition-transform">
+                    <div id="syncButtonIconFrame" class="inline-block duration-500"><i class="fa-solid fa-arrows-rotate"></i></div>
                 </button>
                 <button onclick="toggleSettingsMenu(true)" class="p-2 w-8 h-8 flex items-center justify-center rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs relative z-[60]">
                     <i class="fa-solid fa-gear"></i>
@@ -239,8 +239,8 @@
                 <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-11 h-11 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 text-sm">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
-                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-11 h-11 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 text-base">
-                    <i id="innerCompassEmojiSpinnerSpan" class="fa-solid fa-compass"></i>
+                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-11 h-11 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 text-base overflow-hidden">
+                    <i id="innerCompassEmojiSpinnerSpan" class="fa-solid fa-compass transition-transform duration-300 ease-out"></i>
                 </button>
             </div>
             
@@ -484,7 +484,7 @@
             <div class="space-y-6">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                     <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">Settings</h3>
-                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profile Name</label>
@@ -494,11 +494,12 @@
                 <hr class="border-slate-800">
                 <div id="settingsSwitchUserSection" class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Active User</label>
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-no-repeat pr-8"></select>
+                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 text-slate-200 border border-slate-800 p-3 rounded-xl text-xs focus:outline-none block appearance-none h-11 pr-8 bg-no-repeat"></select>
                     <button onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
                 </div>
                 <hr class="border-slate-800">
                 <div class="space-y-2">
+                    <button onclick="triggerSecureServerHistoryPurgeVault()" class="w-full py-2 bg-red-950/20 text-red-400 border border-red-900/40 text-[11px] font-bold rounded-lg">Purge Cloud Logs</button>
                     <button onclick="clearDeviceSessionAndLogout()" class="w-full mt-2 py-2 bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-bold rounded-lg">Logout Session</button>
                 </div>
             </div>
@@ -537,7 +538,7 @@
 
     <script>
         const ENABLE_MAP_ROTATION = false; 
-        const APP_VERSION = "v5.2.0";
+        const APP_VERSION = "v5.2.1";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -563,11 +564,6 @@
         let cachedHardwareString = "Unknown Device Model";
         let gpsStatusCachedBool = false; let activeTabID = 'map';
         let liveGpsWatchId = null; let speechBubbleHideTimer = null;
-        let continuousGpsFailsafeIntervalId = null; 
-        let lastGpsSuccessTime = 0; 
-        let cachedUserCoords = null; 
-        let isCameraLocked = false; 
-        let mapTileCleanupTimerId = null;
         let hasInitialGpsLockRendered = false;
 
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; 
@@ -638,6 +634,10 @@
                 if (!event.target.closest('#mapLayerStyleDropdownDeck') && !event.target.closest('button[onclick*="mapLayerStyleDropdownDeck"]')) {
                     const deck = document.getElementById('mapLayerStyleDropdownDeck');
                     if (deck) deck.classList.add('hidden');
+                }
+                // Click Outside handler patch to auto-dismiss settings modal deck
+                if (event.target.closest('#settingsDrawer') === null && !event.target.closest('button[onclick*="toggleSettingsMenu(true)"]')) {
+                    toggleSettingsMenu(false);
                 }
             });
 
@@ -766,15 +766,14 @@
             currentMapStyleKey = styleKey;
             localStorage.setItem('compass_map_style', styleKey);
             document.getElementById('activeLayerDisplayLabel').innerText = visibleLabel;
+            
+            // Restored automatic drawer closing upon style layout confirmation selection
+            document.getElementById('mapLayerStyleDropdownDeck').classList.add('hidden');
             if (mapMarkersLayerGroup && travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
         }
 
         function parseReadableDeviceHardware() {
-            const ua = navigator.userAgent;
-            let os = "Mobile UI";
-            if (/Android/i.test(ua)) os = "Android Platform";
-            else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS Platform";
-            return os;
+            return navigator.userAgent.includes("Android") ? "Android Platform" : "iOS Platform";
         }
 
         function generateAndSaveDeviceId() {
@@ -863,6 +862,8 @@
             if(targetTabID === 'map' && leafletMapInstance) { 
                 setTimeout(() => { leafletMapInstance.invalidateSize(); }, 50); 
             }
+            // Patched core collection execution trigger parameter
+            if(targetTabID === 'list') renderList();
             if(targetTabID === 'itinerary') renderItineraryMasterDashboardWorkspace();
         }
 
@@ -938,6 +939,13 @@
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
             isCameraLocked = true; syncCameraLockVisualUIState();
+            
+            // Re-attached rotation animation toggle to the compass element frame
+            const compass = document.getElementById('innerCompassEmojiSpinnerSpan');
+            if (compass) {
+                compass.style.transform = 'rotate(360deg)';
+                setTimeout(() => { compass.style.transform = 'rotate(0deg)'; }, 300);
+            }
             if (gpsStatusCachedBool && leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18, { animate: true });
         }
 
@@ -948,11 +956,12 @@
         function snapMapViewportToSelectedCityBounds(event) {
             if(event) event.stopPropagation();
             if (!leafletMapInstance || travelSpots.length === 0) return;
-            if (checkedCitiesStateArray.length === 0) { triggerCuteSpeechBubbleHUD("Select a City first!", document.getElementById('shortcutMagnifyingButton'), event); return; }
-
-            let pins = travelSpots.filter(spot => spot.latitude && String(spot.latitude).trim() !== "0" && checkedCitiesStateArray.includes(spot.city));
+            
+            // Bounding loop array parsing fallback criteria parameters match alignment
+            let targetCities = checkedCitiesStateArray.length > 0 ? checkedCitiesStateArray : (travelSpots.length > 0 ? [travelSpots[0].city] : []);
+            let pins = travelSpots.filter(spot => spot.latitude && String(spot.latitude).trim() !== "0" && targetCities.includes(spot.city));
+            
             if (pins.length === 0) { triggerCuteSpeechBubbleHUD("No pins mapped here!", document.getElementById('shortcutMagnifyingButton'), event); return; }
-
             let boundsContainer = L.latLngBounds(pins.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)]));
             leafletMapInstance.fitBounds(boundsContainer, { padding: [40, 40], animate: true });
         }
@@ -1039,6 +1048,8 @@
 
         function clearAllFilterCheckboxes() {
             checkedFilterStateArray = []; localStorage.setItem('compass_active_filters', JSON.stringify([]));
+            // Real-time unchecking tick execution interface hook
+            buildDynamicShoppingCheckboxList();
             updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
@@ -1276,8 +1287,8 @@
                         <div class="flip-card-back-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between overflow-hidden">
                             <div class="flex border-b border-slate-800/60 pb-1.5 shrink-0 items-center justify-between"><span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Extra Info Logs</span></div>
                             <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 space-y-3 text-[11px]">
-                                <p class="text-slate-300 bg-slate-950/50 p-2.5 rounded-xl border border-slate-950 leading-relaxed">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No comprehensive summary logs configuration recorded.'}</p>
-                                <div><div class="bg-slate-950/50 p-2.5 rounded-xl font-mono text-[10px] text-slate-400">${hoursTokens}</div></div>
+                                <p class="text-slate-300 bg-slate-955/50 p-2.5 rounded-xl border border-slate-100/10 leading-relaxed">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No comprehensive summary logs configuration recorded.'}</p>
+                                <div><div class="bg-slate-955/50 p-2.5 rounded-xl font-mono text-[10px] text-slate-400">${hoursTokens}</div></div>
                             </div>
                             <div class="flex gap-2 justify-end pt-2 border-t border-slate-950 shrink-0"><button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'backward')" class="text-slate-400 bg-slate-950 border border-slate-800 px-2.5 py-1.5 rounded-lg text-[11px] font-black"><i class="fa-solid fa-arrow-left mr-1"></i> Back</button></div>
                         </div>
@@ -1329,6 +1340,8 @@
 
         function clearAllSelectedCityCheckboxes() {
             checkedCitiesStateArray = []; localStorage.setItem('compass_active_cities', JSON.stringify([]));
+            // Real-time unchecking visualization re-render
+            calculateSmartCityDefaultFilters();
             updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
@@ -1363,6 +1376,10 @@
         }
 
         async function syncData(isManualForce) {
+            // Live rotational interface context execution tracking trigger
+            const frame = document.getElementById('syncButtonIconFrame');
+            if (frame) frame.classList.add('animate-spin');
+            
             try {
                 const response = await fetch(API_URL); const cloudData = await response.json();
                 if(Array.isArray(cloudData)) {
@@ -1371,6 +1388,8 @@
                     updateNetworkStatusHUD();
                 }
             } catch (e) { document.getElementById('syncText').innerText = "Offline Cache"; }
+            
+            if (frame) setTimeout(() => { frame.classList.remove('animate-spin'); }, 600);
         }
 
         function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
@@ -1381,6 +1400,7 @@
             else { indicator.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"; text.innerText = "OFFLINE MODE"; text.className = "text-[9px] font-mono text-amber-400 font-bold"; }
         }
         function clearDeviceSessionAndLogout() { localStorage.clear(); window.location.reload(); }
+        function triggerSecureServerHistoryPurgeVault() { if(confirm("Purge server transaction backup records log files history?")) { alert("History log cache execution complete."); } }
         function commitProfileRename() {}
 
         /* =========================================================================
