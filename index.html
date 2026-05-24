@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.15</title>
+    <title>Save2Go V3.9.16</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -386,20 +386,20 @@
             
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Reference Link (Instagram/TikTok)</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Reference Link</label>
                     <input type="url" id="new-url" placeholder="https://instagram.com/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Google Maps Link / Location URL</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Maps Link</label>
                     <input type="url" id="new-maps-url" placeholder="https://maps.app.goo.gl/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Target City</label>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">City</label>
                         <input type="text" id="new-city" placeholder="e.g., Paris" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Category Type</label>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Category</label>
                         <input type="text" id="new-category" placeholder="e.g., Food Spot" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                     </div>
                 </div>
@@ -408,11 +408,11 @@
                     <input type="text" id="new-keyword" placeholder="e.g., Hidden Arch Viewpoint" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Vibe Check / Notes</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Notes</label>
                     <textarea id="new-notes" rows="3" placeholder="Optimal angles, suggestions..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none"></textarea>
                 </div>
                 <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 mt-2">
-                    <span class="font-bold text-slate-400 uppercase tracking-wider">Prioritize Selection?</span>
+                    <span class="font-bold text-slate-400 uppercase tracking-wider">Prioritize?</span>
                     <button onclick="toggleFormPriorityState()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold">Normal</button>
                 </div>
                 <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-sm">
@@ -481,7 +481,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.15";
+        const APP_VERSION = "v3.9.16";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
