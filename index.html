@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.11</title>
+    <title>Save2Go V3.9.12</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -91,23 +91,19 @@
             position: absolute;
         }
 
+        /* Upgraded structural base for adaptive vector map pins */
         .custom-map-cube {
-            background: rgba(15, 23, 42, 0.95) !important;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
             border-radius: 10px !important;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6) !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             font-size: 16px !important;
             width: 36px !important;
             height: 36px !important;
+            border-width: 1px !important;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
         }
-        .starred-cube-border {
-            border: 2px solid rgba(245, 158, 11, 0.9) !important;
-            box-shadow: 0 0 14px rgba(245, 158, 11, 0.5) !important;
-        }
+
         .cluster-map-cube {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
             border: 2px solid rgba(255, 255, 255, 0.8) !important;
@@ -485,7 +481,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.11";
+        const APP_VERSION = "v3.9.12";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -821,6 +817,11 @@
 
             const deck = document.getElementById('mapLayerStyleDropdownDeck');
             if(deck) deck.classList.add('hidden');
+            
+            // Re-render markers so they instantly adapt to the new theme
+            if (mapMarkersLayerGroup && travelSpots.length > 0) {
+                plotDynamicMarkersOnCanvasMap();
+            }
         }
 
         function parseReadableDeviceHardware() {
@@ -903,7 +904,6 @@
             updateNetworkStatusHUD(); 
         }
 
-        // --- NEW SURGICAL DISTANCE UPDATER ENGINE ---
         function updateLiveDistancesUI() {
             if (activeTabID !== 'list') return; 
             const processed = getFilteredDatasetRows();
@@ -911,7 +911,6 @@
             processed.forEach(spot => {
                 const distHUD = document.getElementById(`dist-badge-${spot.rowid}`);
                 if (distHUD) {
-                    // CRITICAL: Must use innerHTML here now that we are rendering the Font Awesome pin inside the JS string
                     distHUD.innerHTML = spot.distStr;
                     
                     const latVal = spot.latitude ? String(spot.latitude).trim() : "";
@@ -971,12 +970,11 @@
                         }
                     }
                     
-                    // THE FIX: Decoupling GPS live tracker from DOM list destruction
                     if (!hasInitialGpsLockRendered) {
                         hasInitialGpsLockRendered = true;
-                        renderList(); // First lock generates the cards
+                        renderList(); 
                     } else {
-                        updateLiveDistancesUI(); // Subsequent locks surgically update numbers ONLY
+                        updateLiveDistancesUI(); 
                     }
                 },
                 (err) => {
@@ -1008,7 +1006,7 @@
                             leafletMapInstance.removeLayer(userAccuracyRadiusCircle);
                             userAccuracyRadiusCircle = null;
                         }
-                        updateLiveDistancesUI(); // Surgical update
+                        updateLiveDistancesUI(); 
                     }
                     
                     navigator.geolocation.getCurrentPosition(
@@ -1022,7 +1020,6 @@
                                 leafletMapInstance.setView([userLat, userLon], 16);
                             }
                             
-                            // Prevent Failsafe from destroying DOM
                             if (!hasInitialGpsLockRendered) {
                                 hasInitialGpsLockRendered = true;
                                 renderList();
@@ -1377,7 +1374,6 @@
                 const lngStr = spot.longitude ? String(spot.longitude).trim() : "";
                 const hasLatLon = latStr !== "" && latStr !== "0" && lngStr !== "" && lngStr !== "0";
                 
-                // CRITICAL: Font Awesome upgrade inside Javascript Engine
                 let distanceOutputLabel = !hasLatLon ? "Missing Location" : (!gpsStatusCachedBool ? "<i class='fa-solid fa-location-dot mr-1'></i>GPS Off" : "");
                 let rawDistanceValue = 99999;
                 let stableDistanceZoneBucket = 4; 
@@ -1504,18 +1500,51 @@
             });
         }
 
+        // --- UPGRADED: DYNAMIC ADAPTIVE PINS ---
         function renderSingleMarkerElement(spot, latOffset, lonOffset) {
             const isStarred = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
             const isDone = (spot.status || "").toLowerCase().trim() === 'done';
 
-            let categoryIconEmoji = "📍";
+            // 1. Assign FontAwesome category icons
+            let categoryIconClass = "fa-location-dot text-slate-400";
             const catStr = (spot.category || "").toLowerCase();
-            if(catStr.includes("food") || catStr.includes("cafe")) categoryIconEmoji = "🍕";
-            else if(catStr.includes("photo") || catStr.includes("view")) categoryIconEmoji = "📸";
-            else if(catStr.includes("shop")) categoryIconEmoji = "🛍️";
-            else if(catStr.includes("bar") || catStr.includes("drink")) categoryIconEmoji = "🍸";
+            if(catStr.includes("photo")) categoryIconClass = "fa-camera-retro text-pink-500";
+            else if(catStr.includes("food")) categoryIconClass = "fa-utensils text-orange-500";
+            else if(catStr.includes("viewpoint")) categoryIconClass = "fa-binoculars text-sky-500";
+            else if(catStr.includes("nature")) categoryIconClass = "fa-leaf text-emerald-500";
+            else if(catStr.includes("culture")) categoryIconClass = "fa-landmark text-violet-500";
+            else if(catStr.includes("shopping") || catStr.includes("shop")) categoryIconClass = "fa-bag-shopping text-rose-500";
+            else if(catStr.includes("activity")) categoryIconClass = "fa-person-running text-amber-500";
+            else if(catStr.includes("relax")) categoryIconClass = "fa-spa text-teal-500";
+            else if(catStr.includes("nightlife") || catStr.includes("bar") || catStr.includes("drink")) categoryIconClass = "fa-martini-glass text-indigo-500";
 
-            const iconHTML = `<div class="custom-map-cube ${isStarred ? 'starred-cube-border' : ''} ${isDone ? 'opacity-40 filter grayscale' : ''}">${categoryIconEmoji}</div>`;
+            // 2. Generate Base Theme Styling dynamically based on the current active map layer
+            let baseThemeClasses = "";
+            if (currentMapStyleKey === 'dark') {
+                baseThemeClasses = "bg-slate-900 border-slate-700 shadow-lg shadow-black/60";
+            } else if (currentMapStyleKey === 'light') {
+                baseThemeClasses = "bg-white border-slate-200 shadow-lg shadow-slate-300/60";
+            } else if (currentMapStyleKey === 'street') {
+                baseThemeClasses = "bg-slate-50 border-slate-300 shadow-md shadow-slate-400/50";
+            } else if (currentMapStyleKey === 'satellite') {
+                baseThemeClasses = "bg-slate-950/70 border-white/20 shadow-lg shadow-black/80 backdrop-blur-md";
+            }
+
+            // 3. Apply state overrides (Starred / Done)
+            let stateClasses = "";
+            if (isStarred) {
+                if (currentMapStyleKey === 'light' || currentMapStyleKey === 'street') {
+                    stateClasses = "!border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)] ring-2 ring-amber-400/30";
+                } else {
+                    stateClasses = "!border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.7)]";
+                }
+            }
+            if (isDone) {
+                stateClasses += " opacity-40 grayscale";
+            }
+
+            // 4. Inject compiled pin
+            const iconHTML = `<div class="custom-map-cube ${baseThemeClasses} ${stateClasses}"><i class="fa-solid ${categoryIconClass}"></i></div>`;
             const customMarkerIcon = L.divIcon({ html: iconHTML, className: '', iconSize: [36, 36], iconAnchor: [18, 18] });
             
             const finalLat = parseFloat(spot.latitude) + latOffset;
