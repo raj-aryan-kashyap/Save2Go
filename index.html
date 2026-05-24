@@ -8,6 +8,9 @@
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%23ec4899'/><stop offset='100%25' stop-color='%238b5cf6'/></linearGradient></defs><path fill='url(%23g)' d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/></svg>">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -180,7 +183,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer relative z-[60]">
+                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer relative z-[60]">
                     <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> <span id="gpsBadgeText">GPS Off</span>
                 </button>
                 <button id="manualSyncCloudBtn" onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs transition-transform duration-200 active:scale-95 relative z-[60]">
@@ -268,7 +271,7 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
                 <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 active:bg-slate-800 overflow-hidden relative text-[19px]">
-                    <i id="innerCompassEmojiSpinnerSpan" class="fa-solid fa-compass inline-block transform transition-transform duration-500 ease-out"></i>
+                    <i id="innerCompassEmojiSpinnerSpan" class="fa-solid fa-compass inline-block transform transition-transform duration-300 ease-out"></i>
                 </button>
             </div>
             
@@ -495,7 +498,6 @@
     </div>
 
     <script>
-        // MASTER TOGGLE SWITCH FLAG SET TO FALSE AS REQUESTED FOR THE REVISIT STAGING PERIOD
         const ENABLE_MAP_ROTATION = false; 
 
         const APP_VERSION = "v4.0.0";
@@ -759,7 +761,6 @@
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
             
-            // Initialized default zoom level baseline parameters explicitly to 18
             leafletMapInstance = L.map('map-render-element', { 
                 zoomControl: false, 
                 attributionControl: false,
@@ -776,7 +777,6 @@
                     isCameraLocked = false;
                     syncCameraLockVisualUIState();
                 }
-                // Cleared the open-world tile lifecycle timers upon detection of physical map movement
                 if (mapTileCleanupTimerId) {
                     clearTimeout(mapTileCleanupTimerId);
                     mapTileCleanupTimerId = null;
@@ -800,7 +800,6 @@
                         });
                     }
 
-                    // Enforced 10 second memory optimization loop routine for active distant tile memory reduction management
                     if (mapTileCleanupTimerId) clearTimeout(mapTileCleanupTimerId);
                     mapTileCleanupTimerId = setTimeout(() => {
                         if (activeBaseTileLayer && typeof activeBaseTileLayer._pruneTiles === 'function') {
@@ -874,7 +873,6 @@
 
             let providerUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
             
-            // Introduced Open-World Game Architecture engine tile parameters (+4 loading buffers and tile popping deactivation options)
             let attributionMeta = { 
                 maxZoom: 20,
                 preload: true,
@@ -1238,7 +1236,7 @@
             );
         }
 
-        // Updated alert warning message text exactly to the custom database missing token string value pattern
+        // Fixed coordinate domain mapping error to output clean fallback requests directly to Google Maps
         function handleAdaptiveDirectionClick(buttonElement, event) {
             if (event) event.stopPropagation();
             const rowId = buttonElement.getAttribute('data-row-id');
@@ -1252,9 +1250,9 @@
             if (mapsUrl !== "" && mapsUrl !== "N/A") {
                 window.open(mapsUrl, '_blank');
             } else if (lat !== "" && lat !== "0" && lng !== "" && lng !== "0") {
-                window.open(`http://googleusercontent.com/maps.google.com/?q=${lat},${lng}`, '_blank');
+                window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
             } else {
-                triggerCuteSpeechBubbleHUD("Map Data Missing in database", buttonElement, event);
+                triggerCuteSpeechBubbleHUD("Map data missing in database!", buttonElement, event);
             }
         }
 
@@ -1269,9 +1267,11 @@
                 if (pane) pane.style.transform = 'rotate(0deg)';
             }
 
+            // Restored the high-tactility spring click rotation animation workflow
             const emojiSpinnerNode = document.getElementById('innerCompassEmojiSpinnerSpan');
             if (emojiSpinnerNode) {
-                emojiSpinnerNode.style.transform = 'rotate(0deg) scale(1)';
+                emojiSpinnerNode.style.transform = 'rotate(180deg) scale(0.85)';
+                setTimeout(() => { emojiSpinnerNode.style.transform = 'rotate(0deg) scale(1)'; }, 350);
             }
 
             isCameraLocked = true;
@@ -1809,7 +1809,6 @@
             }
         }
 
-        // Updated copy metrics exactly to read "End of filtered list" down within tailpiece layout engine parameters
         function renderList() {
             const scrollContainerFrame = document.getElementById('gesture-touch-container');
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
