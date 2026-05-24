@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.5</title>
+    <title>Save2Go V3.9.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -123,7 +123,6 @@
             height: 40px !important;
         }
         
-        /* UNIFIED PREMIUM NAVIGATION SELECTION LAYER TRANSITIONS */
         .nav-tab-transition {
             transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
             will-change: transform, opacity;
@@ -147,7 +146,7 @@
                 <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded View</span>
             </div>
             <div id="noteExpandedOverlayScrollBox" class="max-h-[50vh] overflow-y-auto subtle-scrollbar pr-1 select-none">
-                <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap select-none"></p>
+                <p id="noteExpandedOverlayText" class="text-xs text-slate-200 pleading-relaxed font-medium whitespace-pre-wrap select-none"></p>
             </div>
         </div>
     </div>
@@ -346,8 +345,7 @@
                         <span id="vaultDensityHUDLabelCounter" class="text-xs font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
                     </div>
                 </div>
-
-                </div>
+            </div>
         </div>
 
         <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
@@ -477,7 +475,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.5";
+        const APP_VERSION = "v3.9.6";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -966,7 +964,6 @@
             }, 2000);
         }
 
-        // SCALING ATTRIBUTES INJECTED DYNAMICALLY INTO THE NAVIGATION MATRIX 
         function switchMasterMenuDashboardTab(targetTabID) {
             killLiveSpeechBubbleHUDState();
             dismissMapDetailTrayHUDCard();
@@ -1579,6 +1576,22 @@
             if (plusBtn) plusBtn.classList.remove('hidden');
         }
 
+        // CONTROL EXCLUSION ROUTINE RE-BALANCED
+        function handleManualInlineCardFlipExecution(event, nodeWrapperId, operationDirection) {
+            if(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const targetElement = document.getElementById(nodeWrapperId);
+            if(!targetElement) return;
+
+            if(operationDirection === 'forward') {
+                targetElement.classList.add('flipped');
+            } else {
+                targetElement.classList.remove('flipped');
+            }
+        }
+
         function renderList() {
             const scrollContainerFrame = document.getElementById('gesture-touch-container');
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
@@ -1621,6 +1634,7 @@
                 cardWrapper.id = uniqueCardContainerId;
                 cardWrapper.className = "dynamic-card-node w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200 mt-4 shrink-0 block";
 
+                // INLINE TRIGGERS COMPLETELY RE-ISOLATED VIA MINIMAL EXPLICIT OPERATION ROUTINES
                 cardWrapper.innerHTML = `
                     <div class="flip-card-inner-rotator w-full h-full">
                         
@@ -1646,7 +1660,7 @@
                                 </div>
                                 ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
                                 <div class="flex gap-2 mt-1 justify-end items-center">
-                                    <button onclick="event.stopPropagation(); document.getElementById('${uniqueCardContainerId}').classList.add('flipped');" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
+                                    <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'forward')" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
                                         ℹ️ Extra Info
                                     </button>
                                     <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold active:bg-slate-850">${isDone ? '↩ Undo' : '✓ Mark Done'}</button>
@@ -1673,7 +1687,7 @@
                                 </div>` : ''}
                             </div>
                             <div class="flex gap-2 justify-end pt-2 border-t border-slate-950 shrink-0 items-center">
-                                <button onclick="event.stopPropagation(); document.getElementById('${uniqueCardContainerId}').classList.remove('flipped');" class="text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-slate-900">
+                                <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'backward')" class="text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-slate-900">
                                     ↩ Back
                                 </button>
                             </div>
@@ -1684,7 +1698,6 @@
                 scrollContainerFrame.appendChild(cardWrapper);
             });
 
-            // FIXED FOOTER BUFFER HEIGHT: ADDS ENTIRE VERTICAL OVERFLOW MATRIX SECURITY FOR NAVIGATION CODES
             const tailEndLabelDeckNode = document.createElement('div');
             tailEndLabelDeckNode.className = "dynamic-tailpiece-node w-full pt-6 pb-40 flex items-center justify-center shrink-0 block";
             tailEndLabelDeckNode.innerHTML = `
