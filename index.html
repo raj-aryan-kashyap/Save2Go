@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V4.0.0</title>
+    <title>Save2Go V5.0.0 - Itinerary Workspace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -234,6 +234,17 @@
 
     <div class="flex-1 relative w-full h-full overflow-hidden z-10">
         
+        <div id="mapItineraryActiveOverlayBanner" class="absolute top-28 left-4 right-4 mx-auto max-w-xs bg-slate-900/90 border border-pink-500/40 rounded-xl p-2.5 z-[410] hidden flex items-center justify-between shadow-2xl backdrop-blur-md">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-route text-pink-500 animate-pulse text-sm"></i>
+                <div class="text-[10px] flex flex-col">
+                    <span class="font-black text-slate-200 uppercase tracking-wider">Itinerary Route View</span>
+                    <span id="mapItineraryActiveBannerLabel" class="text-slate-400 truncate max-w-[160px]">Active Schedule</span>
+                </div>
+            </div>
+            <button onclick="deactivateItineraryRouteMapView()" class="px-2.5 py-1 bg-rose-950/40 border border-rose-500/30 text-rose-400 text-[9px] font-black uppercase rounded-lg tracking-wider active:bg-rose-950">Exit</button>
+        </div>
+
         <div id="view-map" class="view-panel active-view">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
@@ -284,7 +295,6 @@
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <span id="trayCityBadge" class="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">Global</span>
                                     <span id="trayStarredBadge" class="hidden text-[9px] font-black text-amber-400"><i class="fa-solid fa-star mr-1"></i>Starred</span>
-                                    <span id="trayBookedBadge" class="hidden text-[9px] uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold">Booked</span>
                                 </div>
                                 <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
                             </div>
@@ -351,7 +361,6 @@
         </div>
 
         <div id="view-list" class="view-panel w-full bg-slate-950 flex flex-col">
-            
             <div class="w-full px-4 bg-slate-950 shrink-0 z-20 relative">
                 <div class="max-w-md mx-auto bg-slate-900/90 backdrop-blur-xl border-x border-b border-slate-800/80 px-3.5 py-1 rounded-b-xl flex justify-between items-center h-7 shadow-md -mt-[1px]">
                     <span class="text-[9px] uppercase font-black tracking-widest text-slate-400">Summary</span>
@@ -366,11 +375,80 @@
             </div>
         </div>
 
-        <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
-            <div class="space-y-2 max-w-xs">
-                <div class="text-4xl"><i class="fa-solid fa-screwdriver-wrench text-slate-600"></i></div>
-                <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Module</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Work in progress workspace matrix engine.</p>
+        <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col overflow-y-auto subtle-scrollbar px-4 pt-4 pb-24">
+            <div id="itineraryMasterViewMountNode" class="w-full max-w-md mx-auto space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="itineraryWizardModalContainer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-end hidden transition-all duration-300">
+        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl relative text-xs">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <h3 class="text-base font-black flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-xl text-pink-500"></i>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-black uppercase tracking-wide">Itinerary Builder Wizard</span>
+                </h3>
+                <button onclick="toggleItineraryWizardModalTray(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Route Label Name</label>
+                    <input type="text" id="itinFormRouteLabelField" placeholder="e.g., Tokyo Day 1 Exploration" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none font-medium">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Target Execution Date</label>
+                        <input type="date" id="itinFormExecutionDateField" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Target Filter City</label>
+                        <select id="itinFormTargetCityDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none font-bold h-[46px]"></select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Pace Density Matrix</label>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button id="itinPaceBtn-max" onclick="setItineraryWizardPaceConfiguration('max')" class="py-2.5 text-center font-black rounded-lg text-pink-400 bg-pink-500/10">🚀 Max Exploration</button>
+                        <button id="itinPaceBtn-relaxed" onclick="setItineraryWizardPaceConfiguration('relaxed')" class="py-2.5 text-center font-black rounded-lg text-slate-500">☕ Relaxed Pace</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Experience Block Stack Sequences (Tap to append)</label>
+                    <div id="itinWizardCategoryPillsBucket" class="flex flex-wrap gap-1.5 pt-1"></div>
+                </div>
+
+                <div class="bg-slate-950/60 border border-slate-850 p-3 rounded-xl">
+                    <span class="block text-[10px] uppercase font-black text-slate-500 tracking-widest mb-2">Chosen Build String Blueprint</span>
+                    <div id="itinWizardSequenceQueueHUD" class="flex flex-wrap items-center gap-2 font-mono text-[11px] text-slate-400 min-h-[24px]">
+                        <span class="italic text-slate-600">Select blocks above to design layout...</span>
+                    </div>
+                </div>
+
+                <button onclick="triggerEngineClientSideItinerarySynthesis()" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-4 rounded-xl text-white shadow-lg uppercase tracking-wider text-xs">
+                    <i class="fa-solid fa-bolt mr-1.5"></i> Generate Proposed Route
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="itineraryPreviewScreenModalContainer" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[99999] flex items-center justify-center p-4 hidden">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden text-xs">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800 shrink-0">
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-black uppercase text-pink-500 tracking-widest">Engine Proposed Preview</span>
+                    <h4 id="itinPreviewTitleLabelNode" class="text-sm font-black text-slate-200 truncate mt-0.5">Route Proposal</h4>
+                </div>
+                <button onclick="document.getElementById('itineraryPreviewScreenModalContainer').classList.add('hidden')" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div id="itinPreviewSlotsScrollerRegion" class="flex-1 overflow-y-auto subtle-scrollbar my-4 space-y-3 pr-1"></div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 shrink-0">
+                <button onclick="document.getElementById('itineraryPreviewScreenModalContainer').classList.add('hidden')" class="w-full py-3.5 bg-slate-950 border border-slate-800 text-slate-400 font-bold rounded-xl uppercase tracking-wider text-[11px]">Back</button>
+                <button onclick="commitProposedItineraryRouteToCache()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black rounded-xl uppercase tracking-wider text-[11px] shadow-lg"><i class="fa-solid fa-floppy-disk mr-1"></i> Save Itinerary</button>
             </div>
         </div>
     </div>
@@ -408,7 +486,7 @@
                 </div>
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Maps Link</label>
-                    <input type="url" id="new-maps-url" placeholder="http://maps.google.com/?q=..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                    <input type="url" id="new-maps-url" placeholder="https://maps.google.com/?q=..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -500,7 +578,7 @@
     <script>
         const ENABLE_MAP_ROTATION = false; 
 
-        const APP_VERSION = "v4.0.0";
+        const APP_VERSION = "v5.0.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -511,6 +589,16 @@
         let showStarredOnly = JSON.parse(localStorage.getItem('compass_starred_only')) || false;
         let hideCompletedSpotsStateBool = localStorage.getItem('compass_hide_completed') !== null ? JSON.parse(localStorage.getItem('compass_hide_completed')) : true;
         let currentMapStyleKey = localStorage.getItem('compass_map_style') || 'dark';
+
+        // V5 Core Relational Local Storage Vault
+        let savedItineraries = JSON.parse(localStorage.getItem('compass_itineraries')) || [];
+        let activeMapItineraryId = null;
+        let itineraryMapPolylineRef = null;
+
+        // Wizard Temporal State Matrix variables
+        let itinWizardPaceMode = "max"; // max or relaxed
+        let itinWizardSequenceBlueprint = [];
+        let itinWizardEngineDraftProposal = null;
 
         if (currentMapStyleKey === 'street') {
             currentMapStyleKey = 'terrain';
@@ -634,6 +722,7 @@
                 closeAllActiveHUDDropdownOverlays();
                 toggleSettingsMenu(false);
                 dismissMapDetailTrayHUDCard();
+                toggleItineraryWizardModalTray(false);
             });
 
             if (travelSpots.length > 0) {
@@ -670,6 +759,8 @@
                     }
                 }
             });
+            // Init V5 Itinerary Pane Rendering Workspace 
+            renderItineraryMasterDashboardWorkspace();
         };
 
         function setupV4TwoFingerRotationListeners() {
@@ -1165,6 +1256,9 @@
                     }
                 }, 50); 
             }
+            if(targetTabID === 'itinerary') {
+                renderItineraryMasterDashboardWorkspace();
+            }
         }
 
         function toggleCityDropdownOverlayMenu(event) {
@@ -1249,7 +1343,6 @@
             if (mapsUrl !== "" && mapsUrl !== "N/A") {
                 window.open(mapsUrl, '_blank');
             } else if (lat !== "" && lat !== "0" && lng !== "" && lng !== "0") {
-                // Bulletproof consumer fallback redirection link mapping to handle standalone database coordinate points
                 window.open(`https://maps.google.com/?q=${lat},${lng}`, '_blank');
             } else {
                 triggerCuteSpeechBubbleHUD("Map data missing in database!", buttonElement, event);
@@ -1527,6 +1620,12 @@
                     distZone: stableDistanceZoneBucket 
                 };
             }).filter(s => {
+                if (activeMapItineraryId !== null) {
+                    const activeItinObj = savedItineraries.find(i => i.itinerary_id === activeMapItineraryId);
+                    if (activeItinObj && activeItinObj.route_sequence) {
+                        return activeItinObj.route_sequence.includes(String(s.rowid));
+                    }
+                }
                 if (hideCompletedSpotsStateBool && (s.status || "").toLowerCase().trim() === "done") return false;
                 if (showStarredOnly && !['high','🔥','must do','starred'].includes((s.priority || "").toLowerCase())) return false;
                 if (checkedCitiesStateArray.length > 0 && !checkedCitiesStateArray.includes(s.city)) return false;
@@ -1730,7 +1829,7 @@
             const directMapsUrl = spotObj.maps_url ? String(spotObj.maps_url).trim() : "";
             const rawLat = spotObj.latitude ? String(spotObj.latitude).trim() : "";
             const rawLng = spotObj.longitude ? String(spotObj.longitude).trim() : "";
-            const hasValidMapDestination = (directMapsUrl !== "" && directMapsUrl !== "N/A") || (rawLat !== "" && rawLat !== "0" && rawLng !== "" && rawLng !== "0");
+            const hasValidMapDestination = (directMapsUrl !== "" && directMapsUrl !== "N/A") || (rawLat !== "" && rawLat !== "0" && rawLng !== "" && rawLng !== "0');
 
             if (!hasValidMapDestination) {
                 actionBtn.innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i>"; 
@@ -1882,7 +1981,7 @@
                                     </div>
                                     <span id="dist-badge-${spot.rowid}" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
                                 </div>
-                                <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px] overflow-hidden">
+                                <div class="mt-3 bg-slate-955/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px] overflow-hidden">
                                     <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
                                 </div>
                             </div>
@@ -1898,7 +1997,7 @@
                                     <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'forward')" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
                                         <i class="fa-solid fa-circle-info mr-1"></i> Extra Info
                                     </button>
-                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold active:bg-slate-855">${isDone ? '<i class="fa-solid fa-arrow-rotate-left mr-1"></i> Undo' : '<i class="fa-solid fa-check mr-1"></i> Mark Done'}</button>
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold active:bg-slate-850">${isDone ? '<i class="fa-solid fa-arrow-rotate-left mr-1"></i> Undo' : '<i class="fa-solid fa-check mr-1"></i> Mark Done'}</button>
                                     <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? '<i class="fa-solid fa-star-half-stroke mr-1"></i> Unstar' : '<i class="fa-solid fa-star mr-1"></i> Star'}</button>
                                 </div>
                             </div>
@@ -2101,6 +2200,8 @@
                     localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
                     calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
                     updateNetworkStatusHUD();
+                    // Sync up state matrices
+                    if (activeTabID === 'itinerary') renderItineraryMasterDashboardWorkspace();
                 }
             } catch (e) { 
                 if(syncText) syncText.innerText = "Offline Mode"; 
@@ -2125,6 +2226,553 @@
         async function triggerSecureServerHistoryPurgeVault() {}
         function clearDeviceSessionAndLogout() {}
         function commitProfileRename() {}
+
+        /* =========================================================================
+           V5 ITINERARY SYSTEM INTEGRATION ARCHITECTURE LAYER (100% CLIENT-SIDE)
+           ========================================================================= */
+        
+        function renderItineraryMasterDashboardWorkspace() {
+            const rootNode = document.getElementById('itineraryMasterViewMountNode');
+            if (!rootNode) return;
+            rootNode.innerHTML = "";
+
+            // Filter down matching profiles context
+            const userRoutes = savedItineraries.filter(i => i.username === currentUser);
+
+            if (userRoutes.length === 0) {
+                // STATE A: Elegant Interactive Empty CTA Block
+                rootNode.innerHTML = `
+                    <div class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-5 shadow-2xl mt-4">
+                        <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-pink-500/10 to-purple-500/10 border border-pink-500/20 flex items-center justify-center text-3xl">
+                            <i class="fa-solid fa-calendar-plus bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500"></i>
+                        </div>
+                        <div class="space-y-1.5">
+                            <h4 class="text-sm font-black text-slate-200 uppercase tracking-widest">Itinerary Vault Empty</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto font-medium">Let's coordinate your saved city pins into a fast, deterministic daily exploration route map.</p>
+                        </div>
+                        <button onclick="initializeNewItineraryCreationFlow()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 font-black text-xs uppercase tracking-wider rounded-xl text-white shadow-xl shadow-pink-600/10"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Create Your First Itinerary</button>
+                    </div>
+                `;
+                return;
+            }
+
+            // STATE D: Dynamic Saved Dashboard Timeline
+            const headerRow = document.createElement('div');
+            headerRow.className = "flex justify-between items-center pb-2 border-b border-slate-800 shrink-0 mt-2";
+            headerRow.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-route text-pink-500 text-sm"></i>
+                    <h3 class="text-xs font-black uppercase text-slate-300 tracking-wider">My Saved Routing Timelines</h3>
+                </div>
+                <button onclick="initializeNewItineraryCreationFlow()" class="px-2.5 py-1.5 bg-pink-500/10 border border-pink-500/20 text-pink-400 font-black uppercase text-[9px] rounded-lg tracking-wide"><i class="fa-solid fa-plus mr-0.5"></i> Add New</button>
+            `;
+            rootNode.appendChild(headerRow);
+
+            userRoutes.sort((a,b) => new Date(a.target_date) - new Date(b.target_date)).forEach(itin => {
+                const card = document.createElement('div');
+                card.className = "w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3 shadow-xl relative overflow-hidden";
+                
+                // Background runtime validation evaluation
+                const validationReport = executeClientSidePayloadValidation(itin);
+                
+                let badgeHTML = "";
+                if (validationReport.errors > 0) {
+                    badgeHTML = `<span class="px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold font-mono text-[9px]"><i class="fa-solid fa-circle-xmark mr-1"></i>${validationReport.errors} Conflict</span>`;
+                } else if (validationReport.warnings > 0) {
+                    badgeHTML = `<span class="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold font-mono text-[9px]"><i class="fa-solid fa-circle-exclamation mr-1"></i>${validationReport.warnings} Alert</span>`;
+                } else {
+                    badgeHTML = `<span class="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold font-mono text-[9px]"><i class="fa-solid fa-circle-check mr-1"></i>Valid Route</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="max-w-[70%] space-y-1">
+                            <h4 class="text-sm font-black text-slate-200 truncate">${itin.name}</h4>
+                            <div class="text-[10px] text-slate-500 font-mono flex items-center gap-1.5">
+                                <i class="fa-solid fa-calendar text-[9px]"></i> <span>${itin.target_date}</span>
+                                <span class="text-slate-700">•</span>
+                                <span>${itin.route_sequence.length} Stops</span>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex flex-col items-end gap-1">
+                            ${badgeHTML}
+                            <input type="date" value="${itin.target_date}" onchange="handleItineraryDateMutation('${itin.itinerary_id}', this.value)" class="bg-slate-950 text-slate-400 text-[9px] px-1 py-0.5 rounded border border-slate-800 font-mono focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/50 rounded-xl p-2.5 border border-slate-900 space-y-1.5">
+                        ${generateTimelineSummaryStepsHTML(itin)}
+                    </div>
+
+                    <div class="flex gap-2 justify-end pt-1 border-t border-slate-850 text-[10px] font-bold">
+                        <button onclick="cloneItinerarySessionDuplicate('${itin.itinerary_id}')" class="px-2.5 py-1.5 bg-slate-950 text-slate-400 border border-slate-800 rounded-lg active:bg-slate-900"><i class="fa-solid fa-clone"></i> Copy</button>
+                        <button onclick="purgeItineraryItemTarget('${itin.itinerary_id}')" class="px-2.5 py-1.5 bg-red-950/20 text-red-400 border border-red-900/20 rounded-lg active:bg-red-950/40"><i class="fa-solid fa-trash-can"></i> Delete</button>
+                        <button onclick="activateItineraryRouteMapView('${itin.itinerary_id}')" class="ml-auto px-3 py-1.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-black uppercase tracking-wider text-[9px] rounded-lg shadow-md"><i class="fa-solid fa-map-location-dot"></i> View Route Map</button>
+                    </div>
+                `;
+                rootNode.appendChild(card);
+            });
+        }
+
+        function generateTimelineSummaryStepsHTML(itinObj) {
+            let html = "";
+            itinObj.route_sequence.forEach((rowId, index) => {
+                const spot = travelSpots.find(s => String(s.rowid) === String(rowId));
+                if (!spot) return;
+                const isStepDone = (itinObj.completed_steps || []).includes(String(rowId));
+                
+                // Fetch phase tag name contexts
+                const phases = ["Morning", "Midday", "Afternoon", "Evening"];
+                const currentPhase = phases[index] || "Night";
+
+                html += `
+                    <div class="flex items-center justify-between gap-2 text-[11px] font-medium py-1 border-b border-slate-900 last:border-0">
+                        <div class="flex items-center gap-2 truncate max-w-[80%]">
+                            <button onclick="toggleItineraryStepCompletionState('${itinObj.itinerary_id}', '${rowId}')" class="text-xs shrink-0 focus:outline-none">
+                                ${isStepDone ? '<i class="fa-solid fa-square-check text-pink-500"></i>' : '<i class="fa-regular fa-square text-slate-600"></i>'}
+                            </button>
+                            <span class="text-[9px] font-mono text-slate-500 uppercase tracking-tight w-12 shrink-0">${currentPhase}:</span>
+                            <span class="truncate ${isStepDone ? 'text-slate-600 line-through' : 'text-slate-300'}">${spot.spot_name}</span>
+                        </div>
+                        <span class="text-[9px] font-mono text-slate-500 shrink-0">${spot.city}</span>
+                    </div>
+                `;
+            });
+            return html || `<div class="text-slate-600 italic text-[10px] text-center p-1">No markers map mapped.</div>`;
+        }
+
+        function toggleItineraryWizardModalTray(show) {
+            const modal = document.getElementById('itineraryWizardModalContainer');
+            const backdrop = document.getElementById('dropdownBlurBackdrop');
+            if(show) {
+                modal.classList.remove('hidden');
+                backdrop.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        function initializeNewItineraryCreationFlow() {
+            toggleItineraryWizardModalTray(true);
+            document.getElementById('itinFormRouteLabelField').value = "";
+            // Set dynamic current safe placeholder matching date
+            document.getElementById('itinFormExecutionDateField').value = "2026-05-25";
+            
+            // Build out clean unique dropdown selection rows matching cities matrix
+            const citySelect = document.getElementById('itinFormTargetCityDropdown');
+            citySelect.innerHTML = "";
+            let uniqueCities = new Set();
+            travelSpots.forEach(s => { if (s.city) uniqueCities.add(s.city.trim()); });
+            
+            if (uniqueCities.size === 0) uniqueCities.add("Global");
+            uniqueCities.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.innerText = c;
+                citySelect.appendChild(opt);
+            });
+
+            // Initialize default Wizard categories pills configuration
+            itinWizardSequenceBlueprint = [];
+            setItineraryWizardPaceConfiguration('max');
+        }
+
+        function setItineraryWizardPaceConfiguration(modeKey) {
+            itinWizardPaceMode = modeKey;
+            const maxBtn = document.getElementById('itinPaceBtn-max');
+            const relaxedBtn = document.getElementById('itinPaceBtn-relaxed');
+            
+            if (modeKey === 'max') {
+                maxBtn.className = "py-2.5 text-center font-black rounded-lg text-pink-400 bg-pink-500/10";
+                relaxedBtn.className = "py-2.5 text-center font-black rounded-lg text-slate-500";
+                itinWizardSequenceBlueprint = ["Food", "Culture", "Nature", "Food"];
+            } else {
+                maxBtn.className = "py-2.5 text-center font-black rounded-lg text-slate-500";
+                relaxedBtn.className = "py-2.5 text-center font-black rounded-lg text-pink-400 bg-pink-500/10";
+                itinWizardSequenceBlueprint = ["Food", "Viewpoint"];
+            }
+            rebuildWizardCategoryPillsHUDDeck();
+        }
+
+        function rebuildWizardCategoryPillsHUDDeck() {
+            const pillsBucket = document.getElementById('itinWizardCategoryPillsBucket');
+            pillsBucket.innerHTML = "";
+
+            const rawCategories = ["Food", "Culture", "Nature", "Viewpoint", "Photo", "Shopping", "Relax"];
+            rawCategories.forEach(cat => {
+                const pill = document.createElement('button');
+                pill.className = "px-2.5 py-1 bg-slate-950 border border-slate-800 text-slate-400 rounded-full text-[10px] font-bold active:bg-slate-850";
+                pill.innerText = `+ ${cat}`;
+                pill.onclick = () => {
+                    if (itinWizardSequenceBlueprint.length >= 4) {
+                        alert("Itinerary limit cap hit. Max 4 slots allowed per timeline sequence.");
+                        return;
+                    }
+                    itinWizardSequenceBlueprint.push(cat);
+                    syncWizardSequenceBlueprintQueueUI();
+                };
+                pillsBucket.appendChild(pill);
+            });
+            syncWizardSequenceBlueprintQueueUI();
+        }
+
+        function syncWizardSequenceBlueprintQueueUI() {
+            const queueHUD = document.getElementById('itinWizardSequenceQueueHUD');
+            queueHUD.innerHTML = "";
+            if(itinWizardSequenceBlueprint.length === 0) {
+                queueHUD.innerHTML = `<span class="italic text-slate-600">Select blocks above to design layout...</span>`;
+                return;
+            }
+            itinWizardSequenceBlueprint.forEach((token, index) => {
+                const badge = document.createElement('span');
+                badge.className = "px-2 py-1 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-lg font-black flex items-center gap-1.5 text-[10px]";
+                badge.innerHTML = `<span>${index+1}. ${token}</span><i class="fa-solid fa-circle-xmark text-pink-600 cursor-pointer text-xs" onclick="removeTokenFromWizardBlueprint(${index}); event.stopPropagation();"></i>`;
+                queueHUD.appendChild(badge);
+            });
+        }
+
+        function removeTokenFromWizardBlueprint(indexTarget) {
+            itinWizardSequenceBlueprint.splice(indexTarget, 1);
+            syncWizardSequenceBlueprintQueueUI();
+        }
+
+        /* =========================================================================
+           V5 ENGINE LAYER: GREEDY DISTANCE MATRIX HEURISTICS & VALIDATION ENGINE
+           ========================================================================= */
+
+        function triggerEngineClientSideItinerarySynthesis() {
+            const targetCity = document.getElementById('itinFormTargetCityDropdown').value;
+            const targetDate = document.getElementById('itinFormExecutionDateField').value;
+            const routeLabelName = document.getElementById('itinFormRouteLabelField').value || `${targetCity} Route Run`;
+
+            if(!targetDate) { alert("Please provide a valid execution target calendar date."); return; }
+            if(itinWizardSequenceBlueprint.length === 0) { alert("Please define at least one Experience category component slot."); return; }
+
+            // Filter out candidates rows matching local user data criteria
+            let pool = travelSpots.filter(spot => String(spot.city).trim().toLowerCase() === targetCity.toLowerCase());
+            if(pool.length === 0) {
+                // Failover fallback loop check context
+                pool = travelSpots;
+            }
+
+            let currentAnchorLat = userLat;
+            let currentAnchorLon = userLon;
+            let finalGeneratedSequenceRowIds = [];
+            let previewSlotsDataPayload = [];
+
+            // Greedy Sequence Vector Loop Solver
+            itinWizardSequenceBlueprint.forEach((categoryKey, index) => {
+                let candidates = pool.filter(spot => {
+                    const spotCats = (spot.category || "").toLowerCase();
+                    const isTypeMatch = spotCats.includes(categoryKey.toLowerCase()) || spotCats.includes("general");
+                    const isAlreadyUsed = finalGeneratedSequenceRowIds.includes(String(spot.rowid));
+                    return isTypeMatch && !isAlreadyUsed;
+                });
+
+                if(candidates.length === 0) {
+                    // Failover logic if categories search runs empty
+                    candidates = pool.filter(spot => !finalGeneratedSequenceRowIds.includes(String(spot.rowid)));
+                }
+
+                if(candidates.length === 0) return; // Completely empty database safeguard
+
+                // Score matching pipeline algorithm evaluation logic
+                let optimalSpot = null;
+                let highestCalculatedScore = -999999;
+
+                candidates.forEach(cand => {
+                    const isStarred = ['high','🔥','must do','starred'].includes((cand.priority || "").toLowerCase());
+                    const candLat = parseFloat(cand.latitude) || 0;
+                    const candLon = parseFloat(cand.longitude) || 0;
+                    
+                    let distanceMultiplierKM = 10;
+                    if(candLat !== 0 && candLon !== 0) {
+                        const distanceKM = calculateDistance(currentAnchorLat, currentAnchorLon, candLat, candLon);
+                        distanceMultiplierKM = distanceKM > 0.05 ? (10 / distanceKM) : 200; // Proximal sorting reward boost
+                    }
+
+                    const starScoreBonus = isStarred ? 25 : 0;
+                    const calculatedCompositeScore = starScoreBonus + distanceMultiplierKM;
+
+                    if(calculatedCompositeScore > highestCalculatedScore) {
+                        highestCalculatedScore = calculatedCompositeScore;
+                        optimalSpot = cand;
+                    }
+                });
+
+                if(optimalSpot) {
+                    finalGeneratedSequenceRowIds.push(String(optimalSpot.rowid));
+                    
+                    const finalLat = parseFloat(optimalSpot.latitude) || 0;
+                    const finalLon = parseFloat(optimalSpot.longitude) || 0;
+                    let distanceLabelStr = "Missing Location";
+
+                    if(finalLat !== 0 && finalLon !== 0) {
+                        const labelDistance = calculateDistance(userLat, userLon, finalLat, finalLon);
+                        distanceLabelStr = labelDistance < 1 ? `${Math.round(labelDistance * 1000)}m away` : `${labelDistance.toFixed(1)}km away`;
+                        // Relocate the anchor vectors to compile next segment leg
+                        currentAnchorLat = finalLat;
+                        currentAnchorLon = finalLon;
+                    }
+
+                    // Push mapping arrays directly into the preview layer state matrices
+                    previewSlotsDataPayload.push({
+                        spot: optimalSpot,
+                        distanceLabel: distanceLabelStr,
+                        categoryKey: categoryKey
+                    });
+                }
+            });
+
+            // Cache temporary setup states parameters for persistence binding execution layers
+            itinWizardEngineDraftProposal = {
+                itinerary_id: "ITIN-" + Math.random().toString(36).substring(2, 7).toUpperCase(),
+                username: currentUser,
+                name: routeLabelName,
+                target_date: targetDate,
+                route_sequence: finalGeneratedSequenceRowIds,
+                completed_steps: []
+            };
+
+            // Render Preview Overlay Card State C
+            renderEngineProposedPreviewOverlayCard(previewSlotsDataPayload);
+        }
+
+        function executeClientSidePayloadValidation(itinObj) {
+            let logs = { errors: 0, warnings: 0 };
+            const dayName = new Date(itinObj.target_date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+            itinObj.route_sequence.forEach(rowId => {
+                const spot = travelSpots.find(s => String(s.rowid) === String(rowId));
+                if (!spot) { logs.errors++; return; }
+
+                const openHoursStr = (spot.opening_hours || "").toLowerCase().trim();
+                
+                if (openHoursStr === "" || openHoursStr === "n/a") {
+                    logs.warnings++;
+                } else if (openHoursStr.includes("24 hours")) {
+                    // Always Open
+                } else if (openHoursStr.includes("closed")) {
+                    if (openHoursStr.includes(`closed ${dayName}`) || openHoursStr.includes(`${dayName}: closed`)) {
+                        logs.errors++;
+                    }
+                }
+            });
+            return logs;
+        }
+
+        function renderEngineProposedPreviewOverlayCard(slotsArray) {
+            const scroller = document.getElementById('itinPreviewSlotsScrollerRegion');
+            document.getElementById('itinPreviewTitleLabelNode').innerText = itinWizardEngineDraftProposal.name;
+            scroller.innerHTML = "";
+
+            if(slotsArray.length === 0) {
+                scroller.innerHTML = `<div class="text-slate-500 italic text-center py-6">Database matching profile constraints computed empty. Save more city data metrics.</div>`;
+                return;
+            }
+
+            const phases = ["Morning (09:00 - 12:00)", "Midday (12:00 - 15:00)", "Afternoon (15:00 - 18:00)", "Evening (18:00 - 22:00)"];
+
+            slotsArray.forEach((slot, index) => {
+                const phaseLabel = phases[index] || "Night Capture Block";
+                const spotObj = slot.spot;
+
+                // Call validation parsing loops
+                let validationHTML = `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Valid Slot Path</span>`;
+                const openHours = (spotObj.opening_hours || "").toLowerCase().trim();
+                if(openHours === "" || openHours === "n/a") {
+                    validationHTML = `<span class="text-amber-400 font-bold"><i class="fa-solid fa-circle-exclamation text-[10px]"></i> Unverified availability</span>`;
+                }
+
+                const itemRow = document.createElement('div');
+                itemRow.className = "w-full bg-slate-950/60 border border-slate-850 p-3 rounded-xl space-y-1.5";
+                itemRow.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-900 pb-1">
+                        <span class="text-[10px] font-mono uppercase tracking-widest text-slate-500 font-black">${phaseLabel}</span>
+                        <span class="px-1.5 py-0.5 rounded bg-slate-900 font-bold text-[9px] text-pink-400 font-mono">${slot.categoryKey}</span>
+                    </div>
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            <h5 class="font-black text-slate-200 text-xs">${spotObj.spot_name}</h5>
+                            <p class="text-[10px] text-slate-500 font-mono mt-0.5">${slot.distanceLabel} • ${spotObj.city}</p>
+                        </div>
+                        <button onclick="triggerInlineSwapEngineSlotModification(${index})" class="px-2 py-1 bg-slate-900 border border-slate-800 text-sky-400 rounded-md text-[9px] font-bold tracking-wide shrink-0">Swap</button>
+                    </div>
+                    <div class="text-[9px] font-mono leading-tight">${validationHTML}</div>
+                `;
+                scroller.appendChild(itemRow);
+            });
+
+            document.getElementById('itineraryPreviewScreenModalContainer').classList.remove('hidden');
+        }
+
+        function triggerInlineSwapEngineSlotModification(indexTarget) {
+            const targetCity = document.getElementById('itinFormTargetCityDropdown').value;
+            const categoryKey = itinWizardSequenceBlueprint[indexTarget] || "General";
+            const exclusionsList = itinWizardEngineDraftProposal.route_sequence;
+
+            let pool = travelSpots.filter(spot => String(spot.city).trim().toLowerCase() === targetCity.toLowerCase());
+            if(pool.length === 0) pool = travelSpots;
+
+            let alternatives = pool.filter(spot => {
+                const spotCats = (spot.category || "").toLowerCase();
+                return (spotCats.includes(categoryKey.toLowerCase()) || spotCats.includes("general")) && !exclusionsList.includes(String(spot.rowid));
+            });
+
+            if(alternatives.length === 0) {
+                alternatives = pool.filter(spot => !exclusionsList.includes(String(spot.rowid)));
+            }
+
+            if(alternatives.length === 0) {
+                alert("No further alternative city spots found in system to cycle swap values.");
+                return;
+            }
+
+            // Greedy pull alternative shift index
+            const newSpotSelected = alternatives[Math.floor(Math.random() * alternatives.length)];
+            
+            // Re-inject mutated node parameters back to memory state buffers
+            itinWizardEngineDraftProposal.route_sequence[indexTarget] = String(newSpotSelected.rowid);
+            
+            // Re-render display loops smoothly
+            let updatedSlotsDataPayload = [];
+            itinWizardEngineDraftProposal.route_sequence.forEach((rowId, idx) => {
+                const currentSpot = travelSpots.find(s => String(s.rowid) === String(rowId));
+                let dLabel = "Tracking Match";
+                const cLat = parseFloat(currentSpot.latitude) || 0;
+                if(cLat !== 0) {
+                    const labelDistance = calculateDistance(userLat, userLon, cLat, parseFloat(currentSpot.longitude));
+                    dLabel = labelDistance < 1 ? `${Math.round(labelDistance * 1000)}m away` : `${labelDistance.toFixed(1)}km away`;
+                }
+                updatedSlotsDataPayload.push({
+                    spot: currentSpot,
+                    distanceLabel: dLabel,
+                    categoryKey: itinWizardSequenceBlueprint[idx] || "General"
+                });
+            });
+            renderEngineProposedPreviewOverlayCard(updatedSlotsDataPayload);
+        }
+
+        function commitProposedItineraryRouteToCache() {
+            if(!itinWizardEngineDraftProposal) return;
+            savedItineraries.push(itinWizardEngineDraftProposal);
+            localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
+            
+            document.getElementById('itineraryPreviewScreenModalContainer').classList.add('hidden');
+            toggleItineraryWizardModalTray(false);
+            
+            renderItineraryMasterDashboardWorkspace();
+            if(navigator.vibrate) navigator.vibrate([30, 50]);
+        }
+
+        function handleItineraryDateMutation(itineraryId, newDateValue) {
+            if (!newDateValue) return;
+            const target = savedItineraries.find(i => i.itinerary_id === itineraryId);
+            if(target) {
+                target.target_date = newDateValue;
+                localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
+                renderItineraryMasterDashboardWorkspace();
+                triggerCuteSpeechBubbleHUD("Date modified & re-validated silently!", document.getElementById('view-itinerary'));
+            }
+        }
+
+        function cloneItinerarySessionDuplicate(itineraryId) {
+            const source = savedItineraries.find(i => i.itinerary_id === itineraryId);
+            if(!source) return;
+
+            const targetNameString = prompt("Enter naming matrix label for duplicated copy asset:", `${source.name} (Copy)`);
+            if (targetNameString === null) return; // Action cancelled check
+
+            let clonePayload = JSON.parse(JSON.stringify(source));
+            clonePayload.itinerary_id = "ITIN-" + Math.random().toString(36).substring(2, 7).toUpperCase();
+            clonePayload.name = targetNameString || `${source.name} (Copy)`;
+            
+            savedItineraries.push(clonePayload);
+            localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
+            renderItineraryMasterDashboardWorkspace();
+        }
+
+        function toggleItineraryStepCompletionState(itineraryId, rowId) {
+            const target = savedItineraries.find(i => i.itinerary_id === itineraryId);
+            if(!target) return;
+            if(!target.completed_steps) target.completed_steps = [];
+
+            if(target.completed_steps.includes(String(rowId))) {
+                target.completed_steps = target.completed_steps.filter(id => id !== String(rowId));
+            } else {
+                target.completed_steps.push(String(rowId));
+            }
+            localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
+            renderItineraryMasterDashboardWorkspace();
+        }
+
+        function purgeItineraryItemTarget(itineraryId) {
+            if(confirm("Confirm security deletion purge log of this routing sequence?")) {
+                savedItineraries = savedItineraries.filter(i => i.itinerary_id !== itineraryId);
+                localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
+                if(activeMapItineraryId === itineraryId) deactivateItineraryRouteMapView();
+                renderItineraryMasterDashboardWorkspace();
+            }
+        }
+
+        /* =========================================================================
+           V5 VIEWPORT SYNC LAYER: INTERACTIVE POLYLINE PATH VECTOR GRAPHICS MAP
+           ========================================================================= */
+
+        function activateItineraryRouteMapView(itineraryId) {
+            const target = savedItineraries.find(i => i.itinerary_id === itineraryId);
+            if(!target) return;
+
+            activeMapItineraryId = itineraryId;
+            switchMasterMenuDashboardTab('map');
+
+            // Inject Overlay HUD text components
+            const banner = document.getElementById('mapItineraryActiveOverlayBanner');
+            document.getElementById('mapItineraryActiveBannerLabel').innerText = target.name;
+            banner.classList.remove('hidden');
+
+            // Synchronize mapping coordinate array blocks
+            plotDynamicMarkersOnCanvasMap();
+
+            if(itineraryMapPolylineRef && leafletMapInstance) {
+                leafletMapInstance.removeLayer(itineraryMapPolylineRef);
+                itineraryMapPolylineRef = null;
+            }
+
+            let coordinatePointsVectorList = [];
+            target.route_sequence.forEach(rowId => {
+                const spot = travelSpots.find(s => String(s.rowid) === String(rowId));
+                if(spot && spot.latitude && spot.longitude && String(spot.latitude).trim() !== "0") {
+                    coordinatePointsVectorList.push([parseFloat(spot.latitude), parseFloat(spot.longitude)]);
+                }
+            });
+
+            if (coordinatePointsVectorList.length >= 2 && leafletMapInstance) {
+                itineraryMapPolylineRef = L.polyline(coordinatePointsVectorList, {
+                    color: '#ec4899',
+                    weight: 4,
+                    opacity: 0.85,
+                    dashArray: '8, 8',
+                    lineJoin: 'round'
+                }).addTo(leafletMapInstance);
+
+                // Auto boundary frame centering viewport snapping
+                leafletMapInstance.fitBounds(L.latLngBounds(coordinatePointsVectorList), { padding: [60, 60], animate: true });
+            }
+        }
+
+        function deactivateItineraryRouteMapView() {
+            activeMapItineraryId = null;
+            document.getElementById('mapItineraryActiveOverlayBanner').classList.add('hidden');
+            
+            if(itineraryMapPolylineRef && leafletMapInstance) {
+                leafletMapInstance.removeLayer(itineraryMapPolylineRef);
+                itineraryMapPolylineRef = null;
+            }
+            
+            plotDynamicMarkersOnCanvasMap();
+            renderList();
+        }
     </script>
 </body>
 </html>
