@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.12</title>
+    <title>Save2Go V3.9.13</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -232,16 +232,16 @@
                 
                 <div id="mapLayerStyleDropdownDeck" class="hidden w-full bg-slate-900/95 border border-slate-800 rounded-2xl shadow-2xl p-3 grid grid-cols-4 gap-2 pointer-events-auto transition-all duration-200">
                     <button onclick="setMapBaseLayerProviderSource('dark')" id="styleCard-dark" class="flex flex-col items-center gap-1 p-1 bg-slate-900 rounded-xl border-2 border-pink-500 shadow-lg">
-                        <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-lg">🌑</div>
+                        <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-lg"><i class="fa-solid fa-moon text-slate-200"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Dark</span>
                     </button>
                     <button onclick="setMapBaseLayerProviderSource('light')" id="styleCard-light" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
-                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-lg">☀️</div>
+                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-lg"><i class="fa-solid fa-sun text-amber-500"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Light</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('street')" id="styleCard-street" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center text-lg">🗺️</div>
-                        <span class="text-[8px] font-bold tracking-tight text-slate-400">Street</span>
+                    <button onclick="setMapBaseLayerProviderSource('terrain')" id="styleCard-terrain" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center text-lg"><i class="fa-solid fa-mountain text-emerald-500"></i></div>
+                        <span class="text-[8px] font-bold tracking-tight text-slate-400">Terrain</span>
                     </button>
                     <button onclick="setMapBaseLayerProviderSource('satellite')" id="styleCard-satellite" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-blue-400">
                         <div class="w-10 h-10 rounded-lg bg-blue-950 flex items-center justify-center text-base"><i class="fa-solid fa-location-dot"></i></div>
@@ -481,7 +481,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.12";
+        const APP_VERSION = "v3.9.13";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -492,6 +492,12 @@
         let showStarredOnly = JSON.parse(localStorage.getItem('compass_starred_only')) || false;
         let hideCompletedSpotsStateBool = localStorage.getItem('compass_hide_completed') !== null ? JSON.parse(localStorage.getItem('compass_hide_completed')) : true;
         let currentMapStyleKey = localStorage.getItem('compass_map_style') || 'dark';
+
+        // Cache migration hook to prevent legacy "street" value from breaking the map logic
+        if (currentMapStyleKey === 'street') {
+            currentMapStyleKey = 'terrain';
+            localStorage.setItem('compass_map_style', 'terrain');
+        }
 
         let userLat = 48.8566; let userLon = 2.3522;
         let cachedHardwareString = "Unknown Device Model";
@@ -788,9 +794,9 @@
             if(styleKey === 'light') {
                 providerUrl = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
                 visibleLabel = "Style: Light";
-            } else if(styleKey === 'street') {
+            } else if(styleKey === 'terrain') {
                 providerUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-                visibleLabel = "Style: Street";
+                visibleLabel = "Style: Terrain";
             } else if(styleKey === 'satellite') {
                 providerUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
                 attributionMeta.maxZoom = 18;
@@ -804,7 +810,7 @@
             const displayLabelNode = document.getElementById('activeLayerDisplayLabel');
             if(displayLabelNode) displayLabelNode.innerText = visibleLabel;
 
-            ['dark', 'light', 'street', 'satellite'].forEach(k => {
+            ['dark', 'light', 'terrain', 'satellite'].forEach(k => {
                 const card = document.getElementById(`styleCard-${k}`);
                 if(card) {
                     if(k === styleKey) {
@@ -1524,7 +1530,7 @@
                 baseThemeClasses = "bg-slate-900 border-slate-700 shadow-lg shadow-black/60";
             } else if (currentMapStyleKey === 'light') {
                 baseThemeClasses = "bg-white border-slate-200 shadow-lg shadow-slate-300/60";
-            } else if (currentMapStyleKey === 'street') {
+            } else if (currentMapStyleKey === 'terrain') {
                 baseThemeClasses = "bg-slate-50 border-slate-300 shadow-md shadow-slate-400/50";
             } else if (currentMapStyleKey === 'satellite') {
                 baseThemeClasses = "bg-slate-950/70 border-white/20 shadow-lg shadow-black/80 backdrop-blur-md";
@@ -1533,7 +1539,7 @@
             // 3. Apply state overrides (Starred / Done)
             let stateClasses = "";
             if (isStarred) {
-                if (currentMapStyleKey === 'light' || currentMapStyleKey === 'street') {
+                if (currentMapStyleKey === 'light' || currentMapStyleKey === 'terrain') {
                     stateClasses = "!border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)] ring-2 ring-amber-400/30";
                 } else {
                     stateClasses = "!border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.7)]";
