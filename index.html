@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.7</title>
+    <title>Save2Go V3.9.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -475,7 +475,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.6";
+        const APP_VERSION = "v3.9.8";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -499,7 +499,11 @@
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; 
         let userPositionPulseCircle = null; let userAccuracyRadiusCircle = null;
         let activeBaseTileLayer = null; 
-        let startY = 0; let isPulling = false;
+        
+        // PULL-TO-REFRESH STATE TRACKING UPGRADED
+        let startY = 0; 
+        let isPulling = false;
+        let pullDelta = 0; 
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
         const PULL_INDICATOR = document.getElementById('pullToRefreshIndicatorHUD');
 
@@ -563,7 +567,7 @@
         }
 
         function handleNoteTouchStartEvent(e, text) { 
-            e.stopPropagation(); // PROTECTS SELECTION OVERRIDES 
+            e.stopPropagation(); 
             initializeNoteGestureEngine(e.touches[0].clientX, e.touches[0].clientY, text); 
         }
         function handleNoteTouchMoveEvent(e) { evaluateNoteGestureMovement(e.touches[0].clientX, e.touches[0].clientY); }
@@ -846,22 +850,39 @@
             }
         }
 
+        // --- 🚨 CRITICAL FIX: PULL-TO-REFRESH DRAG VERIFICATION 🚨 ---
         function setupNativePullToRefreshGestures() {
             if (!GESTURE_CONTAINER) return;
+
             GESTURE_CONTAINER.addEventListener('touchstart', (e) => {
-                if (GESTURE_CONTAINER.scrollTop === 0) { startY = e.touches[0].pageY; isPulling = true; }
+                if (GESTURE_CONTAINER.scrollTop === 0) { 
+                    startY = e.touches[0].pageY; 
+                    isPulling = true; 
+                    pullDelta = 0; // reset
+                }
             }, { passive: true });
 
             GESTURE_CONTAINER.addEventListener('touchmove', (e) => {
                 if (!isPulling) return;
-                const currentY = e.touches[0].pageY; const diff = currentY - startY;
-                if (diff > 0) { const heightBound = Math.min(diff * 0.4, 50); PULL_INDICATOR.style.height = `${heightBound}px`; }
+                const currentY = e.touches[0].pageY; 
+                pullDelta = currentY - startY; // Track actual swipe distance
+                
+                if (pullDelta > 0) { 
+                    const heightBound = Math.min(pullDelta * 0.4, 50); 
+                    PULL_INDICATOR.style.height = `${heightBound}px`; 
+                }
             }, { passive: true });
 
             GESTURE_CONTAINER.addEventListener('touchend', () => {
-                if (!isPulling) return; isPulling = false;
+                if (!isPulling) return; 
+                isPulling = false;
                 PULL_INDICATOR.style.height = '0px';
-                syncData(true);
+                
+                // ONLY TRIGGER A DATA RELOAD IF THEY DRAGGED DOWN MORE THAN 40 PIXELS
+                if (pullDelta > 40) {
+                    syncData(true);
+                }
+                pullDelta = 0; // reset
             }, { passive: true });
         }
 
@@ -1579,7 +1600,6 @@
             if (plusBtn) plusBtn.classList.remove('hidden');
         }
 
-        // IMPROVED EXPLICIT DUAL-SURFACE ROTATOR CONTROLLER PREVENTS PARENT CONTEXT COLLISIONS
         function handleManualInlineCardFlipExecution(event, nodeWrapperId, operationDirection) {
             if(event) {
                 event.preventDefault();
@@ -1635,10 +1655,8 @@
 
                 const cardWrapper = document.createElement('div');
                 cardWrapper.id = uniqueCardContainerId;
-                // SWITCHED TO COMPACT VISUAL TRACK ELEMENT GAPS
                 cardWrapper.className = "dynamic-card-node w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200 shrink-0 block";
 
-                // DECOUPLED GESTURE ENGINE LISTENERS FROM THE BUTTON CONTAINER BOUNDS PERMANENTLY
                 cardWrapper.innerHTML = `
                     <div class="flip-card-inner-rotator w-full h-full">
                         
