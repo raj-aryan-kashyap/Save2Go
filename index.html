@@ -1653,7 +1653,8 @@
             hoursGrid.innerHTML = '';
             const staticHoursString = spotObj.opening_hours || "";
             if (staticHoursString.trim() !== "" && staticHoursString !== "N/A") {
-                const daysTokens = staticHoursString.split(';');
+                // Modified split array selector regex loop to natively map across line-breaks and explicit semicolons symmetrically
+                const daysTokens = staticHoursString.split(/[\n;]+/);
                 daysTokens.forEach(token => {
                     if(!token.trim()) return;
                     const rowDiv = document.createElement('div');
@@ -1736,7 +1737,8 @@
 
                 let hoursHTMLTokens = '';
                 if(spot.opening_hours && spot.opening_hours !== "N/A" && spot.opening_hours.trim() !== "") {
-                    spot.opening_hours.split(';').forEach(t => {
+                    // Upgraded string tokenizer parameters to handle natural lines from sheet inputs seamlessly
+                    spot.opening_hours.split(/[\n;]+/).forEach(t => {
                         if(t.trim()) hoursHTMLTokens += `<div class="flex justify-between border-b border-slate-950 last:border-0 py-0.5"><span>${t.trim()}</span></div>`;
                     });
                 } else {
