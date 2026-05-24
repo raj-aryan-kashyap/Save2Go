@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.8.0</title>
+    <title>Save2Go V3.8.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,7 +20,6 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* GLOBAL SELECTION OVERRIDES - ELIMINATES ACCIDENTAL ACCENT HIGHLIGHTING RULES */
         * {
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
@@ -32,7 +31,6 @@
             overscroll-behavior-y: contain; 
         }
         
-        /* FORCED VISIBLE SUBTLE SCROLLBAR MATRIX */
         .subtle-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; display: block !important; }
         .subtle-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
         .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(236, 72, 153, 0.3); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
@@ -189,7 +187,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);;" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer relative z-[60]">
+                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer relative z-[60]">
                     <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> <span id="gpsBadgeText">GPS Off</span>
                 </button>
                 <button id="manualSyncCloudBtn" onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs transition-transform duration-200 active:scale-95 relative z-[60]">
@@ -360,8 +358,7 @@
                         <span id="vaultDensityHUDLabelCounter" class="text-xs font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
                     </div>
                 </div>
-
-                </div>
+            </div>
         </div>
 
         <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
@@ -490,7 +487,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.8.0";
+        const APP_VERSION = "v3.8.5";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -1272,6 +1269,7 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
+        // UPGRADED MULTI-TIERED ANTI-JITTER SORTING LOGIC MACHINE
         function getFilteredDatasetRows() {
             return travelSpots.map(spot => {
                 const latStr = spot.latitude ? String(spot.latitude).trim() : "";
@@ -1280,12 +1278,27 @@
                 
                 let distanceOutputLabel = !hasLatLon ? "Missing Location" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
                 let rawDistanceValue = 99999;
+                let stableDistanceZoneBucket = 4; // 1: Imminent, 2: Walking, 3: Short Drive, 4: Far Away/Missing
+
                 if (hasLatLon && gpsStatusCachedBool) {
                     const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude), parseFloat(spot.longitude));
-                    rawDistanceValue = dist; distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+                    rawDistanceValue = dist; 
+                    distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+                    
+                    // SEGREGATE INTO STABLE RANGE BUCKETS TO ABSOLUTELY PREVENT LAYOUT SWAP JITTER
+                    if (dist <= 0.5) stableDistanceZoneBucket = 1;       // Under 500 meters
+                    else if (dist <= 2.0) stableDistanceZoneBucket = 2;  // Under 2 kilometers
+                    else if (dist <= 10.0) stableDistanceZoneBucket = 3; // Under 10 kilometers
+                    else stableDistanceZoneBucket = 4;                  // Deep exploration targets
                 }
-                return { ...spot, distRaw: rawDistanceValue, distStr: distanceOutputLabel };
-            }).sort((a, b) => a.distRaw - b.distRaw).filter(s => {
+
+                return { 
+                    ...spot, 
+                    distRaw: rawDistanceValue, 
+                    distStr: distanceOutputLabel,
+                    distZone: stableDistanceZoneBucket 
+                };
+            }).filter(s => {
                 if (hideCompletedSpotsStateBool && (s.status || "").toLowerCase().trim() === "done") return false;
                 if (showStarredOnly && !['high','🔥','must do','starred'].includes((s.priority || "").toLowerCase())) return false;
                 if (checkedCitiesStateArray.length > 0 && !checkedCitiesStateArray.includes(s.city)) return false;
@@ -1295,6 +1308,24 @@
                     return checkedFilterStateArray.some(checkedCat => spotCats.includes(checkedCat.toLowerCase()));
                 }
                 return true;
+            }).sort((a, b) => {
+                // TIERING PHASE 0: Done quarantine mapping
+                const aDone = (a.status || "").toLowerCase().trim() === "done" ? 1 : 0;
+                const bDone = (b.status || "").toLowerCase().trim() === "done" ? 1 : 0;
+                if (aDone !== bDone) return aDone - bDone;
+
+                // TIERING PHASE 1: Priority Status Weighting
+                const aStarred = ['high','🔥','must do','starred'].includes((a.priority || "").toLowerCase()) ? 1 : 0;
+                const bStarred = ['high','🔥','must do','starred'].includes((b.priority || "").toLowerCase()) ? 1 : 0;
+                if (aStarred !== bStarred) return bStarred - aStarred; 
+
+                // TIERING PHASE 2: Anti-Jitter Distance Zones Comparison 
+                if (a.distZone !== b.distZone) return a.distZone - b.distZone;
+
+                // TIERING PHASE 3: Static Alpha-Numeric Anchoring (Bypasses ongoing streaming updates flawlessly)
+                const aRowId = parseInt(a.rowid) || 0;
+                const bRowId = parseInt(b.rowid) || 0;
+                return aRowId - bRowId;
             });
         }
 
@@ -1523,12 +1554,10 @@
         }
 
         function renderList() {
-            // UNIFIED THE SCROLL DOM TREE: INJECTS ELEMENTS SYNCED INSIDE A SINGLE LEVEL NODAL MATRIX
             const scrollContainerFrame = document.getElementById('gesture-touch-container');
             const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
             if(!scrollContainerFrame) return;
 
-            // STRIP TEMPORARY CHIPS KEEPING BOUNDARY TRACK STRUCTS IMMUTABLE
             const dynamicOldCards = scrollContainerFrame.querySelectorAll('.dynamic-card-node, .dynamic-tailpiece-node, .dynamic-empty-node');
             dynamicOldCards.forEach(el => el.remove());
 
@@ -1629,7 +1658,6 @@
                 scrollContainerFrame.appendChild(cardWrapper);
             });
 
-            // GUARANTEED FLUID FOOTER - APPENDED DIRECTLY INTO THE ACTIVE ROOT SCROLLBAR GEOMETRY
             const tailEndLabelDeckNode = document.createElement('div');
             tailEndLabelDeckNode.className = "dynamic-tailpiece-node w-full pt-4 pb-[110px] flex items-center justify-center shrink-0 block";
             tailEndLabelDeckNode.innerHTML = `
