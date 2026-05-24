@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.14</title>
+    <title>Save2Go V3.9.15</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -45,7 +45,7 @@
 
         .view-panel {
             position: absolute;
-            top: 116px; 
+            top: 104px; /* Mathematically aligned with header */
             bottom: 76px; 
             left: 0;
             right: 0;
@@ -158,7 +158,7 @@
         </div>
     </div>
 
-    <div id="masterGlobalControlHeaderDeck" class="fixed top-0 left-0 right-0 h-[116px] bg-slate-900 border-b border-slate-800/80 px-4 pt-3.5 shadow-2xl z-50 rounded-b-2xl overflow-hidden">
+    <div id="masterGlobalControlHeaderDeck" class="fixed top-0 left-0 right-0 h-[104px] bg-slate-900 border-b border-slate-800/80 px-4 pt-3.5 shadow-2xl z-50 rounded-b-2xl overflow-hidden">
         <div class="flex justify-between items-center mb-2.5">
             <div class="flex flex-col items-start pl-1">
                 <h1 class="text-lg font-black flex items-center gap-2 select-none">
@@ -201,7 +201,7 @@
         </div>
     </div>
 
-    <div class="fixed top-[112px] left-0 right-0 px-4 pointer-events-none z-[600]">
+    <div class="fixed top-[100px] left-0 right-0 px-4 pointer-events-none z-[600]">
         <div class="max-w-md mx-auto relative w-full h-0">
             <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
                 <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1"></div>
@@ -342,7 +342,7 @@
                 
                 <div class="w-full shrink-0">
                     <div class="bg-slate-900 border border-slate-800/80 px-3.5 py-2 rounded-xl flex justify-between items-center shadow-inner">
-                        <span class="text-[10px] uppercase font-black tracking-widest text-slate-400">Database Summary</span>
+                        <span class="text-[10px] uppercase font-black tracking-widest text-slate-400">Summary</span>
                         <span id="vaultDensityHUDLabelCounter" class="text-xs font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
                     </div>
                 </div>
@@ -437,7 +437,7 @@
                 <hr class="border-slate-800">
                 <div id="settingsSwitchUserSection" class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Active User</label>
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_16px_center] bg-no-repeat pr-8"></select>
+                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_12px_center] bg-no-repeat pr-8"></select>
                     <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
                 </div>
                 <hr class="border-slate-800">
@@ -481,7 +481,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.14";
+        const APP_VERSION = "v3.9.15";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -493,7 +493,6 @@
         let hideCompletedSpotsStateBool = localStorage.getItem('compass_hide_completed') !== null ? JSON.parse(localStorage.getItem('compass_hide_completed')) : true;
         let currentMapStyleKey = localStorage.getItem('compass_map_style') || 'dark';
 
-        // Cache migration hook to prevent legacy "street" value from breaking the map logic
         if (currentMapStyleKey === 'street') {
             currentMapStyleKey = 'terrain';
             localStorage.setItem('compass_map_style', 'terrain');
@@ -508,14 +507,12 @@
         let cachedUserCoords = null; 
         let isCameraLocked = false; 
         
-        // NEW STATE TRACKER FOR SURGICAL GPS UPDATES
         let hasInitialGpsLockRendered = false;
 
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; 
         let userPositionPulseCircle = null; let userAccuracyRadiusCircle = null;
         let activeBaseTileLayer = null; 
         
-        // PULL-TO-REFRESH STATE TRACKING
         let startY = 0; 
         let isPulling = false;
         let pullDelta = 0; 
@@ -824,7 +821,6 @@
             const deck = document.getElementById('mapLayerStyleDropdownDeck');
             if(deck) deck.classList.add('hidden');
             
-            // Re-render markers so they instantly adapt to the new theme
             if (mapMarkersLayerGroup && travelSpots.length > 0) {
                 plotDynamicMarkersOnCanvasMap();
             }
@@ -900,6 +896,14 @@
                 if (pullDelta > 40) {
                     syncData(true);
                 }
+                pullDelta = 0; 
+            }, { passive: true });
+
+            // CRITICAL FIX: Handle system gesture hijacking
+            GESTURE_CONTAINER.addEventListener('touchcancel', () => {
+                if (!isPulling) return; 
+                isPulling = false;
+                PULL_INDICATOR.style.height = '0px';
                 pullDelta = 0; 
             }, { passive: true });
         }
@@ -1594,7 +1598,6 @@
             
             const distHUD = document.getElementById('trayDistanceBadge');
             
-            // CRITICAL: Safe injection via innerHTML to allow vector Font Awesome icons
             distHUD.innerHTML = spotObj.distStr;
             
             if(spotObj.distStr.includes("Missing Location")) {
@@ -1958,6 +1961,8 @@
             const syncText = document.getElementById('syncText');
             const syncIconFrame = document.getElementById('syncButtonIconFrame');
             
+            if (PULL_INDICATOR) PULL_INDICATOR.style.height = '0px';
+
             if (syncText && isManualForce) syncText.innerText = "Checking cloud...";
             if (syncIconFrame && isManualForce) syncIconFrame.classList.add('animate-spin');
             
