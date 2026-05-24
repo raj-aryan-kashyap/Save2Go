@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V4.1.0 - Map & GPS Production Baseline</title>
+    <title>Save2Go V4.5.0 - Integrated Matrix Engine Production Baseline</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -198,7 +198,7 @@
         <div class="grid grid-cols-12 gap-2 items-center relative">
             <div class="col-span-5 bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden">
                 <button onclick="setPriorityFilterState(false)" id="toggleOptionShowAll" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10">Show All</button>
-                <button onclick="setPriorityFilterState(true)" id="toggleOptionStarred" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 bg-transparent">Starred</button>
+                <button onclick="setPriorityFilterState(true)" id="toggleOptionStarred" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500">Starred</button>
             </div>
             <div class="col-span-4 relative">
                 <button id="cityFilterHUDTriggerBtn" onclick="toggleCityDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 truncate shadow-inner">
@@ -223,6 +223,13 @@
             </div>
 
             <div id="filterCategoryDropdownPopupBox" class="absolute right-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
+                <div class="border-b border-slate-800 pb-1.5 mb-1.5 shrink-0">
+                    <button onclick="toggleItineraryChildDropdownMenu(event)" class="w-full text-left text-[11px] font-black text-pink-400 flex items-center justify-between py-1 px-1.5 rounded bg-pink-500/5 hover:bg-pink-500/10 border border-pink-500/10">
+                        <span><i class="fa-solid fa-route mr-1.5"></i> Itinerary Quick Drop</span>
+                        <span id="itinChildCaretNode">▶</span>
+                    </button>
+                    <div id="itineraryChildSelectorMenuBucket" class="hidden mt-1.5 pl-1 space-y-1 max-h-32 overflow-y-auto subtle-scrollbar border-l border-slate-800"></div>
+                </div>
                 <div class="overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer"></div>
                 <div class="sticky bottom-0 bg-slate-900 pt-2 border-t border-slate-850 shrink-0 space-y-2 text-center pb-1" id="stickyDropdownFreezePanel">
                     <div id="hideCompletedTargetRowContainer"></div>
@@ -295,7 +302,7 @@
                         </div>
                         
                         <div class="flex-1 my-3 bg-slate-950/40 border border-slate-900/60 p-3 rounded-xl overflow-hidden">
-                            <p id="traySpotNotes" class="text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[220px] pr-1 select-none" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)"></p>
+                            <p id="traySpotNotes" class="text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[220px] pr-1 select-none" ontouchstart="handleNoteNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteNoteTouchMoveEvent(event)" ontouchend="handleNoteNoteTouchEndEvent(event)" onmousedown="handleNoteNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteNoteMouseMoveEvent(event)" onmouseup="handleNoteNoteMouseUpEvent(event)"></p>
                         </div>
                         
                         <div class="flex flex-col gap-2 shrink-0">
@@ -323,7 +330,15 @@
                         </div>
 
                         <div class="flex-1 overflow-y-auto subtle-scrollbar space-y-4 pt-3 pr-0.5">
-                            <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-955/50 p-3 rounded-xl border border-slate-100/10 leading-relaxed font-medium">Loading descriptive logs...</p>
+                            <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-950/50 p-3 rounded-xl border border-slate-100/10 leading-relaxed font-medium">Loading descriptive logs...</p>
+
+                            <div class="space-y-1.5">
+                                <span class="text-[9px] uppercase font-black tracking-widest text-pink-500 block">Itinerary Mapping Tracker</span>
+                                <div id="trayInlineItineraryAssignorRow" class="bg-slate-950 border border-slate-850 p-2 rounded-xl flex items-center justify-between gap-2 text-[10px]">
+                                    <span class="font-bold text-slate-400 uppercase tracking-wider">Map to Schedule:</span>
+                                    <div class="flex gap-1" id="trayItineraryBtnDeck"></div>
+                                </div>
+                            </div>
 
                             <div class="space-y-1.5">
                                 <span class="text-[9px] uppercase font-black tracking-widest text-slate-500">Schedule</span>
@@ -366,12 +381,19 @@
             </div>
         </div>
 
-        <div id="view-itinerary" class="view-panel w-full h-full bg-slate-950 flex flex-col justify-center items-center p-6 text-center">
-            <div class="space-y-2 max-w-xs">
-                <div class="text-4xl"><i class="fa-solid fa-screwdriver-wrench text-slate-600"></i></div>
-                <h3 class="text-base font-black text-slate-300 uppercase tracking-widest">Itinerary Module</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Work in progress workspace matrix engine.</p>
+        <div id="view-itinerary" class="view-panel w-full bg-slate-950 flex flex-col h-full overflow-hidden">
+            <div class="px-4 py-2 bg-slate-900/60 backdrop-blur border-b border-slate-800 shrink-0 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+                <div class="flex gap-1 items-center shrink-0" id="itineraryMasterDaySelectorDeck">
+                    <button onclick="selectActiveItineraryDayIndex(1)" id="itinDayBtn-1" class="px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-pink-600 text-white shadow">Day 1</button>
+                    <button onclick="selectActiveItineraryDayIndex(2)" id="itinDayBtn-2" class="px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-slate-900 text-slate-400 border border-slate-800">Day 2</button>
+                    <button onclick="selectActiveItineraryDayIndex(3)" id="itinDayBtn-3" class="px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-slate-900 text-slate-400 border border-slate-800">Day 3</button>
+                </div>
+                <div class="flex gap-1 items-center shrink-0">
+                    <button onclick="openItineraryAutoSequenceWizard()" class="px-2.5 py-1.5 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[10px] font-black uppercase tracking-wider text-white shadow-lg shadow-pink-600/10"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Auto-Build</button>
+                    <button onclick="clearItineraryDay()" class="px-2 py-1.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg text-[10px] font-black uppercase tracking-wider active:bg-rose-500/20"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
             </div>
+            <div id="itineraryTimelineScrollContainer" class="flex-1 min-h-0 overflow-y-auto w-full subtle-scrollbar px-4 pt-3 flex flex-col gap-3 select-none pb-24"></div>
         </div>
     </div>
 
@@ -497,10 +519,26 @@
         </div>
     </div>
 
+    <div id="itineraryWizardModalTray" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <h3 class="text-xs font-black uppercase tracking-wider text-pink-400 flex items-center gap-1">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Sequence Matrix Wizard
+                </h3>
+                <button onclick="toggleItineraryWizardModalTray(false)" class="w-6 h-6 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-relaxed font-medium">
+                Select items from your synchronized repository to populate the daily execution matrix route.
+            </p>
+            <div id="wizardBlueprintSlotsContainer" class="space-y-2 overflow-y-auto subtle-scrollbar flex-1 pr-1 py-1"></div>
+            <button onclick="saveGeneratedWizardSequenceToActiveDay()" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 font-bold text-xs uppercase tracking-wider rounded-xl text-white shadow-lg shadow-pink-600/20"><i class="fa-solid fa-floppy-disk mr-1.5"></i> Compile Sequence</button>
+        </div>
+    </div>
+
     <script>
         const ENABLE_MAP_ROTATION = false; 
 
-        const APP_VERSION = "v4.1.0";
+        const APP_VERSION = "v4.5.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -544,6 +582,12 @@
         let isNoteZoomActive = false;
         let noteGestureStartX = 0;
         let noteGestureStartY = 0;
+
+        // PURE ADDITIVE PARAMETERS: V5 LOCALIZED SCHEDULING MATRIX STATE LAYER
+        let itineraryItems = JSON.parse(localStorage.getItem('compass_itinerary_cache')) || { "1": [], "2": [], "3": [] };
+        let activeItineraryDayTracker = 1;
+        let itinWizardSequenceBlueprint = ['Photo Spot', 'Food Spot', 'Viewpoint', 'Activity'];
+        let finalGeneratedSequenceRowIds = [null, null, null, null];
 
         function initializeNoteGestureEngine(clientX, clientY, textContent) {
             if (!textContent || textContent.trim() === "") return;
@@ -600,16 +644,16 @@
             }, 180);
         }
 
-        function handleNoteTouchStartEvent(e, text) { 
+        function handleNoteNoteTouchStartEvent(e, text) { 
             e.stopPropagation(); 
             initializeNoteGestureEngine(e.touches[0].clientX, e.touches[0].clientY, text); 
         }
-        function handleNoteTouchMoveEvent(e) { evaluateNoteGestureMovement(e.touches[0].clientX, e.touches[0].clientY); }
-        function handleNoteTouchEndEvent(e) { killNoteGestureEngine(); }
+        function handleNoteNoteTouchMoveEvent(e) { evaluateNoteGestureMovement(e.touches[0].clientX, e.touches[0].clientY); }
+        function handleNoteNoteTouchEndEvent(e) { killNoteGestureEngine(); }
 
-        function handleNoteMouseDownEvent(e, text) { e.stopPropagation(); initializeNoteGestureEngine(e.clientX, e.clientY, text); }
-        function handleNoteMouseMoveEvent(e) { evaluateNoteGestureMovement(e.clientX, e.clientY); }
-        function handleNoteMouseUpEvent(e) { killNoteGestureEngine(); }
+        function handleNoteNoteMouseDownEvent(e, text) { e.stopPropagation(); initializeNoteGestureEngine(e.clientX, e.clientY, text); }
+        function handleNoteNoteMouseMoveEvent(e) { evaluateNoteGestureMovement(e.clientX, e.clientY); }
+        function handleNoteNoteMouseUpEvent(e) { killNoteGestureEngine(); }
 
         window.onload = function() {
             localStorage.setItem('compass_map_state_zoom', '18');
@@ -623,7 +667,7 @@
             fetchRegisteredDatabaseUsers(); 
             syncPriorityFilterViewModeUI();
             
-            document.getElementById('trayFlipToBackBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.add('flipped'); });
+            document.getElementById('trayFlipToBackBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.add('flipped'); assembleTrayInlineAssignorRow(); });
             document.getElementById('trayFlipToFrontBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.remove('flipped'); });
             
             const trayNode = document.getElementById('mapDetailTrayHUD');
@@ -640,6 +684,8 @@
                 calculateSmartCityDefaultFilters();
                 renderList();
                 plotDynamicMarkersOnCanvasMap();
+                buildItinerarySubMenuChecklist();
+                renderItineraryMasterDashboardWorkspace();
             }
             
             if (!currentUser) {
@@ -818,11 +864,6 @@
             const initialZoomLevel = leafletMapInstance.getZoom();
             const debugNode = document.getElementById('mapZoomDebugHUD');
             if (debugNode) debugNode.innerText = `Zoom: ${initialZoomLevel}`;
-
-            // RESTORED: Immediate tile synchronization calculation layout refresh loop
-            window.requestAnimationFrame(() => {
-                if (leafletMapInstance) leafletMapInstance.invalidateSize({ animate: false });
-            });
         }
 
         function killLiveSpeechBubbleHUDState() {
@@ -1235,7 +1276,6 @@
                 (err) => {
                     gpsStatusCachedBool = false;
                     updateGpsHudStatus('off', "GPS Off");
-                    // RESTORED: Explicit native block direction error modal injection
                     document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
                 },
                 { enableHighAccuracy: true, timeout: 6000 }
@@ -1332,7 +1372,6 @@
                         isCameraLocked = false;
                         syncCameraLockVisualUIState();
                         updateGpsHudStatus('off', "GPS Off");
-                        // RESTORED: Catch hardware permission deny to popup instructions overlay
                         document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
                     },
                     { enableHighAccuracy: true }
@@ -1889,7 +1928,7 @@
                                     <span id="dist-badge-${spot.rowid}" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
                                 </div>
                                 <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px] overflow-hidden">
-                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
+                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar" ontouchstart="handleNoteNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteNoteTouchMoveEvent(event)" ontouchend="handleNoteNoteTouchEndEvent(event)" onmousedown="handleNoteNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteNoteMouseMoveEvent(event)" onmouseup="handleNoteNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-2 mt-3">
@@ -1917,6 +1956,19 @@
                             </div>
                             <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 pr-0.5 space-y-3 text-[11px]">
                                 <p class="text-slate-300 leading-relaxed font-medium bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No background summary recorded.'}</p>
+                                
+                                <div class="space-y-1">
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-pink-500 block">Itinerary Mapping Tracker</span>
+                                    <div class="bg-slate-950 border border-slate-955 p-2 rounded-xl flex items-center justify-between gap-2">
+                                        <span class="font-bold text-slate-400 uppercase tracking-wide text-[9px]">Map to Schedule:</span>
+                                        <div class="flex gap-1">
+                                            <button onclick="injectActiveSpotToItineraryDay(1, ${spot.rowid}, event)" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[9px] font-bold">D1</button>
+                                            <button onclick="injectActiveSpotToItineraryDay(2, ${spot.rowid}, event)" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[9px] font-bold">D2</button>
+                                            <button onclick="injectActiveSpotToItineraryDay(3, ${spot.rowid}, event)" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[9px] font-bold">D3</button>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Schedule</span>
                                     <div class="bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl font-mono text-[10px] text-slate-400 space-y-0.5">${hoursHTMLTokens}</div>
@@ -1959,6 +2011,7 @@
                 if (action === 'update_status') target.status = value;
                 if (action === 'toggle_priority') target.priority = value;
                 renderList(); plotDynamicMarkersOnCanvasMap();
+                renderItineraryMasterDashboardWorkspace();
             }
             silentPassiveHardwareLocationPingRefresh();
             try {
@@ -2106,6 +2159,8 @@
                     travelSpots = cloudData;
                     localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
                     calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
+                    buildItinerarySubMenuChecklist();
+                    renderItineraryMasterDashboardWorkspace();
                     updateNetworkStatusHUD();
                 }
             } catch (e) { 
@@ -2131,6 +2186,213 @@
         async function triggerSecureServerHistoryPurgeVault() {}
         function clearDeviceSessionAndLogout() {}
         function commitProfileRename() {}
+
+
+        /* ==========================================================================
+           PURE ADDITIVE JS LAYER: V5 SCHEDULING SEQUENCE TIMELINE ENGINE
+           ========================================================================== */
+
+        function toggleItineraryChildDropdownMenu(event) {
+            if (event) event.stopPropagation();
+            const bucket = document.getElementById('itineraryChildSelectorMenuBucket');
+            const caret = document.getElementById('itinChildCaretNode');
+            if (!bucket || !caret) return;
+            if (bucket.classList.contains('hidden')) {
+                bucket.classList.remove('hidden'); caret.innerText = "▼";
+            } else {
+                bucket.classList.add('hidden'); caret.innerText = "▶";
+            }
+        }
+
+        function buildItinerarySubMenuChecklist() {
+            const bucket = document.getElementById('itineraryChildSelectorMenuBucket');
+            if (!bucket) return;
+            bucket.innerHTML = `
+                <button onclick="injectActiveSpotToItineraryDay(1, null, event)" class="w-full text-left text-[10px] py-1 px-2 hover:bg-slate-800 text-slate-300 font-semibold rounded block">→ Schedule Day 1</button>
+                <button onclick="injectActiveSpotToItineraryDay(2, null, event)" class="w-full text-left text-[10px] py-1 px-2 hover:bg-slate-800 text-slate-300 font-semibold rounded block">→ Schedule Day 2</button>
+                <button onclick="injectActiveSpotToItineraryDay(3, null, event)" class="w-full text-left text-[10px] py-1 px-2 hover:bg-slate-800 text-slate-300 font-semibold rounded block">→ Schedule Day 3</button>
+            `;
+        }
+
+        function assembleTrayInlineAssignorRow() {
+            const container = document.getElementById('trayItineraryBtnDeck');
+            const actionBtn = document.getElementById('trayActionBtn');
+            if (!container || !actionBtn) return;
+            const currentRowId = actionBtn.getAttribute('data-row-id');
+            if (!currentRowId) { container.innerHTML = ''; return; }
+            container.innerHTML = `
+                <button onclick="injectActiveSpotToItineraryDay(1, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D1</button>
+                <button onclick="injectActiveSpotToItineraryDay(2, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D2</button>
+                <button onclick="injectActiveSpotToItineraryDay(3, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D3</button>
+            `;
+        }
+
+        function injectActiveSpotToItineraryDay(dayIndex, fallbackRowId, event) {
+            if (event) event.stopPropagation();
+            let resolvedRowId = fallbackRowId;
+            if (!resolvedRowId) {
+                const actionBtn = document.getElementById('trayActionBtn');
+                if (actionBtn) resolvedRowId = actionBtn.getAttribute('data-row-id');
+            }
+            if (!resolvedRowId) { alert("Select a location asset card payload first."); return; }
+            
+            const numericId = parseInt(resolvedRowId);
+            if (!itineraryItems[dayIndex]) itineraryItems[dayIndex] = [];
+            if (itineraryItems[dayIndex].includes(numericId)) {
+                alert(`Asset row #${numericId} is already mapped to Day ${dayIndex}.`); return;
+            }
+            
+            itineraryItems[dayIndex].push(numericId);
+            localStorage.setItem('compass_itinerary_cache', JSON.stringify(itineraryItems));
+            renderItineraryMasterDashboardWorkspace();
+            
+            const notificationTarget = event ? event.target : document.body;
+            triggerCuteSpeechBubbleHUD(`Added to Day ${dayIndex}!`, notificationTarget, event);
+        }
+
+        function selectActiveItineraryDayIndex(dayIndex) {
+            activeItineraryDayTracker = dayIndex;
+            const container = document.getElementById('itineraryMasterDaySelectorDeck');
+            if (container) {
+                const buttons = container.querySelectorAll('button');
+                buttons.forEach((btn, idx) => {
+                    if ((idx + 1) === dayIndex) {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-pink-600 text-white shadow";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-lg text-xs font-black transition-all bg-slate-900 text-slate-400 border border-slate-800";
+                    }
+                });
+            }
+            renderItineraryMasterDashboardWorkspace();
+        }
+
+        function clearItineraryDay() {
+            if (!confirm(`Flush all matrix sequence records mapped to Day ${activeItineraryDayTracker}?`)) return;
+            itineraryItems[activeItineraryDayTracker] = [];
+            localStorage.setItem('compass_itinerary_cache', JSON.stringify(itineraryItems));
+            renderItineraryMasterDashboardWorkspace();
+        }
+
+        function removeSpotFromItineraryDay(rowId) {
+            if (!itineraryItems[activeItineraryDayTracker]) return;
+            itineraryItems[activeItineraryDayTracker] = itineraryItems[activeItineraryDayTracker].filter(id => id !== parseInt(rowId));
+            localStorage.setItem('compass_itinerary_cache', JSON.stringify(itineraryItems));
+            renderItineraryMasterDashboardWorkspace();
+        }
+
+        function toggleItineraryWizardModalTray(show) {
+            document.getElementById('itineraryWizardModalTray').classList.toggle('hidden', !show);
+        }
+
+        function openItineraryAutoSequenceWizard() {
+            toggleItineraryWizardModalTray(true);
+            const container = document.getElementById('wizardBlueprintSlotsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            finalGeneratedSequenceRowIds = [null, null, null, null];
+
+            itinWizardSequenceBlueprint.forEach((categoryLabel, slotIndex) => {
+                const rowWrapper = document.createElement('div');
+                rowWrapper.className = "space-y-1 bg-slate-950 p-2 rounded-xl border border-slate-850 flex flex-col";
+                rowWrapper.innerHTML = `<span class="text-[9px] font-black tracking-wider uppercase text-slate-400">Slot ${slotIndex + 1}: ${categoryLabel}</span>`;
+                
+                const selector = document.createElement('select');
+                selector.className = "w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-[11px] font-semibold text-slate-200 focus:outline-none focus:border-pink-500 h-9";
+                selector.onchange = function() { finalGeneratedSequenceRowIds[slotIndex] = this.value ? parseInt(this.value) : null; };
+                
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = ""; defaultOpt.innerText = "-- Select Match Candidate --";
+                selector.appendChild(defaultOpt);
+
+                const lowerBlueprint = categoryLabel.toLowerCase();
+                travelSpots.forEach(spot => {
+                    const spotCat = (spot.category || "").toLowerCase();
+                    if (spotCat.includes(lowerBlueprint) || (lowerBlueprint.includes("activity") && spotCat.includes("shop"))) {
+                        const opt = document.createElement('option');
+                        opt.value = spot.rowid; opt.innerText = `[${spot.city || 'Global'}] ${spot.spot_name || 'Unnamed'}`;
+                        selector.appendChild(opt);
+                    }
+                });
+                
+                rowWrapper.appendChild(selector);
+                container.appendChild(rowWrapper);
+            });
+        }
+
+        function saveGeneratedWizardSequenceToActiveDay() {
+            if (!itineraryItems[activeItineraryDayTracker]) itineraryItems[activeItineraryDayTracker] = [];
+            let injectionCounter = 0;
+
+            finalGeneratedSequenceRowIds.forEach(rowId => {
+                if (rowId && !itineraryItems[activeItineraryDayTracker].includes(rowId)) {
+                    itineraryItems[activeItineraryDayTracker].push(rowId);
+                    injectionCounter++;
+                }
+            });
+
+            localStorage.setItem('compass_itinerary_cache', JSON.stringify(itineraryItems));
+            toggleItineraryWizardModalTray(false);
+            renderItineraryMasterDashboardWorkspace();
+            alert(`Surgically compiled matrix track. Injecting ${injectionCounter} sequence units into Day ${activeItineraryDayTracker}.`);
+        }
+
+        function renderItineraryMasterDashboardWorkspace() {
+            const container = document.getElementById('itineraryTimelineScrollContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const dayTrackRowIds = itineraryItems[activeItineraryDayTracker] || [];
+            if (dayTrackRowIds.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-slate-600 py-16 text-xs font-medium space-y-2">
+                        <div class="text-3xl opacity-30"><i class="fa-solid fa-route"></i></div>
+                        <p>No operational matrices mapped to Day ${activeItineraryDayTracker}.</p>
+                        <p class="text-[10px] text-slate-500 font-mono">Use map drawers or wizard arrays to populate tracks.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            dayTrackRowIds.forEach((id, sequenceIdx) => {
+                const spot = travelSpots.find(s => parseInt(s.rowid) === parseInt(id));
+                if (!spot) return;
+
+                const isDone = (spot.status || "").toLowerCase().trim() === 'done';
+                const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
+                
+                const card = document.createElement('div');
+                card.className = "w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden shrink-0";
+                
+                // Timeline neon vertical indicator striping layout structure
+                card.innerHTML = `
+                    <div class="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-pink-500 to-purple-600 opacity-80"></div>
+                    <div class="flex justify-between items-start gap-2 pl-1">
+                        <div class="max-w-[75%]">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span class="bg-slate-950 px-2 py-0.5 rounded text-[9px] uppercase font-black tracking-wider text-slate-400 border border-slate-850">Stop #${sequenceIdx + 1} • ${spot.category || 'General'}</span>
+                                ${isHigh ? '<span class="text-[9px] font-black text-amber-400"><i class="fa-solid fa-star"></i></span>' : ''}
+                            </div>
+                            <h3 class="text-sm font-bold mt-2 truncate ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'}">${spot.spot_name || 'Unnamed'}</h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5 font-medium"><i class="fa-solid fa-city opacity-40 mr-1"></i>${spot.city || 'Global Bound'}</p>
+                        </div>
+                        <button onclick="removeSpotFromItineraryDay(${spot.rowid})" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition-colors"><i class="fa-solid fa-circle-minus"></i></button>
+                    </div>
+                    
+                    ${spot.notes ? `
+                    <div class="mt-2.5 bg-slate-950/40 p-2 rounded-xl border border-slate-900/60 ml-1">
+                        <p class="text-[11px] leading-relaxed ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} pr-1 line-clamp-2">${spot.notes}</p>
+                    </div>` : ''}
+
+                    <div class="flex gap-2 mt-3 pl-1 justify-end items-center">
+                        <a href="${spot.instagram_url || '#'}" target="_blank" class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-300 active:bg-slate-900">Reference</a>
+                        <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/20 text-pink-400 rounded-lg text-[10px] font-black tracking-wide flex items-center gap-1">
+                            <i class="fa-solid fa-map text-[9px]"></i> Route Map
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
     </script>
 </body>
 </html>
