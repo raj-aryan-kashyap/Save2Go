@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.22</title>
+    <title>Save2Go V3.9.23</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -335,15 +335,16 @@
         </div>
 
         <div id="view-list" class="view-panel w-full h-full bg-slate-950">
-            <div id="gesture-touch-container" class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto w-full h-full subtle-scrollbar px-4 pt-2 flex flex-col gap-2 select-none">
-                <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0">
+            <div id="gesture-touch-container" class="absolute top-0 bottom-0 left-0 right-0 overflow-y-auto w-full h-full subtle-scrollbar px-4 pt-0 flex flex-col gap-2 select-none">
+                
+                <div id="pullToRefreshIndicatorHUD" class="w-[calc(100%+2rem)] -ml-4 h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0">
                     <span class="animate-pulse">Refresh...</span>
                 </div>
                 
-                <div class="w-full shrink-0">
-                    <div class="bg-slate-900 border border-slate-800/80 px-3.5 py-2 rounded-xl flex justify-between items-center shadow-inner">
-                        <span class="text-[10px] uppercase font-black tracking-widest text-slate-400">Summary</span>
-                        <span id="vaultDensityHUDLabelCounter" class="text-xs font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
+                <div class="w-[calc(100%+2rem)] -ml-4 px-4 shrink-0 sticky top-0 z-[450] bg-slate-950 pt-0 pb-1.5">
+                    <div class="bg-slate-900 border-x border-b border-slate-800/80 px-3.5 py-1.5 rounded-b-xl flex justify-between items-center shadow-lg">
+                        <span class="text-[9px] uppercase font-black tracking-widest text-slate-400">Summary</span>
+                        <span id="vaultDensityHUDLabelCounter" class="text-[10px] font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
                     </div>
                 </div>
             </div>
@@ -481,7 +482,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.22";
+        const APP_VERSION = "v3.9.23";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
