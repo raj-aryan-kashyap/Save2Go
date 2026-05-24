@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V5.0.0 - Itinerary Engine</title>
+    <title>Save2Go V5.1.0 - Optimized Workspace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -14,12 +14,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link class="manifest-ref" rel="manifest" href="manifest.json">
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -31,20 +25,11 @@
             user-select: none;
         }
 
-        body { 
-            overscroll-behavior-y: contain; 
-        }
+        body { overscroll-behavior-y: contain; }
         
         .subtle-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; display: block !important; }
-        .subtle-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
-        .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(236, 72, 153, 0.3); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .subtle-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(236, 72, 153, 0.5); }
-
-        .leaflet-tile-container {
-            will-change: transform;
-            transform-style: preserve-3d;
-            -webkit-transform-style: preserve-3d;
-        }
+        .subtle-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(236, 72, 153, 0.3); border-radius: 10px; }
 
         .view-panel {
             position: absolute;
@@ -56,7 +41,7 @@
             opacity: 0;
             pointer-events: none;
             visibility: hidden;
-            transition: opacity 0.2s ease-in-out;
+            transition: opacity 0.15s ease-in-out;
         }
         .view-panel.active-view {
             opacity: 1;
@@ -64,109 +49,75 @@
             pointer-events: auto;
         }
 
-        #view-map {
-            top: 0 !important;
-        }
+        #view-map { top: 0 !important; bottom: 76px !important; }
 
-        .flip-perspective-container {
-            perspective: 1200px;
-            -webkit-perspective: 1200px;
-        }
+        .flip-perspective-container { perspective: 1200px; }
         .flip-card-inner-rotator {
             position: relative;
             width: 100%;
             height: 100%;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             transform-style: preserve-3d;
-            -webkit-transform-style: preserve-3d;
         }
-        .flip-perspective-container.flipped .flip-card-inner-rotator {
-            transform: rotateY(180deg);
-            -webkit-transform: rotateY(180deg);
-        }
+        .flip-perspective-container.flipped .flip-card-inner-rotator { transform: rotateY(180deg); }
         .flip-card-front-face, .flip-card-back-face {
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
             top: 0;
             left: 0;
         }
-        .flip-card-back-face {
-            transform: rotateY(180deg);
-            -webkit-transform: rotateY(180deg);
-            position: absolute;
-        }
+        .flip-card-back-face { transform: rotateY(180deg); position: absolute; }
 
         .custom-map-cube {
             border-radius: 10px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            font-size: 16px !important;
-            width: 36px !important;
-            height: 36px !important;
-            border-width: 1px !important;
-            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            font-size: 15px !important;
+            width: 34px !important;
+            height: 34px !important;
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .cluster-map-cube {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%) !important;
             border: 2px solid rgba(255, 255, 255, 0.8) !important;
             border-radius: 12px !important;
-            box-shadow: 0 0 15px rgba(236, 72, 153, 0.6) !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             font-weight: 900 !important;
             color: #ffffff !important;
             font-size: 12px !important;
-            width: 40px !important;
-            height: 40px !important;
+            width: 38px !important;
+            height: 38px !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
         
-        .nav-tab-transition {
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, opacity 0.2s ease;
-            will-change: transform, opacity;
-        }
-
-        .leaflet-map-pane {
-            transition: transform 0.08s ease-out;
-            will-change: transform;
-        }
+        .nav-tab-transition { transition: transform 0.2s ease, color 0.2s ease, opacity 0.2s ease; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col overflow-hidden selection:bg-transparent select-none">
 
-    <div id="dropdownBlurBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[500] hidden transition-all duration-300"></div>
+    <div id="dropdownBlurBackdrop" class="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-[500] hidden transition-all duration-200"></div>
 
-    <div id="globalToastSpeechBubbleHUD" class="fixed z-[99999] pointer-events-none hidden max-w-[240px] w-full filter drop-shadow-xl h-0 w-0 overflow-visible">
+    <div id="globalToastSpeechBubbleHUD" class="fixed z-[99999] pointer-events-none hidden max-w-[240px] w-full h-0 overflow-visible">
         <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 text-slate-200 text-[11px] font-bold p-3 rounded-2xl text-center relative shadow-2xl leading-relaxed w-[240px]">
-            <span id="speechBubbleTextContainer">Message context</span>
+            <span id="speechBubbleTextContainer">Context Message</span>
             <div id="bubblePointerNode" class="absolute -bottom-1.5 w-3 h-3 bg-slate-950 border-r border-b border-slate-700 rotate-45"></div>
         </div>
     </div>
 
-    <div id="noteExpandedOverlayHUD" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[99999] flex items-center justify-center p-6 hidden transition-all duration-200">
-        <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
-            <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
-                <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded View</span>
-                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+    <div id="noteExpandedOverlayHUD" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[99999] flex items-center justify-center p-6 hidden">
+        <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded Note View</span>
+                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="noteExpandedOverlayScrollBox" class="max-h-[50vh] overflow-y-auto subtle-scrollbar pr-1">
+            <div id="noteExpandedOverlayScrollBox" class="max-h-[40vh] overflow-y-auto subtle-scrollbar pr-1">
                 <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap select-text"></p>
             </div>
-        </div>
-    </div>
-
-    <div id="gpsInstructionsOverlayModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-6 hidden">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl text-center">
-            <div class="text-3xl"><i class="fa-solid fa-satellite-dish"></i></div>
-            <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider mt-2">Location Error</h3>
-            <p class="text-xs text-slate-400 leading-relaxed font-medium">
-                Your device location setting is turned off or blocked. Please enable device location inside your phone settings dashboard and try again.
-            </p>
-            <button onclick="document.getElementById('gpsInstructionsOverlayModal').classList.add('hidden')" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 font-bold text-xs uppercase tracking-wider rounded-xl text-white">Got It</button>
         </div>
     </div>
 
@@ -174,7 +125,7 @@
         <div class="flex justify-between items-center mb-1">
             <div class="flex flex-col items-start pl-1">
                 <h1 class="text-lg font-black flex items-center gap-2 select-none">
-                    <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] rotate-12 transform origin-bottom-left"></i>
+                    <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 rotate-12"></i>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500 tracking-tight">Save2Go</span>
                 </h1>
                 <div class="flex items-center gap-1.5 mt-0.5 pl-0.5">
@@ -183,10 +134,10 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer relative z-[60]">
-                    <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> <span id="gpsBadgeText">GPS Off</span>
+                <button id="gpsBadgeButton" onclick="handleGpsBadgeClickAction(event);" class="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-rose-500/5 border-rose-500/20 text-rose-400 cursor-pointer relative z-[60]">
+                    <span id="gpsDotSignal" class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> <span id="gpsBadgeText">GPS Off</span>
                 </button>
-                <button id="manualSyncCloudBtn" onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs transition-transform duration-200 active:scale-95 relative z-[60]">
+                <button onclick="syncData(true)" class="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs relative z-[60]">
                     <div id="syncButtonIconFrame" class="inline-block"><i class="fa-solid fa-arrows-rotate"></i></div>
                 </button>
                 <button onclick="toggleSettingsMenu(true)" class="p-2 w-8 h-8 flex items-center justify-center rounded-xl bg-slate-800/60 border border-slate-700/50 text-slate-300 text-xs relative z-[60]">
@@ -206,7 +157,7 @@
                 </button>
             </div>
             <div class="col-span-3 relative">
-                <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-955 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
+                <button id="filterMenuTriggerBtn" onclick="toggleFilterDropdownOverlayMenu(event)" class="w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner">
                     <span>Type</span><span>▼</span><span id="activeFilterBadgeCount" class="hidden px-1.5 py-0.5 bg-pink-600 text-white font-black text-[9px] rounded-full">0</span>
                 </button>
             </div>
@@ -218,15 +169,23 @@
             <div id="cityHUDDropdownPopupBox" class="absolute left-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
                 <div id="cityHUDChecklistContainer" class="space-y-1 text-xs text-slate-300 font-semibold overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1"></div>
                 <div class="pt-2 pb-1 mt-1.5 border-t border-slate-850 bg-slate-900 text-center shrink-0">
-                    <button onclick="clearAllSelectedCityCheckboxes()" class="w-11/12 mx-auto py-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg text-[10px] font-black uppercase tracking-wider active:bg-rose-500/20 transition-all">Clear Filter</button>
+                    <button onclick="clearAllSelectedCityCheckboxes()" class="w-11/12 mx-auto py-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg text-[10px] font-black uppercase tracking-wider">Clear Filter</button>
                 </div>
             </div>
 
             <div id="filterCategoryDropdownPopupBox" class="absolute right-4 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 hidden pointer-events-auto flex flex-col max-h-80 overflow-hidden">
-                <div class="overflow-y-auto subtle-scrollbar flex-1 max-h-64 pb-1 pr-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer"></div>
-                <div class="sticky bottom-0 bg-slate-900 pt-2 border-t border-slate-850 shrink-0 space-y-2 text-center pb-1" id="stickyDropdownFreezePanel">
+                <div class="border-b border-slate-800 pb-1.5 mb-1.5 shrink-0">
+                    <button onclick="toggleItineraryChildDropdownMenu(event)" class="w-full text-left text-[11px] font-black text-pink-400 flex items-center justify-between py-1 px-1.5 rounded bg-pink-500/5 hover:bg-pink-500/10 border border-pink-500/10">
+                        <span><i class="fa-solid fa-route mr-1.5"></i> Itinerary View</span>
+                        <span id="itinChildCaretNode">▶</span>
+                    </button>
+                    <div id="itineraryChildSelectorMenuBucket" class="hidden mt-1.5 pl-1 space-y-1 max-h-32 overflow-y-auto subtle-scrollbar border-l border-slate-800"></div>
+                </div>
+                
+                <div class="overflow-y-auto subtle-scrollbar flex-1 max-h-48 pb-1 pr-1 space-y-1 text-xs text-slate-300 font-semibold" id="checkboxScrollRegionContainer"></div>
+                <div class="sticky bottom-0 bg-slate-900 pt-2 border-t border-slate-800 shrink-0 space-y-2 text-center pb-1" id="stickyDropdownFreezePanel">
                     <div id="hideCompletedTargetRowContainer"></div>
-                    <button onclick="clearAllFilterCheckboxes()" class="w-11/12 mx-auto py-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg text-[10px] font-black uppercase tracking-wider active:bg-rose-500/20 transition-all block">Clear Filter</button>
+                    <button onclick="clearAllFilterCheckboxes()" class="w-11/12 mx-auto py-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-lg text-[10px] font-black uppercase tracking-wider block">Clear Filter</button>
                 </div>
             </div>
         </div>
@@ -234,59 +193,59 @@
 
     <div class="flex-1 relative w-full h-full overflow-hidden z-10">
         
-        <div id="mapItineraryActiveOverlayBanner" class="absolute top-28 left-4 right-4 mx-auto max-w-xs bg-slate-900/90 border border-pink-500/40 rounded-xl p-2.5 z-[410] hidden flex items-center justify-between shadow-2xl backdrop-blur-md">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-route text-pink-500 animate-pulse text-sm"></i>
-                <div class="text-[10px] flex flex-col">
-                    <span class="font-black text-slate-200 uppercase tracking-wider">Itinerary Route View</span>
-                    <span id="mapItineraryActiveBannerLabel" class="text-slate-400 truncate max-w-[160px]">Active Schedule</span>
+        <div id="mapItineraryActiveOverlayBanner" class="absolute top-28 left-4 right-4 mx-auto max-w-xs bg-slate-900/95 border border-pink-500/40 rounded-xl p-2.5 z-[410] hidden flex items-center justify-between shadow-2xl backdrop-blur-md">
+            <div class="flex items-center gap-2 max-w-[75%]">
+                <i class="fa-solid fa-route text-pink-500 text-sm shrink-0"></i>
+                <div class="text-[10px] flex flex-col truncate">
+                    <span class="font-black text-slate-200 uppercase tracking-wider text-[9px]">Active Itinerary</span>
+                    <span id="mapItineraryActiveBannerLabel" class="text-slate-400 truncate font-semibold">Route Active</span>
                 </div>
             </div>
-            <button onclick="deactivateItineraryRouteMapView()" class="px-2.5 py-1 bg-rose-950/40 border border-rose-500/30 text-rose-400 text-[9px] font-black uppercase rounded-lg tracking-wider active:bg-rose-950">Exit</button>
+            <button onclick="deactivateItineraryRouteMapView()" class="px-2 py-1 bg-rose-950/40 border border-rose-500/30 text-rose-400 text-[9px] font-black uppercase rounded-lg tracking-wider">Exit</button>
         </div>
 
         <div id="view-map" class="view-panel active-view">
             <div id="map-render-element" class="w-full h-full bg-slate-950 absolute inset-0 z-10"></div>
             
             <div class="absolute top-28 left-4 z-[400] pointer-events-none select-none">
-                <span id="mapZoomDebugHUD" class="text-[10px] font-mono font-bold text-slate-500/80 tracking-wide">Zoom: 18</span>
+                <span id="mapZoomDebugHUD" class="text-[10px] font-mono font-bold text-slate-500/60">Zoom: 18</span>
             </div>
 
             <div class="absolute top-28 right-4 z-[400] flex flex-col items-end gap-1.5 pointer-events-none w-full max-w-[280px]">
-                <button onclick="document.getElementById('mapLayerStyleDropdownDeck').classList.toggle('hidden'); event.stopPropagation();" class="px-3 py-2 bg-slate-900/95 border border-slate-800 text-[10px] font-black uppercase tracking-wider rounded-xl shadow-2xl text-slate-300 flex items-center gap-1.5 active:bg-slate-800 pointer-events-auto">
+                <button onclick="document.getElementById('mapLayerStyleDropdownDeck').classList.toggle('hidden'); event.stopPropagation();" class="px-3 py-2 bg-slate-900/95 border border-slate-800 text-[10px] font-black uppercase tracking-wider rounded-xl text-slate-300 flex items-center gap-1.5 pointer-events-auto shadow-2xl">
                     <span id="activeLayerDisplayLabel">Style: Dark</span><span>▼</span>
                 </button>
                 
-                <div id="mapLayerStyleDropdownDeck" class="hidden w-full bg-slate-900/95 border border-slate-800 rounded-2xl shadow-2xl p-3 grid grid-cols-4 gap-2 pointer-events-auto transition-all duration-200">
-                    <button onclick="setMapBaseLayerProviderSource('dark')" id="styleCard-dark" class="flex flex-col items-center gap-1 p-1 bg-slate-900 rounded-xl border-2 border-pink-500 shadow-lg">
-                        <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-lg"><i class="fa-solid fa-moon text-slate-200"></i></div>
-                        <span class="text-[8px] font-bold tracking-tight text-slate-400">Dark</span>
+                <div id="mapLayerStyleDropdownDeck" class="hidden w-full bg-slate-900/95 border border-slate-800 rounded-2xl p-3 grid grid-cols-4 gap-2 pointer-events-auto shadow-2xl">
+                    <button onclick="setMapBaseLayerProviderSource('dark')" id="styleCard-dark" class="flex flex-col items-center gap-1 p-1 bg-slate-900 rounded-xl border border-slate-800">
+                        <div class="w-8 h-8 rounded-lg bg-slate-950 flex items-center justify-center text-xs"><i class="fa-solid fa-moon text-slate-200"></i></div>
+                        <span class="text-[8px] font-bold text-slate-400">Dark</span>
                     </button>
                     <button onclick="setMapBaseLayerProviderSource('light')" id="styleCard-light" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
-                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-lg"><i class="fa-solid fa-sun text-amber-500"></i></div>
-                        <span class="text-[8px] font-bold tracking-tight text-slate-400">Light</span>
+                        <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs"><i class="fa-solid fa-sun text-amber-500"></i></div>
+                        <span class="text-[8px] font-bold text-slate-400">Light</span>
                     </button>
                     <button onclick="setMapBaseLayerProviderSource('terrain')" id="styleCard-terrain" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center text-lg"><i class="fa-solid fa-mountain text-emerald-500"></i></div>
-                        <span class="text-[8px] font-bold tracking-tight text-slate-400">Terrain</span>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-950 flex items-center justify-center text-xs"><i class="fa-solid fa-mountain text-emerald-500"></i></div>
+                        <span class="text-[8px] font-bold text-slate-400">Terrain</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('satellite')" id="styleCard-satellite" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-blue-400">
-                        <div class="w-10 h-10 rounded-lg bg-blue-950 flex items-center justify-center text-base"><i class="fa-solid fa-location-dot"></i></div>
-                        <span class="text-[8px] font-bold tracking-tight text-slate-400">Sat</span>
+                    <button onclick="setMapBaseLayerProviderSource('satellite')" id="styleCard-satellite" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                        <div class="w-8 h-8 rounded-lg bg-blue-950 flex items-center justify-center text-xs"><i class="fa-solid fa-location-dot text-blue-400"></i></div>
+                        <span class="text-[8px] font-bold text-slate-400">Sat</span>
                     </button>
                 </div>
             </div>
 
             <div id="mapNavigationShortcutsStack" class="absolute top-1/2 right-4 -translate-y-1/2 z-[400] flex flex-col gap-2.5 pointer-events-auto">
-                <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 active:bg-slate-800 text-[17px]">
+                <button id="shortcutMagnifyingButton" onclick="snapMapViewportToSelectedCityBounds(event)" class="w-11 h-11 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 text-sm">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
-                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 active:bg-slate-800 overflow-hidden relative text-[19px]">
-                    <i id="innerCompassEmojiSpinnerSpan" class="fa-solid fa-compass inline-block transform transition-transform duration-300 ease-out"></i>
+                <button id="hardwareCompassRecenterButtonNode" onclick="triggerRecenterToGpsHardwareAction(event)" class="w-11 h-11 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 text-base">
+                    <i id="innerCompassEmojiSpinnerSpan" class="fa-solid fa-compass"></i>
                 </button>
             </div>
             
-            <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 flip-perspective-container bg-transparent z-[999] hidden max-w-md mx-auto h-[480px] pointer-events-auto transition-transform">
+            <div id="mapDetailTrayHUD" class="fixed bottom-24 left-4 right-4 flip-perspective-container bg-transparent z-[999] hidden max-w-md mx-auto h-[440px] pointer-events-auto">
                 <div class="flip-card-inner-rotator w-full h-full">
                     
                     <div class="flip-card-front-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden">
@@ -299,13 +258,13 @@
                                 <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
                             </div>
                             <div class="flex items-center gap-1.5 shrink-0">
-                                <span id="trayDistanceBadge" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400">0m</span>
-                                <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                                <span id="trayDistanceBadge" class="text-xs font-mono font-bold px-2 py-1 rounded-lg bg-pink-500/10 text-pink-400">0m</span>
+                                <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                         </div>
                         
                         <div class="flex-1 my-3 bg-slate-950/40 border border-slate-900/60 p-3 rounded-xl overflow-hidden">
-                            <p id="traySpotNotes" class="text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[220px] pr-1 select-none" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)"></p>
+                            <p id="traySpotNotes" class="text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[180px] pr-1" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)"></p>
                         </div>
                         
                         <div class="flex flex-col gap-2 shrink-0">
@@ -318,11 +277,11 @@
                             </div>
                             
                             <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1 items-center">
-                                <button id="trayFlipToBackBtn" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
+                                <button id="trayFlipToBackBtn" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto">
                                     <i class="fa-solid fa-circle-info mr-1"></i> Extra Info
                                 </button>
-                                <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300 active:bg-slate-800"><i class="fa-solid fa-check mr-1"></i> Mark Done</button>
-                                <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400 active:bg-slate-800"><i class="fa-solid fa-star mr-1"></i> Star</button>
+                                <button id="trayDoneToggleBtn" class="text-xs px-3 py-2 font-bold rounded-lg bg-slate-950 border border-slate-800 text-slate-300">Mark Done</button>
+                                <button id="trayStarToggleBtn" class="text-xs px-3 py-2 font-black rounded-lg bg-slate-950 border border-slate-800 text-amber-400"><i class="fa-solid fa-star"></i></button>
                             </div>
                         </div>
                     </div>
@@ -331,15 +290,12 @@
                         <div class="flex border-b border-slate-800/60 pb-2 shrink-0 items-center justify-between">
                             <h4 class="text-xs font-black uppercase tracking-wider text-slate-300">Extra Info</h4>
                         </div>
-
                         <div class="flex-1 overflow-y-auto subtle-scrollbar space-y-4 pt-3 pr-0.5">
-                            <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-955/50 p-3 rounded-xl border border-slate-100/10 leading-relaxed font-medium">Loading descriptive logs...</p>
-
+                            <p id="trayBackLongDescription" class="text-xs text-slate-300 bg-slate-955/50 p-3 rounded-xl border border-slate-100/10 leading-relaxed font-medium">Loading summary details...</p>
                             <div class="space-y-1.5">
                                 <span class="text-[9px] uppercase font-black tracking-widest text-slate-500">Schedule</span>
                                 <div id="trayBackHoursGrid" class="bg-slate-955/50 border border-slate-100/10 p-2.5 rounded-xl grid grid-cols-1 gap-1 font-mono text-[11px] text-slate-400"></div>
                             </div>
-
                             <div id="trayBackBookingWarningCard" class="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-start gap-2.5 hidden">
                                 <span class="text-base mt-0.5"><i class="fa-solid fa-calendar-exclamation text-amber-500"></i></span>
                                 <div class="space-y-0.5">
@@ -348,14 +304,12 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1 items-center shrink-0">
-                            <button id="trayFlipToFrontBtn" class="text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-slate-900">
+                        <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1 shrink-0">
+                            <button id="trayFlipToFrontBtn" class="text-slate-400 bg-slate-950 border border-slate-800 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto">
                                 <i class="fa-solid fa-arrow-left mr-1"></i> Back
                             </button>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -363,14 +317,14 @@
         <div id="view-list" class="view-panel w-full bg-slate-950 flex flex-col">
             <div class="w-full px-4 bg-slate-950 shrink-0 z-20 relative">
                 <div class="max-w-md mx-auto bg-slate-900/90 backdrop-blur-xl border-x border-b border-slate-800/80 px-3.5 py-1 rounded-b-xl flex justify-between items-center h-7 shadow-md -mt-[1px]">
-                    <span class="text-[9px] uppercase font-black tracking-widest text-slate-400">Summary</span>
+                    <span class="text-[9px] uppercase font-black tracking-widest text-slate-400">Summary Vault</span>
                     <span id="vaultDensityHUDLabelCounter" class="text-[10px] font-mono font-bold px-2 py-0.5 bg-pink-500/10 text-pink-400 border border-pink-500/20 rounded-md">Showing 0 / 0 Spots</span>
                 </div>
             </div>
 
             <div id="gesture-touch-container" class="flex-1 min-h-0 overflow-y-auto w-full subtle-scrollbar px-4 pt-2 flex flex-col gap-2 select-none">
                 <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950 shrink-0">
-                    <span class="animate-pulse">Refresh...</span>
+                    <span>Refresh Data...</span>
                 </div>
             </div>
         </div>
@@ -381,60 +335,48 @@
     </div>
 
     <div id="itineraryWizardModalContainer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-end hidden transition-all duration-300">
-        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar shadow-2xl relative text-xs">
+        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar shadow-2xl relative text-xs">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                 <h3 class="text-base font-black flex items-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles text-xl text-pink-500"></i>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 font-black uppercase tracking-wide">Itinerary Builder Wizard</span>
+                    <i class="fa-solid fa-wand-magic-sparkles text-pink-500"></i>
+                    <span class="text-slate-200 font-black uppercase tracking-wide">Itinerary Builder</span>
                 </h3>
-                <button onclick="toggleItineraryWizardModalTray(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="toggleItineraryWizardModalTray(false)" class="w-7 h-7 bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div id="itinWizardRolloverWarningCard" class="hidden p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-circle-exclamation text-amber-400 text-sm"></i>
                     <div class="flex flex-col">
-                        <span class="font-black text-slate-300 tracking-wide uppercase text-[9px]">Unfinished Spots Vault</span>
-                        <span id="itinWizardRolloverCardMessage" class="text-slate-400 text-[10px]">Found unvisited past spots.</span>
+                        <span class="font-black text-slate-300 tracking-wide uppercase text-[9px]">Unvisited Tasks Rollover</span>
+                        <span id="itinWizardRolloverCardMessage" class="text-slate-400 text-[10px]">Found unvisited past items.</span>
                     </div>
                 </div>
-                <button id="itinWizardRolloverTriggerBtn" onclick="toggleRolloverPrioritizationState()" class="px-2.5 py-1.5 bg-slate-950 border border-slate-800 text-[10px] font-black text-slate-300 rounded-lg whitespace-nowrap">Prioritize</button>
+                <button id="itinWizardRolloverTriggerBtn" onclick="toggleRolloverPrioritizationState()" class="px-2.5 py-1.5 bg-slate-950 border border-slate-800 text-[10px] font-black text-slate-300 rounded-lg">Prioritize</button>
             </div>
 
             <div class="space-y-4">
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Route Label Name</label>
-                    <input type="text" id="itinFormRouteLabelField" placeholder="e.g., Tokyo Day 2 Exploration" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none font-medium">
+                    <input type="text" id="itinFormRouteLabelField" placeholder="e.g., Tokyo Day 1 Adventure" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none font-medium">
                 </div>
                 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Target Execution Date</label>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Planned Date</label>
                         <input type="date" id="itinFormExecutionDateField" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none font-mono" onchange="evaluatePastUnfinishedRolloverContext()">
                     </div>
                     <div>
-                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Target Filter City</label>
+                        <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Target City</label>
                         <select id="itinFormTargetCityDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none font-bold h-[46px]" onchange="evaluatePastUnfinishedRolloverContext()"></select>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Pace Density Matrix</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Pace Density Mode</label>
                     <div class="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
                         <button id="itinPaceBtn-max" onclick="setItineraryWizardPaceConfiguration('max')" class="py-2.5 text-center font-black rounded-lg text-pink-400 bg-pink-500/10">🚀 Max Exploration</button>
                         <button id="itinPaceBtn-relaxed" onclick="setItineraryWizardPaceConfiguration('relaxed')" class="py-2.5 text-center font-black rounded-lg text-slate-500">☕ Relaxed Pace</button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Experience Block Stack Sequences (Tap to append)</label>
-                    <div id="itinWizardCategoryPillsBucket" class="flex flex-wrap gap-1.5 pt-1"></div>
-                </div>
-
-                <div class="bg-slate-950/60 border border-slate-850 p-3 rounded-xl">
-                    <span class="block text-[10px] uppercase font-black text-slate-500 tracking-widest mb-2">Chosen Build String Blueprint</span>
-                    <div id="itinWizardSequenceQueueHUD" class="flex flex-wrap items-center gap-2 font-mono text-[11px] text-slate-400 min-h-[24px]">
-                        <span class="italic text-slate-600">Select blocks above to design layout...</span>
                     </div>
                 </div>
 
@@ -446,13 +388,13 @@
     </div>
 
     <div id="itineraryPreviewScreenModalContainer" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[99999] flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden text-xs">
+        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col max-h-[80vh] shadow-2xl overflow-hidden text-xs">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800 shrink-0">
                 <div class="flex flex-col">
                     <span class="text-[10px] font-black uppercase text-pink-500 tracking-widest">Engine Proposed Preview</span>
                     <h4 id="itinPreviewTitleLabelNode" class="text-sm font-black text-slate-200 truncate mt-0.5">Route Proposal</h4>
                 </div>
-                <button onclick="document.getElementById('itineraryPreviewScreenModalContainer').classList.add('hidden')" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="document.getElementById('itineraryPreviewScreenModalContainer').classList.add('hidden')" class="w-7 h-7 bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div id="itinPreviewSlotsScrollerRegion" class="flex-1 overflow-y-auto subtle-scrollbar my-4 space-y-3 pr-1"></div>
@@ -476,7 +418,7 @@
         </button>
     </div>
 
-    <button id="globalFloatingActionPlusButton" onclick="toggleQuickAddModal(true)" class="fixed bottom-24 left-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-white shadow-2xl shadow-pink-500/20 z-[450] border border-white/10 text-lg">
+    <button id="globalFloatingActionPlusButton" onclick="toggleQuickAddModal(true)" class="fixed bottom-24 left-4 w-12 h-12 bg-gradient-to-tr from-pink-500 to-violet-600 rounded-full flex items-center justify-center text-white shadow-2xl z-[450] border border-white/10 text-lg">
         <i class="fa-solid fa-plus"></i>
     </button>
 
@@ -484,10 +426,10 @@
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl relative">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800">
                 <h3 class="text-base font-black flex items-center gap-2">
-                    <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] rotate-12 transform origin-bottom-left"></i>
+                    <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 rotate-12"></i>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">Add New Spot</span>
                 </h3>
-                <button onclick="toggleQuickAddModal(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="toggleQuickAddModal(false)" class="w-7 h-7 bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="space-y-3 text-xs">
@@ -497,12 +439,12 @@
                 </div>
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Maps Link</label>
-                    <input type="url" id="new-maps-url" placeholder="https://www.google.com/maps/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                    <input type="url" id="new-maps-url" placeholder="http://maps.google.com/..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">City</label>
-                        <input type="text" id="new-city" placeholder="e.g., Paris" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
+                        <input type="text" id="new-city" placeholder="e.g., Tokyo" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Category</label>
@@ -515,13 +457,13 @@
                 </div>
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider">Notes</label>
-                    <textarea id="new-notes" rows="3" placeholder="Optimal angles, suggestions..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none"></textarea>
+                    <textarea id="new-notes" rows="3" placeholder="Suggestions..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none"></textarea>
                 </div>
                 <div class="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800 mt-2">
                     <span class="font-bold text-slate-400 uppercase tracking-wider">Prioritize?</span>
                     <button onclick="toggleFormPriorityState()" id="form-priority-btn" class="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold">Normal</button>
                 </div>
-                <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-sm">
+                <button onclick="submitNewSpotToCloud()" id="form-submit-btn" class="w-full mt-4 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white text-sm">
                     <i class="fa-solid fa-floppy-disk mr-2"></i> Save
                 </button>
             </div>
@@ -533,36 +475,34 @@
             <div class="space-y-6">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                     <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">Settings</h3>
-                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-slate-950 border border-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
                 </div>
                 <div class="space-y-2">
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Change My Profile Name</label>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Profile Name</label>
                     <input type="text" id="settingsRenameField" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-200 focus:outline-none">
-                    <button onclick="commitProfileRename()" class="w-full py-2 bg-slate-800 rounded-lg text-[11px] font-bold">Update Profile Label</button>
+                    <button onclick="commitProfileRename()" class="w-full py-2 bg-slate-800 rounded-lg text-[11px] font-bold">Update Label</button>
                 </div>
                 <hr class="border-slate-800">
                 <div id="settingsSwitchUserSection" class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Active User</label>
-                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_12px_center] bg-no-repeat pr-8"></select>
-                    <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
+                    <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-no-repeat pr-8"></select>
+                    <button onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
                 </div>
                 <hr class="border-slate-800">
                 <div class="space-y-2">
-                    <button onclick="triggerSecureServerHistoryPurgeVault()" class="w-full py-2 bg-red-950/20 text-red-400 border border-red-900/40 text-[11px] font-bold rounded-lg">Purge Cloud Logs</button>
                     <button onclick="clearDeviceSessionAndLogout()" class="w-full mt-2 py-2 bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-bold rounded-lg">Logout Session</button>
                 </div>
             </div>
             <div id="deviceMetaText" class="text-[9px] text-center text-slate-500 font-mono space-y-0.5">
                 <div id="meta-version" class="text-[9px] font-bold">Version: Loading...</div>
                 <div id="meta-id">Device ID: Loading...</div>
-                <div id="meta-hardware" class="text-[8px]">Specs: Detecting...</div>
             </div>
         </div>
     </div>
 
     <div id="userModal" class="fixed inset-0 bg-slate-950 z-[9999] flex flex-col justify-center items-center p-6 hidden">
         <div class="text-center w-full max-w-xs space-y-6">
-            <div class="text-6xl filter drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]"><i class="fa-solid fa-earth-americas text-pink-500"></i></div>
+            <div class="text-6xl text-pink-500"><i class="fa-solid fa-earth-americas"></i></div>
             <div class="space-y-1">
                 <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">Save2Go</h2>
                 <p class="text-xs text-slate-400 font-semibold tracking-wide">Who is holding the map right now?</p>
@@ -570,9 +510,9 @@
             
             <div class="space-y-3 pt-2 text-left">
                 <div id="loginDropdownContainer">
-                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block appearance-none h-12 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_16px_center] bg-no-repeat pr-10"></select>
+                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block appearance-none h-12 pr-10"></select>
                 </div>
-                <div id="loginDividerLine" class="relative flex items-center justify-center my-2">
+                <div class="relative flex items-center justify-center my-2">
                     <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase">Or Register New</span>
                     <hr class="w-full border-slate-900">
                 </div>
@@ -588,8 +528,7 @@
 
     <script>
         const ENABLE_MAP_ROTATION = false; 
-
-        const APP_VERSION = "v5.0.0";
+        const APP_VERSION = "v5.1.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -612,11 +551,6 @@
         let itinWizardRolloverActiveRowIds = [];
         let itinWizardRolloverToggleEnabled = false;
 
-        if (currentMapStyleKey === 'street') {
-            currentMapStyleKey = 'terrain';
-            localStorage.setItem('compass_map_style', 'terrain');
-        }
-
         let userLat = 48.8566; let userLon = 2.3522;
         let cachedHardwareString = "Unknown Device Model";
         let gpsStatusCachedBool = false; let activeTabID = 'map';
@@ -625,110 +559,59 @@
         let lastGpsSuccessTime = 0; 
         let cachedUserCoords = null; 
         let isCameraLocked = false; 
-        let currentMapBearingAngle = 0;
         let mapTileCleanupTimerId = null;
-        
         let hasInitialGpsLockRendered = false;
 
         let leafletMapInstance = null; let mapMarkersLayerGroup = null; 
         let userPositionPulseCircle = null; let userAccuracyRadiusCircle = null;
         let activeBaseTileLayer = null; 
         
-        let startY = 0; 
-        let isPulling = false;
-        let pullDelta = 0; 
+        let startY = 0; let isPulling = false; let pullDelta = 0; 
         const GESTURE_CONTAINER = document.getElementById('gesture-touch-container');
         const PULL_INDICATOR = document.getElementById('pullToRefreshIndicatorHUD');
 
-        let noteGestureTimerId = null;
-        let isNoteZoomActive = false;
-        let noteGestureStartX = 0;
-        let noteGestureStartY = 0;
+        let noteGestureTimerId = null; let isNoteZoomActive = false;
+        let noteGestureStartX = 0; let noteGestureStartY = 0;
 
         function initializeNoteGestureEngine(clientX, clientY, textContent) {
             if (!textContent || textContent.trim() === "") return;
             killNoteGestureEngine();
-            
-            noteGestureStartX = clientX;
-            noteGestureStartY = clientY;
+            noteGestureStartX = clientX; noteGestureStartY = clientY;
             
             noteGestureTimerId = setTimeout(() => {
                 isNoteZoomActive = true;
                 const overlay = document.getElementById('noteExpandedOverlayHUD');
-                const overlayCard = document.getElementById('noteExpandedOverlayCard');
-                const overlayText = document.getElementById('noteExpandedOverlayText');
-                const scrollBox = document.getElementById('noteExpandedOverlayScrollBox');
-                
-                overlayText.innerText = textContent;
-                if(scrollBox) scrollBox.scrollTop = 0;
-                
+                document.getElementById('noteExpandedOverlayText').innerText = textContent;
                 overlay.classList.remove('hidden');
-                overlayCard.classList.remove('note-zoom-closing');
-                overlayCard.classList.add('note-zoom-active');
-                
                 if(navigator.vibrate) navigator.vibrate(15);
             }, 500);
         }
 
         function evaluateNoteGestureMovement(currentX, currentY) {
             if (!noteGestureTimerId || isNoteZoomActive) return;
-            const deltaX = Math.abs(currentX - noteGestureStartX);
-            const deltaY = Math.abs(currentY - noteGestureStartY);
-            
-            if (deltaX > 15 || deltaY > 15) {
+            if (Math.abs(currentX - noteGestureStartX) > 15 || Math.abs(currentY - noteGestureStartY) > 15) {
                 killNoteGestureEngine();
             }
         }
 
-        function killNoteGestureEngine() {
-            if (noteGestureTimerId) {
-                clearTimeout(noteGestureTimerId);
-                noteGestureTimerId = null;
-            }
-        }
+        function killNoteGestureEngine() { if (noteGestureTimerId) { clearTimeout(noteGestureTimerId); noteGestureTimerId = null; } }
+        function manuallyCloseNoteOverlayHUD() { isNoteZoomActive = false; document.getElementById('noteExpandedOverlayHUD').classList.add('hidden'); }
 
-        function manuallyCloseNoteOverlayHUD() {
-            isNoteZoomActive = false;
-            const overlay = document.getElementById('noteExpandedOverlayHUD');
-            const overlayCard = document.getElementById('noteExpandedOverlayCard');
-            
-            overlayCard.classList.remove('note-zoom-active');
-            overlayCard.classList.add('note-zoom-closing');
-            
-            setTimeout(() => {
-                if(!isNoteZoomActive) overlay.classList.add('hidden');
-            }, 180);
-        }
-
-        function handleNoteTouchStartEvent(e, text) { 
-            e.stopPropagation(); 
-            initializeNoteGestureEngine(e.touches[0].clientX, e.touches[0].clientY, text); 
-        }
+        function handleNoteTouchStartEvent(e, text) { e.stopPropagation(); initializeNoteGestureEngine(e.touches[0].clientX, e.touches[0].clientY, text); }
         function handleNoteTouchMoveEvent(e) { evaluateNoteGestureMovement(e.touches[0].clientX, e.touches[0].clientY); }
         function handleNoteTouchEndEvent(e) { killNoteGestureEngine(); }
-
         function handleNoteMouseDownEvent(e, text) { e.stopPropagation(); initializeNoteGestureEngine(e.clientX, e.clientY, text); }
         function handleNoteMouseMoveEvent(e) { evaluateNoteGestureMovement(e.clientX, e.clientY); }
         function handleNoteMouseUpEvent(e) { killNoteGestureEngine(); }
 
         window.onload = function() {
-            localStorage.setItem('compass_map_state_zoom', '18');
-
             cachedHardwareString = parseReadableDeviceHardware();
             document.getElementById('meta-id').innerText = `Device ID: ${deviceId}`;
-            document.getElementById('meta-hardware').innerText = `Model: ${cachedHardwareString}`;
             document.getElementById('meta-version').innerText = `Version: ${APP_VERSION}`;
             
             initLeafletMapEngineCanvas();
             fetchRegisteredDatabaseUsers(); 
             syncPriorityFilterViewModeUI();
-            
-            document.getElementById('trayFlipToBackBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.add('flipped'); });
-            document.getElementById('trayFlipToFrontBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.remove('flipped'); });
-            
-            const trayNode = document.getElementById('mapDetailTrayHUD');
-            L.DomEvent.disableClickPropagation(trayNode);
-            L.DomEvent.on(trayNode, 'contextmenu', L.DomEvent.stopPropagation);
             
             document.getElementById('dropdownBlurBackdrop').addEventListener('click', () => {
                 closeAllActiveHUDDropdownOverlays();
@@ -751,68 +634,27 @@
             setupNetworkListeners(); 
             monitorNativeGpsPermissions();
             setupNativePullToRefreshGestures();
-            setupV4TwoFingerRotationListeners();
+
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('#cityHUDDropdownPopupBox') && 
+                    !event.target.closest('#filterCategoryDropdownPopupBox') && 
+                    !event.target.closest('#cityFilterHUDTriggerBtn') && 
+                    !event.target.closest('#filterMenuTriggerBtn')) {
+                    closeAllActiveHUDDropdownOverlays();
+                }
+                if (!event.target.closest('#mapLayerStyleDropdownDeck') && !event.target.closest('button[onclick*="mapLayerStyleDropdownDeck"]')) {
+                    const deck = document.getElementById('mapLayerStyleDropdownDeck');
+                    if (deck) deck.classList.add('hidden');
+                }
+            });
             renderItineraryMasterDashboardWorkspace();
         };
-
-        function setupV4TwoFingerRotationListeners() {
-            if (!ENABLE_MAP_ROTATION) return;
-            const targetElement = document.getElementById('map-render-element');
-            if (!targetElement) return;
-
-            let initialTouchAngle = 0;
-            let baseBearingAngleOnTouchStart = 0;
-            let processingRotationActive = false;
-
-            targetElement.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) {
-                    processingRotationActive = true;
-                    baseBearingAngleOnTouchStart = currentMapBearingAngle;
-                    initialTouchAngle = Math.atan2(
-                        e.touches[1].pageY - e.touches[0].pageY,
-                        e.touches[1].pageX - e.touches[0].pageX
-                    ) * 180 / Math.PI;
-                }
-            }, { passive: true });
-
-            targetElement.addEventListener('touchmove', (e) => {
-                if (processingRotationActive && e.touches.length === 2) {
-                    const currentTouchAngle = Math.atan2(
-                        e.touches[1].pageY - e.touches[0].pageY,
-                        e.touches[1].pageX - e.touches[0].pageX
-                    ) * 180 / Math.PI;
-                    
-                    const angleDelta = currentTouchAngle - initialTouchAngle;
-                    currentMapBearingAngle = (baseBearingAngleOnTouchStart + angleDelta) % 360;
-                    
-                    const pane = document.querySelector('.leaflet-map-pane');
-                    if (pane) {
-                        pane.style.transform = `rotate(${currentMapBearingAngle}deg)`;
-                    }
-
-                    const innerCompassIcon = document.getElementById('innerCompassEmojiSpinnerSpan');
-                    if (innerCompassIcon) {
-                        innerCompassIcon.style.transform = `rotate(${-currentMapBearingAngle}deg)`;
-                    }
-                }
-            }, { passive: true });
-
-            targetElement.addEventListener('touchend', (e) => {
-                if (e.touches.length < 2) {
-                    processingRotationActive = false;
-                }
-            }, { passive: true });
-        }
 
         async function fetchRegisteredDatabaseUsers() {
             try {
                 const response = await fetch(`${API_URL}?action=get_users`);
                 const userList = await response.json();
-                if (Array.isArray(userList) && userList.length > 0) {
-                    populateUserUIDropdowns(userList);
-                } else {
-                    populateUserUIDropdowns(["Global Traveller"]);
-                }
+                populateUserUIDropdowns(Array.isArray(userList) && userList.length > 0 ? userList : ["Global Traveller"]);
             } catch (err) {
                 populateUserUIDropdowns(["Global Traveller", "Paris Scout", "Echo User"]);
             }
@@ -821,20 +663,16 @@
         function populateUserUIDropdowns(usersArray) {
             const loginSelect = document.getElementById('loginDropdown');
             const settingsSelect = document.getElementById('settingsSwitchUserDropdown');
-            
             if(loginSelect) {
                 loginSelect.innerHTML = '';
                 usersArray.forEach(user => {
-                    const opt = document.createElement('option');
-                    opt.value = user; opt.innerText = user;
-                    loginSelect.appendChild(opt);
+                    const opt = document.createElement('option'); opt.value = user; opt.innerText = user; loginSelect.appendChild(opt);
                 });
             }
             if(settingsSelect) {
                 settingsSelect.innerHTML = '';
                 usersArray.forEach(user => {
-                    const opt = document.createElement('option');
-                    opt.value = user; opt.innerText = user;
+                    const opt = document.createElement('option'); opt.value = user; opt.innerText = user;
                     if(user === currentUser) opt.selected = true;
                     settingsSelect.appendChild(opt);
                 });
@@ -843,72 +681,34 @@
 
         function initLeafletMapEngineCanvas() {
             if (leafletMapInstance) return;
-            
-            leafletMapInstance = L.map('map-render-element', { 
-                zoomControl: false, 
-                attributionControl: false,
-                touchRotate: true,
-                rotate: true,
-                bounceAtZoomLimits: false
-            }).setView([userLat, userLon], 18);
-            
+            leafletMapInstance = L.map('map-render-element', { zoomControl: false, attributionControl: false, bounceAtZoomLimits: false }).setView([userLat, userLon], 18);
             setMapBaseLayerProviderSource(currentMapStyleKey);
             mapMarkersLayerGroup = L.layerGroup().addTo(leafletMapInstance);
 
             leafletMapInstance.on('movestart zoomstart dragstart', (e) => {
-                if (leafletMapInstance && e.target && isCameraLocked) {
-                    isCameraLocked = false;
-                    syncCameraLockVisualUIState();
-                }
-                if (mapTileCleanupTimerId) {
-                    clearTimeout(mapTileCleanupTimerId);
-                    mapTileCleanupTimerId = null;
-                }
+                if (isCameraLocked) { isCameraLocked = false; syncCameraLockVisualUIState(); }
             });
+
+            // Streamlined interaction model to prevent race condition clicks
+            leafletMapInstance.on('click', () => { dismissMapDetailTrayHUDCard(); });
 
             leafletMapInstance.on('moveend zoomend viewreset animationend', () => {
                 if (leafletMapInstance) {
-                    const currentZoomLevel = leafletMapInstance.getZoom();
-                    const debugNode = document.getElementById('mapZoomDebugHUD');
-                    if (debugNode) debugNode.innerText = `Zoom: ${currentZoomLevel}`;
-
+                    document.getElementById('mapZoomDebugHUD').innerText = `Zoom: ${leafletMapInstance.getZoom()}`;
                     const center = leafletMapInstance.getCenter();
                     localStorage.setItem('compass_map_state_lat', center.lat);
                     localStorage.setItem('compass_map_state_lng', center.lng);
-                    localStorage.setItem('compass_map_state_zoom', '18');
-                    
-                    if (travelSpots.length > 0) {
-                        window.requestAnimationFrame(() => {
-                            plotDynamicMarkersOnCanvasMap();
-                        });
-                    }
-
-                    if (mapTileCleanupTimerId) clearTimeout(mapTileCleanupTimerId);
-                    mapTileCleanupTimerId = setTimeout(() => {
-                        if (activeBaseTileLayer && typeof activeBaseTileLayer._pruneTiles === 'function') {
-                            activeBaseTileLayer._pruneTiles();
-                        }
-                    }, 10000);
+                    if (travelSpots.length > 0) window.requestAnimationFrame(() => { plotDynamicMarkersOnCanvasMap(); });
                 }
             });
 
             const savedLat = localStorage.getItem('compass_map_state_lat');
             const savedLng = localStorage.getItem('compass_map_state_lng');
-            if (savedLat && savedLng) {
-                leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 18);
-            }
-            
-            const initialZoomLevel = leafletMapInstance.getZoom();
-            const debugNode = document.getElementById('mapZoomDebugHUD');
-            if (debugNode) debugNode.innerText = `Zoom: ${initialZoomLevel}`;
+            if (savedLat && savedLng) leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 18);
         }
 
         function killLiveSpeechBubbleHUDState() {
-            const globalBubbleHUD = document.getElementById('globalToastSpeechBubbleHUD');
-            if (globalBubbleHUD) {
-                globalBubbleHUD.classList.add('hidden');
-                globalBubbleHUD.classList.remove('bubble-popup-anim', 'bubble-popdown-anim');
-            }
+            document.getElementById('globalToastSpeechBubbleHUD').classList.add('hidden');
             if(speechBubbleHideTimer) clearTimeout(speechBubbleHideTimer);
         }
 
@@ -923,31 +723,16 @@
             textNode.innerText = message;
 
             const bounds = elementTarget.getBoundingClientRect();
-            const bubbleWidth = 240; 
-            const screenWidth = window.innerWidth;
-            const padOffset = 16; 
+            let targetLeftPosition = bounds.left + (bounds.width / 2) - 120;
+            if (targetLeftPosition < 16) targetLeftPosition = 16;
+            if (targetLeftPosition + 240 > window.innerWidth - 16) targetLeftPosition = window.innerWidth - 240 - 16;
 
-            let targetLeftPosition = bounds.left + (bounds.width / 2) - (bubbleWidth / 2);
-
-            if (targetLeftPosition < padOffset) targetLeftPosition = padOffset;
-            if (targetLeftPosition + bubbleWidth > screenWidth - padOffset) {
-                targetLeftPosition = screenWidth - bubbleWidth - padOffset;
-            }
-
-            const customPointerOffset = (bounds.left + (bounds.width / 2)) - targetLeftPosition;
-            pointer.style.left = `${customPointerOffset}px`;
-
+            pointer.style.left = `${(bounds.left + (bounds.width / 2)) - targetLeftPosition}px`;
             bubble.style.left = `${targetLeftPosition}px`;
-            bubble.style.top = `${bounds.top + window.scrollY - 66}px`;
+            bubble.style.top = `${bounds.top + window.scrollY - 60}px`;
+            bubble.classList.remove('hidden');
 
-            bubble.classList.remove('hidden', 'bubble-popdown-anim');
-            bubble.classList.add('bubble-popup-anim');
-
-            speechBubbleHideTimer = setTimeout(() => {
-                bubble.classList.remove('bubble-popup-anim');
-                bubble.classList.add('bubble-popdown-anim');
-                setTimeout(() => { bubble.classList.add('hidden'); }, 250);
-            }, 3000);
+            speechBubbleHideTimer = setTimeout(() => { bubble.classList.add('hidden'); }, 3000);
         }
 
         function setMapBaseLayerProviderSource(styleKey) {
@@ -955,14 +740,7 @@
             if(activeBaseTileLayer) leafletMapInstance.removeLayer(activeBaseTileLayer);
 
             let providerUrl = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-            
-            let attributionMeta = { 
-                maxZoom: 20,
-                preload: true,
-                keepBuffer: 4, 
-                updateWhenIdle: false, 
-                updateWhenZooming: false
-            };
+            let attributionMeta = { maxZoom: 20, keepBuffer: 4 };
             let visibleLabel = "Style: Dark";
 
             if(styleKey === 'light') {
@@ -980,46 +758,16 @@
             activeBaseTileLayer = L.tileLayer(providerUrl, attributionMeta).addTo(leafletMapInstance);
             currentMapStyleKey = styleKey;
             localStorage.setItem('compass_map_style', styleKey);
-
-            const displayLabelNode = document.getElementById('activeLayerDisplayLabel');
-            if(displayLabelNode) displayLabelNode.innerText = visibleLabel;
-
-            ['dark', 'light', 'terrain', 'satellite'].forEach(k => {
-                const card = document.getElementById(`styleCard-${k}`);
-                if(card) {
-                    if(k === styleKey) {
-                        card.className = "flex flex-col items-center gap-1 p-1 bg-slate-900 rounded-xl border-2 border-pink-500 shadow-lg scale-105 transform duration-150";
-                    } else {
-                        card.className = "flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800/80 hover:bg-slate-900 transition-all duration-150 opacity-70";
-                    }
-                }
-            });
-
-            const deck = document.getElementById('mapLayerStyleDropdownDeck');
-            if(deck) deck.classList.add('hidden');
-            
-            if (mapMarkersLayerGroup && travelSpots.length > 0) {
-                plotDynamicMarkersOnCanvasMap();
-            }
+            document.getElementById('activeLayerDisplayLabel').innerText = visibleLabel;
+            if (mapMarkersLayerGroup && travelSpots.length > 0) plotDynamicMarkersOnCanvasMap();
         }
 
         function parseReadableDeviceHardware() {
             const ua = navigator.userAgent;
-            let os = "Unknown OS";
-            if (/Android/i.test(ua)) os = "Android";
-            else if (/iPhone|iPad|iPod/i.test(ua)) os = "iOS";
-            const width = window.screen.width; const height = window.screen.height;
-            let modelEstimate = "";
-            if (os === "Android") {
-                if ((width === 360 && height === 800) || (width === 412 && height === 915)) modelEstimate = " (Likely Samsung S-Series)";
-                else if (width === 412 && height === 892) modelEstimate = " (Likely Pixel)";
-                else modelEstimate = " Mobile";
-            } else if (os === "iOS") {
-                if (width === 393 && height === 852) modelEstimate = " (iPhone Pro)";
-                else if (width === 430 && height === 932) modelEstimate = " (iPhone Pro Max)";
-                else modelEstimate = " Phone";
-            }
-            return `${os}${modelEstimate}`;
+            let os = "Mobile UI";
+            if (/Android/i.test(ua)) os = "Android Platform";
+            else if (/iPhone|iPad/i.test(ua)) os = "iOS Platform";
+            return os;
         }
 
         function generateAndSaveDeviceId() {
@@ -1031,12 +779,8 @@
             if (navigator.permissions && navigator.permissions.query) {
                 navigator.permissions.query({ name: 'geolocation' }).then(status => {
                     const checkState = () => {
-                        if (status.state === 'denied') { 
-                            gpsStatusCachedBool = false; 
-                            updateGpsHudStatus('off', "GPS Off"); 
-                        } else if (status.state === 'granted') {
-                            startLiveHardwareGPSTracking();
-                        }
+                        if (status.state === 'granted') startLiveHardwareGPSTracking();
+                        else updateGpsHudStatus('off', "GPS Off");
                     };
                     status.onchange = checkState; checkState();
                 });
@@ -1045,230 +789,94 @@
 
         function setupNativePullToRefreshGestures() {
             if (!GESTURE_CONTAINER) return;
-
             GESTURE_CONTAINER.addEventListener('touchstart', (e) => {
-                if (GESTURE_CONTAINER.scrollTop === 0) { 
-                    startY = e.touches[0].pageY; 
-                    isPulling = true; 
-                    pullDelta = 0; 
-                }
+                if (GESTURE_CONTAINER.scrollTop === 0) { startY = e.touches[0].pageY; isPulling = true; pullDelta = 0; }
             }, { passive: true });
 
             GESTURE_CONTAINER.addEventListener('touchmove', (e) => {
                 if (!isPulling) return;
-                const currentY = e.touches[0].pageY; 
-                pullDelta = currentY - startY; 
-                
-                if (pullDelta > 0) { 
-                    const heightBound = Math.min(pullDelta * 0.4, 50); 
-                    PULL_INDICATOR.style.height = `${heightBound}px`; 
-                }
+                pullDelta = e.touches[0].pageY - startY; 
+                if (pullDelta > 0) PULL_INDICATOR.style.height = `${Math.min(pullDelta * 0.4, 40)}px`; 
             }, { passive: true });
 
             GESTURE_CONTAINER.addEventListener('touchend', () => {
-                if (!isPulling) return; 
-                isPulling = false;
-                PULL_INDICATOR.style.height = '0px';
-                
-                if (pullDelta > 40) {
-                    syncData(true);
-                }
-                pullDelta = 0; 
-            }, { passive: true });
-
-            GESTURE_CONTAINER.addEventListener('touchcancel', () => {
-                if (!isPulling) return; 
-                isPulling = false;
-                PULL_INDICATOR.style.height = '0px';
+                if (!isPulling) return; isPulling = false; PULL_INDICATOR.style.height = '0px';
+                if (pullDelta > 40) syncData(true);
                 pullDelta = 0; 
             }, { passive: true });
         }
 
-        function initializeSessionDashboard() {
-            syncData(true);
-            startLiveHardwareGPSTracking();
-            updateNetworkStatusHUD(); 
-        }
-
-        function updateLiveDistancesUI() {
-            if (activeTabID !== 'list') return; 
-            const processed = getFilteredDatasetRows();
-            
-            processed.forEach(spot => {
-                const distHUD = document.getElementById(`dist-badge-${spot.rowid}`);
-                if (distHUD) {
-                    distHUD.innerHTML = spot.distStr;
-                    const latVal = spot.latitude ? String(spot.latitude).trim() : "";
-                    const hasCoordinates = latVal !== "" && latVal !== "0";
-                    if (!hasCoordinates) {
-                        distHUD.className = "text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                    } else {
-                        distHUD.className = "text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400";
-                    }
-                }
-            });
-        }
+        function initializeSessionDashboard() { syncData(true); startLiveHardwareGPSTracking(); updateNetworkStatusHUD(); }
 
         function startLiveHardwareGPSTracking() {
-            if (!navigator.geolocation) {
-                gpsStatusCachedBool = false;
-                updateGpsHudStatus('off', "Unsupported");
-                return;
-            }
+            if (!navigator.geolocation) { updateGpsHudStatus('off', "Unsupported"); return; }
             if (liveGpsWatchId !== null) navigator.geolocation.clearWatch(liveGpsWatchId);
 
-            lastGpsSuccessTime = Date.now();
-
+            // Robust state tracking to prevent jumping or immediate disconnection indicators
             liveGpsWatchId = navigator.geolocation.watchPosition(
                 (pos) => {
                     gpsStatusCachedBool = true;
-                    lastGpsSuccessTime = Date.now(); 
                     cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                    updateGpsHudStatus('active', "GPS Active");
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                    updateGpsHudStatus('active', "GPS Active");
                     
                     if (leafletMapInstance) {
                         if (userPositionPulseCircle) {
                             userPositionPulseCircle.setLatLng([userLat, userLon]);
                         } else {
-                            userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
-                                radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
-                            }).addTo(leafletMapInstance);
+                            userPositionPulseCircle = L.circleMarker([userLat, userLon], { radius: 7, fillColor: '#3b82f6', fillOpacity: 0.9, color: '#ffffff', weight: 2 }).addTo(leafletMapInstance);
                         }
-
-                        const currentAccuracyRadiusMeters = pos.coords.accuracy || 0;
-                        if (userAccuracyRadiusCircle) {
-                            userAccuracyRadiusCircle.setLatLng([userLat, userLon]).setRadius(currentAccuracyRadiusMeters);
-                        } else {
-                            userAccuracyRadiusCircle = L.circle([userLat, userLon], {
-                                radius: currentAccuracyRadiusMeters,
-                                fillColor: '#3b82f6',
-                                fillOpacity: 0.12,
-                                stroke: false,
-                                pointerEvents: 'none'
-                            }).addTo(leafletMapInstance);
-                        }
-                        
-                        if (isCameraLocked) {
-                            leafletMapInstance.panTo([userLat, userLon], { animate: true });
-                        }
+                        if (isCameraLocked) leafletMapInstance.panTo([userLat, userLon], { animate: true });
                     }
-                    
-                    if (!hasInitialGpsLockRendered) {
-                        hasInitialGpsLockRendered = true;
-                        renderList(); 
-                    } else {
-                        updateLiveDistancesUI(); 
-                    }
+                    if (!hasInitialGpsLockRendered) { hasInitialGpsLockRendered = true; renderList(); } else { updateLiveDistancesUI(); }
                 },
-                (err) => {
-                    if (Date.now() - lastGpsSuccessTime > 6000) {
-                        gpsStatusCachedBool = false;
-                        updateGpsHudStatus('off', "GPS Off");
-                    }
-                },
-                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                () => { /* Smooth silent failover to continuous loop fallback */ },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
-
-            if (continuousGpsFailsafeIntervalId !== null) clearInterval(continuousGpsFailsafeIntervalId);
-            continuousGpsFailsafeIntervalId = setInterval(() => {
-                const timeElapsed = Date.now() - lastGpsSuccessTime;
-
-                if (timeElapsed <= 3000) {
-                    updateGpsHudStatus('active', "GPS Active");
-                } else if (timeElapsed > 3000 && timeElapsed <= 6000) {
-                    updateGpsHudStatus('syncing', "Syncing...");
-                } else {
-                    if (gpsStatusCachedBool) {
-                        gpsStatusCachedBool = false;
-                        updateGpsHudStatus('off', "GPS Off");
-                        if (userPositionPulseCircle && leafletMapInstance) {
-                            leafletMapInstance.removeLayer(userPositionPulseCircle);
-                            userPositionPulseCircle = null;
-                        }
-                        if (userAccuracyRadiusCircle && leafletMapInstance) {
-                            leafletMapInstance.removeLayer(userAccuracyRadiusCircle);
-                            userAccuracyRadiusCircle = null;
-                        }
-                        updateLiveDistancesUI(); 
-                    }
-                    
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            gpsStatusCachedBool = true;
-                            lastGpsSuccessTime = Date.now();
-                            cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                            userLat = pos.coords.latitude; userLon = pos.coords.longitude;
-                            
-                            if (isCameraLocked && leafletMapInstance) {
-                                leafletMapInstance.setView([userLat, userLon], 18);
-                            }
-                            
-                            if (!hasInitialGpsLockRendered) {
-                                hasInitialGpsLockRendered = true;
-                                renderList();
-                            } else {
-                                updateLiveDistancesUI(); 
-                            }
-                        },
-                        () => {},
-                        { enableHighAccuracy: true, timeout: 1500 }
-                    );
-                }
-            }, 2000);
         }
 
         function switchMasterMenuDashboardTab(targetTabID) {
             killLiveSpeechBubbleHUDState();
             dismissMapDetailTrayHUDCard();
 
-            if(targetTabID === activeTabID) return;
-            
             const currentTabBtn = document.getElementById(`nav-tab-${activeTabID}`);
-            currentTabBtn.className = "nav-tab-transition flex flex-col items-center gap-0.5 text-slate-500 opacity-50 scale-100 font-medium translate-y-0 brightness-100";
+            currentTabBtn.className = "nav-tab-transition flex flex-col items-center gap-0.5 text-slate-500 opacity-50 font-medium scale-100";
             document.getElementById(`view-${activeTabID}`).classList.remove('active-view');
             
             const nextTabBtn = document.getElementById(`nav-tab-${targetTabID}`);
-            nextTabBtn.className = "nav-tab-transition flex flex-col items-center gap-0.5 text-pink-500 scale-110 font-black tracking-wide translate-y-[-2px] brightness-125";
+            nextTabBtn.className = "nav-tab-transition flex flex-col items-center gap-0.5 text-pink-500 font-black scale-110 brightness-125";
             document.getElementById(`view-${targetTabID}`).classList.add('active-view');
             
             activeTabID = targetTabID;
+            
+            // Controlled Visibility Layer Sync
+            const routeBanner = document.getElementById('mapItineraryActiveOverlayBanner');
+            if (activeMapItineraryId !== null) {
+                routeBanner.classList.toggle('hidden', activeTabID !== 'map');
+            }
 
             if(targetTabID === 'map' && leafletMapInstance) { 
-                setTimeout(() => { 
-                    leafletMapInstance.invalidateSize(); 
-                    const savedLat = localStorage.getItem('compass_map_state_lat');
-                    const savedLng = localStorage.getItem('compass_map_state_lng');
-                    if (savedLat && savedLng) {
-                        leafletMapInstance.setView([parseFloat(savedLat), parseFloat(savedLng)], 18, { animate: false });
-                    } else if(gpsStatusCachedBool) {
-                        leafletMapInstance.setView([userLat, userLon], 18, { animate: false });
-                    }
-                }, 50); 
+                setTimeout(() => { leafletMapInstance.invalidateSize(); }, 50); 
             }
-            if(targetTabID === 'itinerary') {
-                renderItineraryMasterDashboardWorkspace();
-            }
+            if(targetTabID === 'itinerary') renderItineraryMasterDashboardWorkspace();
         }
 
         function toggleCityDropdownOverlayMenu(event) {
             event.stopPropagation();
-            killLiveSpeechBubbleHUDState();
             const box = document.getElementById('cityHUDDropdownPopupBox');
-            const backdrop = document.getElementById('dropdownBlurBackdrop');
             document.getElementById('filterCategoryDropdownPopupBox').classList.add('hidden');
-            if (!box.classList.contains('hidden')) { box.classList.add('hidden'); backdrop.classList.add('hidden'); } 
-            else { box.classList.remove('hidden'); backdrop.classList.remove('hidden'); calculateSmartCityDefaultFilters(); }
+            box.classList.toggle('hidden');
+            document.getElementById('dropdownBlurBackdrop').classList.toggle('hidden', box.classList.contains('hidden'));
+            if (!box.classList.contains('hidden')) calculateSmartCityDefaultFilters();
         }
 
         function toggleFilterDropdownOverlayMenu(event) {
             event.stopPropagation();
-            killLiveSpeechBubbleHUDState();
             const box = document.getElementById('filterCategoryDropdownPopupBox');
-            const backdrop = document.getElementById('dropdownBlurBackdrop');
             document.getElementById('cityHUDDropdownPopupBox').classList.add('hidden');
-            if (!box.classList.contains('hidden')) { box.classList.add('hidden'); backdrop.classList.add('hidden'); } 
-            else { box.classList.remove('hidden'); backdrop.classList.remove('hidden'); buildDynamicShoppingCheckboxList(); }
+            box.classList.toggle('hidden');
+            document.getElementById('dropdownBlurBackdrop').classList.toggle('hidden', box.classList.contains('hidden'));
+            if (!box.classList.contains('hidden')) buildDynamicShoppingCheckboxList();
         }
 
         function closeAllActiveHUDDropdownOverlays() {
@@ -1287,249 +895,128 @@
         function switchUserSessionViaSettings() {
             const selectedUser = document.getElementById('settingsSwitchUserDropdown').value;
             if(selectedUser) {
-                localStorage.setItem('compass_user', selectedUser);
-                currentUser = selectedUser;
-                toggleSettingsMenu(false);
-                syncData(true);
+                localStorage.setItem('compass_user', selectedUser); currentUser = selectedUser;
+                toggleSettingsMenu(false); syncData(true);
             }
         }
 
         function handleGpsBadgeClickAction(event) {
             if(event) event.stopPropagation();
-            killLiveSpeechBubbleHUDState();
-            updateGpsHudStatus('syncing', "Re-pinging...");
+            updateGpsHudStatus('syncing', "Locating...");
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     gpsStatusCachedBool = true;
-                    lastGpsSuccessTime = Date.now();
-                    cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
                     userLat = pos.coords.latitude; userLon = pos.coords.longitude;
                     updateGpsHudStatus('active', "GPS Active");
-                    isCameraLocked = true;
-                    syncCameraLockVisualUIState();
-                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18); 
-                    startLiveHardwareGPSTracking();
+                    isCameraLocked = true; syncCameraLockVisualUIState();
+                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18);
                 },
-                (err) => {
-                    gpsStatusCachedBool = false;
-                    updateGpsHudStatus('off', "GPS Off");
-                    document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
-                },
-                { enableHighAccuracy: true, timeout: 6000 }
+                () => { updateGpsHudStatus('off', "GPS Off"); document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden'); },
+                { enableHighAccuracy: true }
             );
         }
 
         function handleAdaptiveDirectionClick(buttonElement, event) {
             if (event) event.stopPropagation();
-            const rowId = buttonElement.getAttribute('data-row-id');
-            const targetSpot = travelSpots.find(s => String(s.rowid) === String(rowId));
+            const targetSpot = travelSpots.find(s => String(s.rowid) === String(buttonElement.getAttribute('data-row-id')));
             if (!targetSpot) return;
 
-            const mapsUrl = targetSpot.maps_url ? String(targetSpot.maps_url).trim() : "";
-            const lat = targetSpot.latitude ? String(targetSpot.latitude).trim() : "";
-            const lng = targetSpot.longitude ? String(targetSpot.longitude).trim() : "";
-            
-            if (mapsUrl !== "" && mapsUrl !== "N/A") {
-                window.open(mapsUrl, '_blank');
-            } else if (lat !== "" && lat !== "0" && lng !== "" && lng !== "0") {
-                // Resolved Fallback Anchor Redirection Parameter Link
-                window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank');
+            if (targetSpot.maps_url && targetSpot.maps_url !== "N/A") {
+                window.open(targetSpot.maps_url, '_blank');
+            } else if (targetSpot.latitude) {
+                window.open(`https://www.google.com/maps/search/?api=1&query=${targetSpot.latitude},${targetSpot.longitude}`, '_blank');
             } else {
-                triggerCuteSpeechBubbleHUD("Map data missing in database!", buttonElement, event);
+                triggerCuteSpeechBubbleHUD("Coordinates unpopulated!", buttonElement, event);
             }
         }
 
         function triggerRecenterToGpsHardwareAction(event) {
             if(event) event.stopPropagation();
-            killLiveSpeechBubbleHUDState();
-            if (!leafletMapInstance) return;
-
-            if (ENABLE_MAP_ROTATION) {
-                currentMapBearingAngle = 0;
-                const pane = document.querySelector('.leaflet-map-pane');
-                if (pane) pane.style.transform = 'rotate(0deg)';
-            }
-
-            const emojiSpinnerNode = document.getElementById('innerCompassEmojiSpinnerSpan');
-            if (emojiSpinnerNode) {
-                emojiSpinnerNode.style.transform = 'rotate(180deg) scale(0.85)';
-                setTimeout(() => { emojiSpinnerNode.style.transform = 'rotate(0deg) scale(1)'; }, 350);
-            }
-
-            isCameraLocked = true;
-            syncCameraLockVisualUIState();
-
-            if (cachedUserCoords) {
-                const currentCenterPos = leafletMapInstance.getCenter();
-                const currentZoomScale = leafletMapInstance.getZoom();
-                const isMatchingLat = Math.abs(currentCenterPos.lat - cachedUserCoords.lat) < 0.00001;
-                const isMatchingLng = Math.abs(currentCenterPos.lng - cachedUserCoords.lon) < 0.00001;
-                const isExactlyLevel18 = (currentZoomScale === 18);
-
-                if (!(isMatchingLat && isMatchingLng && isExactlyLevel18)) {
-                    leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 18, { animate: true }); 
-                }
-            }
-
-            const executeHardwareQuery = () => {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        gpsStatusCachedBool = true;
-                        lastGpsSuccessTime = Date.now();
-                        const incomingLat = pos.coords.latitude;
-                        const incomingLon = pos.coords.longitude;
-                        cachedUserCoords = { lat: incomingLat, lon: incomingLon };
-                        userLat = incomingLat; userLon = incomingLon;
-                        updateGpsHudStatus('active', "GPS Active");
-                        
-                        if (userPositionPulseCircle) {
-                            userPositionPulseCircle.setLatLng([userLat, userLon]);
-                        } else {
-                            userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
-                                radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
-                            }).addTo(leafletMapInstance);
-                        }
-                        
-                        if (isCameraLocked) {
-                            const innerCenter = leafletMapInstance.getCenter();
-                            const innerZoom = leafletMapInstance.getZoom();
-                            const subLat = Math.abs(innerCenter.lat - userLat) < 0.00001;
-                            const subLng = Math.abs(innerCenter.lng - userLon) < 0.00001;
-                            const subZoom = (innerZoom === 18);
-
-                            if (!(subLat && subLng && subZoom)) {
-                                leafletMapInstance.setView([userLat, userLon], 18, { animate: true }); 
-                            }
-                        }
-                    },
-                    (err) => {
-                        gpsStatusCachedBool = false;
-                        isCameraLocked = false;
-                        syncCameraLockVisualUIState();
-                        updateGpsHudStatus('off', "GPS Off");
-                        document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
-                    },
-                    { enableHighAccuracy: true }
-                );
-            };
-
-            if (navigator.permissions && navigator.permissions.query) {
-                navigator.permissions.query({ name: 'geolocation' }).then(status => {
-                    if (status.state === 'denied') {
-                        gpsStatusCachedBool = false;
-                        isCameraLocked = false;
-                        syncCameraLockVisualUIState();
-                        updateGpsHudStatus('off', "GPS Off");
-                        document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
-                    } else {
-                        executeHardwareQuery();
-                    }
-                });
-            } else {
-                executeHardwareQuery();
-            }
+            isCameraLocked = true; syncCameraLockVisualUIState();
+            if (gpsStatusCachedBool && leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18, { animate: true });
         }
 
         function syncCameraLockVisualUIState() {
-            const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
-            if (!compassBtn) return;
-            if (isCameraLocked) {
-                compassBtn.className = "w-12 h-12 bg-slate-900 border-2 border-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center justify-center text-slate-300 active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative text-[19px]";
-            } else {
-                compassBtn.className = "w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative text-[19px]";
-            }
+            document.getElementById('hardwareCompassRecenterButtonNode').className = isCameraLocked ? "w-11 h-11 bg-slate-900 border-2 border-pink-500 rounded-full flex items-center justify-center text-slate-300 text-base" : "w-11 h-11 bg-slate-900/95 border border-slate-800 rounded-full flex items-center justify-center text-slate-300 text-base";
         }
 
         function snapMapViewportToSelectedCityBounds(event) {
             if(event) event.stopPropagation();
-            killLiveSpeechBubbleHUDState();
             if (!leafletMapInstance || travelSpots.length === 0) return;
-            
-            if (checkedCitiesStateArray.length === 0) {
-                triggerCuteSpeechBubbleHUD("Select a city filter first!", document.getElementById('shortcutMagnifyingButton'), event);
-                return;
-            }
+            if (checkedCitiesStateArray.length === 0) { triggerCuteSpeechBubbleHUD("Select a City first!", document.getElementById('shortcutMagnifyingButton'), event); return; }
 
-            let activeCityPins = travelSpots.filter(spot => {
-                const latVal = spot.latitude ? String(spot.latitude).trim() : "";
-                return latVal !== "" && latVal !== "0" && checkedCitiesStateArray.includes(spot.city);
-            });
+            let pins = travelSpots.filter(spot => spot.latitude && String(spot.latitude).trim() !== "0" && checkedCitiesStateArray.includes(spot.city));
+            if (pins.length === 0) { triggerCuteSpeechBubbleHUD("No pins mapped here!", document.getElementById('shortcutMagnifyingButton'), event); return; }
 
-            if (activeCityPins.length === 0) {
-                triggerCuteSpeechBubbleHUD("No pins found for this city!", document.getElementById('shortcutMagnifyingButton'), event);
-                return;
-            }
-
-            isCameraLocked = false;
-            syncCameraLockVisualUIState();
-
-            if (activeCityPins.length === 1) {
-                leafletMapInstance.setView([parseFloat(activeCityPins[0].latitude), parseFloat(activeCityPins[0].longitude)], 18, { animate: true });
-            } else {
-                let boundsContainer = L.latLngBounds();
-                activeCityPins.forEach(spot => {
-                    boundsContainer.extend([parseFloat(spot.latitude), parseFloat(spot.longitude)]);
-                });
-                leafletMapInstance.fitBounds(boundsContainer, { padding: [50, 50], animate: true, duration: 0.6 });
-            }
+            let boundsContainer = L.latLngBounds(pins.map(p => [parseFloat(p.latitude), parseFloat(p.longitude)]));
+            leafletMapInstance.fitBounds(boundsContainer, { padding: [40, 40], animate: true });
         }
 
         function setPriorityFilterState(shouldShowStarredOnly) {
-            killLiveSpeechBubbleHUDState();
             showStarredOnly = shouldShowStarredOnly;
             localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
             syncPriorityFilterViewModeUI(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
-        function silentPassiveHardwareLocationPingRefresh() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        gpsStatusCachedBool = true;
-                        userLat = pos.coords.latitude; userLon = pos.coords.longitude;
-                        lastGpsSuccessTime = Date.now();
-                        cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                    },
-                    () => {},
-                    { enableHighAccuracy: true, timeout: 2000 }
-                );
-            }
-        }
-
         function syncPriorityFilterViewModeUI() {
-            const showAllBtn = document.getElementById('toggleOptionShowAll');
-            const starredBtn = document.getElementById('toggleOptionStarred');
-            if (showStarredOnly) {
-                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 bg-transparent";
-                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10";
-            } else {
-                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10";
-                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 bg-transparent";
-            }
+            document.getElementById('toggleOptionShowAll').className = showStarredOnly ? "flex-1 text-center text-[10px] font-black rounded-lg text-slate-500" : "flex-1 text-center text-[10px] font-black rounded-lg text-amber-400 bg-amber-500/10";
+            document.getElementById('toggleOptionStarred').className = showStarredOnly ? "flex-1 text-center text-[10px] font-black rounded-lg text-amber-400 bg-amber-500/10" : "flex-1 text-center text-[10px] font-black rounded-lg text-slate-500";
         }
 
         function buildDynamicShoppingCheckboxList() {
             const scrollContainer = document.getElementById('checkboxScrollRegionContainer');
-            const stickyPanel = document.getElementById('hideCompletedTargetRowContainer');
-            if(!scrollContainer || !stickyPanel) return;
-            scrollContainer.innerHTML = ''; stickyPanel.innerHTML = '';
+            if(!scrollContainer) return; scrollContainer.innerHTML = '';
             
             let uniqueCategories = new Set();
             travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
             
             uniqueCategories.forEach(cat => {
                 if(!cat) return;
-                const label = document.createElement('label');
-                label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer";
-                label.innerHTML = `<span class="truncate pr-2">${cat}</span><input type="checkbox" value="${cat}" ${checkedFilterStateArray.includes(cat) ? 'checked' : ''} onchange="handleCheckboxToggleEvent(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
+                const label = document.createElement('label'); label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer";
+                label.innerHTML = `<span>${cat}</span><input type="checkbox" value="${cat}" ${checkedFilterStateArray.includes(cat) ? 'checked' : ''} onchange="handleCheckboxToggleEvent(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
                 scrollContainer.appendChild(label);
             });
 
-            const hideCompletedLabel = document.createElement('label');
-            hideCompletedLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 hover:bg-pink-500/10 text-pink-400 cursor-pointer text-xs font-bold w-full";
-            hideCompletedLabel.innerHTML = `<span class="truncate pr-2 font-black">Hide Completed</span><input type="checkbox" id="hideCompletedFilterSystemCheckbox" ${hideCompletedSpotsStateBool ? 'checked' : ''} onchange="handleHideCompletedStateToggleCheckboxEvent(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
-            stickyPanel.appendChild(hideCompletedLabel);
+            const stickyPanel = document.getElementById('hideCompletedTargetRowContainer');
+            stickyPanel.innerHTML = '';
+            const hideLabel = document.createElement('label'); hideLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 text-pink-400 text-xs font-bold w-full cursor-pointer";
+            hideLabel.innerHTML = `<span class="font-black">Hide Completed</span><input type="checkbox" ${hideCompletedSpotsStateBool ? 'checked' : ''} onchange="handleHideCompletedStateToggleCheckboxEvent(this)" class="w-3.5 h-3.5 accent-pink-500 rounded">`;
+            stickyPanel.appendChild(hideLabel);
+            
+            // Build out clean V5.1 Map Selector Child elements list
+            rebuildMapFilterItineraryChildDeck();
             updateHeaderBadgeHUDCounters();
+        }
+
+        function rebuildMapFilterItineraryChildDeck() {
+            const bucket = document.getElementById('itineraryChildSelectorMenuBucket');
+            if(!bucket) return; bucket.innerHTML = '';
+            const routes = savedItineraries.filter(i => i.username === currentUser);
+            
+            if(routes.length === 0) {
+                bucket.innerHTML = `<div class="p-1 text-slate-600 italic text-[10px]">No itineraries found.</div>`; return;
+            }
+            routes.forEach(itin => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-1 rounded hover:bg-slate-800 text-slate-300 text-[10px] truncate block font-medium";
+                btn.innerHTML = activeMapItineraryId === itin.itinerary_id ? `<i class="fa-solid fa-circle-check text-pink-500 mr-1"></i> ${itin.name}` : `<i class="fa-regular fa-circle mr-1 text-slate-600"></i> ${itin.name}`;
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (activeMapItineraryId === itin.itinerary_id) deactivateItineraryRouteMapView();
+                    else activateItineraryRouteMapView(itin.itinerary_id);
+                    closeAllActiveHUDDropdownOverlays();
+                };
+                bucket.appendChild(btn);
+            });
+        }
+
+        function toggleItineraryChildDropdownMenu(e) {
+            e.stopPropagation();
+            const bucket = document.getElementById('itineraryChildSelectorMenuBucket');
+            const caret = document.getElementById('itinChildCaretNode');
+            const isHidden = bucket.classList.contains('hidden');
+            bucket.classList.toggle('hidden', !isHidden);
+            caret.innerText = isHidden ? "▼" : "▶";
         }
 
         function handleCheckboxToggleEvent(checkboxElement) {
@@ -1547,59 +1034,33 @@
         }
 
         function clearAllFilterCheckboxes() {
-            checkedFilterStateArray = []; 
-            localStorage.setItem('compass_active_filters', JSON.stringify([]));
-            const checkboxes = document.getElementById('checkboxScrollRegionContainer').querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(cb => cb.checked = false);
+            checkedFilterStateArray = []; localStorage.setItem('compass_active_filters', JSON.stringify([]));
             updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
         }
 
         function updateHeaderBadgeHUDCounters() {
             const badge = document.getElementById('activeFilterBadgeCount');
-            const btn = document.getElementById('filterMenuTriggerBtn');
-            if(!btn) return;
             const count = checkedFilterStateArray.length;
-            if(count > 0) {
-                if(badge) { badge.innerText = count; badge.classList.remove('hidden'); }
-                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] text-center text-[11px] font-black text-pink-400 flex items-center justify-center gap-1 shadow-inner";
-            } else {
-                if(badge) badge.classList.add('hidden');
-                btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner";
-            }
-        }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            badge.classList.toggle('hidden', count === 0); if (count > 0) badge.innerText = count;
         }
 
         function getFilteredDatasetRows() {
             return travelSpots.map(spot => {
                 const latStr = spot.latitude ? String(spot.latitude).trim() : "";
-                const lngStr = spot.longitude ? String(spot.longitude).trim() : "";
-                const hasLatLon = latStr !== "" && latStr !== "0" && lngStr !== "" && lngStr !== "0";
-                
-                let distanceOutputLabel = !hasLatLon ? "Missing Location" : (!gpsStatusCachedBool ? "<i class='fa-solid fa-location-dot mr-1'></i>GPS Off" : "");
-                let rawDistanceValue = 99999;
-                let stableDistanceZoneBucket = 4; 
+                const hasLatLon = latStr !== "" && latStr !== "0";
+                let distanceOutputLabel = !hasLatLon ? "Missing Location" : (!gpsStatusCachedBool ? "GPS Off" : "");
+                let rawDistanceValue = 99999; let stableDistanceZoneBucket = 4; 
 
                 if (hasLatLon && gpsStatusCachedBool) {
                     const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude), parseFloat(spot.longitude));
-                    rawDistanceValue = dist; 
-                    distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
-                    if (dist <= 0.5) stableDistanceZoneBucket = 1;       
-                    else if (dist <= 2.0) stableDistanceZoneBucket = 2;  
-                    else if (dist <= 10.0) stableDistanceZoneBucket = 3; 
-                    else stableDistanceZoneBucket = 4;                  
+                    rawDistanceValue = dist; distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+                    stableDistanceZoneBucket = dist <= 0.5 ? 1 : (dist <= 2.0 ? 2 : (dist <= 10.0 ? 3 : 4));
                 }
                 return { ...spot, distRaw: rawDistanceValue, distStr: distanceOutputLabel, distZone: stableDistanceZoneBucket };
             }).filter(s => {
                 if (activeMapItineraryId !== null) {
                     const activeItinObj = savedItineraries.find(i => i.itinerary_id === activeMapItineraryId);
-                    if (activeItinObj && activeItinObj.route_sequence) {
-                        return activeItinObj.route_sequence.includes(String(s.rowid));
-                    }
+                    if (activeItinObj && activeItinObj.route_sequence) return activeItinObj.route_sequence.includes(String(s.rowid));
                 }
                 if (hideCompletedSpotsStateBool && (s.status || "").toLowerCase().trim() === "done") return false;
                 if (showStarredOnly && !['high','🔥','must do','starred'].includes((s.priority || "").toLowerCase())) return false;
@@ -1628,26 +1089,22 @@
 
             const dataset = getFilteredDatasetRows();
             const currentZoom = leafletMapInstance.getZoom();
-            let overlapPixelRadiusThreshold = currentZoom >= 14 && currentZoom <= 15 ? 14 : (currentZoom >= 16 ? 6 : 28);
+            let overlapPixelRadiusThreshold = currentZoom >= 15 ? 6 : (currentZoom >= 14 ? 14 : 28);
             let structuredClustersArray = [];
 
             dataset.forEach(spot => {
-                if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0" || String(spot.latitude).trim() === "") return;
+                if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0") return;
                 const latLngObj = L.latLng(parseFloat(spot.latitude), parseFloat(spot.longitude));
                 const screenPoint = leafletMapInstance.latLngToLayerPoint(latLngObj);
                 let assignedToCluster = false;
                 
                 for (let i = 0; i < structuredClustersArray.length; i++) {
                     let cluster = structuredClustersArray[i];
-                    const isCoordinatesExactMatch = (cluster.leadLatLng.lat === latLngObj.lat && cluster.leadLatLng.lng === latLngObj.lng);
-                    let pixelDistance = Math.sqrt(Math.pow(screenPoint.x - cluster.centerPx.x, 2) + Math.pow(screenPoint.y - cluster.centerPx.y, 2));
-                    if (isCoordinatesExactMatch || (pixelDistance <= overlapPixelRadiusThreshold)) {
+                    if (cluster.leadLatLng.lat === latLngObj.lat && cluster.leadLatLng.lng === latLngObj.lng || (Math.sqrt(Math.pow(screenPoint.x - cluster.centerPx.x, 2) + Math.pow(screenPoint.y - cluster.centerPx.y, 2)) <= overlapPixelRadiusThreshold)) {
                         cluster.spots.push(spot); assignedToCluster = true; break;
                     }
                 }
-                if (!assignedToCluster) {
-                    structuredClustersArray.push({ centerPx: screenPoint, leadLatLng: latLngObj, spots: [spot] });
-                }
+                if (!assignedToCluster) structuredClustersArray.push({ centerPx: screenPoint, leadLatLng: latLngObj, spots: [spot] });
             });
 
             structuredClustersArray.forEach(cluster => {
@@ -1662,7 +1119,7 @@
                         });
                     } else {
                         const clusterMarker = L.marker([cluster.leadLatLng.lat, cluster.leadLatLng.lng], { 
-                            icon: L.divIcon({ html: `<div class="cluster-map-cube">${clusterSize}</div>`, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) 
+                            icon: L.divIcon({ html: `<div class="cluster-map-cube">${clusterSize}</div>`, className: '', iconSize: [38, 38], iconAnchor: [19, 19] }) 
                         });
                         clusterMarker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
@@ -1677,23 +1134,22 @@
         function renderSingleMarkerElement(spot, latOffset, lonOffset) {
             const isStarred = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
             const isDone = (spot.status || "").toLowerCase().trim() === 'done';
-            let categoryIconClass = "fa-location-dot text-slate-400";
+            let iconClass = "fa-location-dot text-slate-400";
             const catStr = (spot.category || "").toLowerCase();
 
-            if(catStr.includes("photo")) categoryIconClass = "fa-camera-retro text-pink-500";
-            else if(catStr.includes("food")) categoryIconClass = "fa-utensils text-orange-500";
-            else if(catStr.includes("viewpoint")) categoryIconClass = "fa-binoculars text-sky-500";
-            else if(catStr.includes("nature")) categoryIconClass = "fa-leaf text-emerald-500";
-            else if(catStr.includes("culture")) categoryIconClass = "fa-landmark text-violet-500";
-            else if(catStr.includes("shop")) categoryIconClass = "fa-bag-shopping text-rose-500";
-            else if(catStr.includes("night")) categoryIconClass = "fa-martini-glass text-indigo-500";
+            if(catStr.includes("photo")) iconClass = "fa-camera text-pink-500";
+            else if(catStr.includes("food")) iconClass = "fa-utensils text-orange-500";
+            else if(catStr.includes("viewpoint")) iconClass = "fa-binoculars text-sky-500";
+            else if(catStr.includes("nature")) iconClass = "fa-leaf text-emerald-500";
+            else if(catStr.includes("culture")) iconClass = "fa-landmark text-violet-500";
+            else if(catStr.includes("shop")) iconClass = "fa-bag-shopping text-rose-500";
 
-            let baseThemeClasses = currentMapStyleKey === 'dark' ? "bg-slate-900 border-slate-700 shadow-black/60" : "bg-white border-slate-200 shadow-slate-300/60";
-            let stateClasses = isStarred ? "!border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.7)]" : "";
-            if (isDone) stateClasses += " opacity-40 grayscale";
+            let baseTheme = currentMapStyleKey === 'dark' ? "bg-slate-900 border-slate-700 text-slate-200" : "bg-white border-slate-200 text-slate-800";
+            let stateStyle = isStarred ? "!border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]" : "";
+            if (isDone) stateStyle += " opacity-40 grayscale";
 
             const leafMarker = L.marker([parseFloat(spot.latitude) + latOffset, parseFloat(spot.longitude) + lonOffset], { 
-                icon: L.divIcon({ html: `<div class="custom-map-cube shadow-lg ${baseThemeClasses} ${stateClasses}"><i class="fa-solid ${categoryIconClass}"></i></div>`, className: '', iconSize: [36, 36], iconAnchor: [18, 18] }) 
+                icon: L.divIcon({ html: `<div class="custom-map-cube shadow-md ${baseTheme} ${stateStyle}"><i class="fa-solid ${iconClass}"></i></div>`, className: '', iconSize: [34, 34], iconAnchor: [17, 17] }) 
             });
             leafMarker.on('click', (event) => { L.DomEvent.stopPropagation(event); revealMapItemDetailTrayHUD(spot, isStarred); });
             mapMarkersLayerGroup.addLayer(leafMarker);
@@ -1701,78 +1157,50 @@
 
         function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
             const tray = document.getElementById('mapDetailTrayHUD');
-            const blurBg = document.getElementById('dropdownBlurBackdrop');
-            const plusBtn = document.getElementById('globalFloatingActionPlusButton');
             tray.classList.remove('flipped');
             const isDone = (spotObj.status || "").toLowerCase().trim() === 'done';
             
-            if (plusBtn) plusBtn.classList.add('hidden');
-            if (blurBg) blurBg.classList.remove('hidden');
+            document.getElementById('globalFloatingActionPlusButton').classList.add('hidden');
 
             const titleWidget = document.getElementById('traySpotTitle');
             const notesWidget = document.getElementById('traySpotNotes');
-            titleWidget.innerText = spotObj.spot_name || "Unnamed Destination";
-            notesWidget.innerText = spotObj.notes || "No custom notes assigned.";
-            document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
+            titleWidget.innerText = spotObj.spot_name || "Unnamed Spot";
+            notesWidget.innerText = spotObj.notes || "No standard description notes recorded.";
+            document.getElementById('trayCityBadge').innerText = `${spotObj.city} • ${spotObj.category || 'General'}`;
 
-            if (isDone) {
-                titleWidget.className = "text-base font-black text-slate-500 line-through mt-2 truncate max-w-[220px]";
-                notesWidget.className = "text-xs text-slate-500 leading-relaxed overflow-y-auto max-h-[220px] line-through pr-1 select-none";
-            } else {
-                titleWidget.className = "text-base font-black text-slate-200 mt-2 truncate max-w-[220px]";
-                notesWidget.className = "text-xs text-slate-400 leading-relaxed overflow-y-auto max-h-[220px] pr-1 select-none";
-            }
+            titleWidget.className = isDone ? "text-base font-black text-slate-500 line-through mt-2 truncate max-w-[220px]" : "text-base font-black text-slate-200 mt-2 truncate max-w-[220px]";
+            notesWidget.className = isDone ? "text-xs text-slate-500 leading-relaxed overflow-y-auto max-h-[180px] line-through pr-1" : "text-xs text-slate-400 leading-relaxed overflow-y-auto max-h-[180px] pr-1";
             
-            const distHUD = document.getElementById('trayDistanceBadge');
-            distHUD.innerHTML = spotObj.distStr;
-            distHUD.className = spotObj.distStr.includes("Missing Location") ? "text-xs font-mono font-bold bg-amber-500/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-500/20 shrink-0 h-fit" : "text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400";
-
+            document.getElementById('trayDistanceBadge').innerHTML = spotObj.distStr;
             document.getElementById('trayOpenReferenceBtn').href = spotObj.instagram_url || "#";
-            const actionBtn = document.getElementById('trayActionBtn');
-            actionBtn.setAttribute('data-row-id', spotObj.rowid);
+            document.getElementById('trayActionBtn').setAttribute('data-row-id', spotObj.rowid);
             
-            const directMapsUrl = spotObj.maps_url ? String(spotObj.maps_url).trim() : "";
-            const rawLat = spotObj.latitude ? String(spotObj.latitude).trim() : "";
-            const rawLng = spotObj.longitude ? String(spotObj.longitude).trim() : "";
-            // Safely Closed String Delimiter to enforce validation execution loops
-            const hasValidMapDestination = (directMapsUrl !== "" && directMapsUrl !== "N/A") || (rawLat !== "" && rawLat !== "0" && rawLng !== "0");
-
-            if (!hasValidMapDestination) {
-                actionBtn.innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i>";
-                actionBtn.className = "px-6 bg-slate-950 border border-slate-800 text-amber-400 flex items-center justify-center rounded-xl text-sm font-black h-12 whitespace-nowrap";
-            } else {
-                actionBtn.innerHTML = "<i class='fa-solid fa-map mr-1.5 text-sm'></i> Directions";
-                actionBtn.className = "px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold h-12 whitespace-nowrap";
-            }
-
             const ticketRow = document.getElementById('trayTicketRow');
             if (spotObj.ticket_url && spotObj.ticket_url.trim() !== "") {
                 ticketRow.classList.remove('hidden'); document.getElementById('trayTicketBtn').href = spotObj.ticket_url;
             } else { ticketRow.classList.add('hidden'); }
 
             document.getElementById('trayStarredBadge').classList.toggle('hidden', !isStarredBool);
-            document.getElementById('trayDoneToggleBtn').innerHTML = isDone ? '<i class="fa-solid fa-arrow-rotate-left mr-1"></i> Undo' : '<i class="fa-solid fa-check mr-1"></i> Mark Done';
+            document.getElementById('trayDoneToggleBtn').innerHTML = isDone ? 'Undo Done' : 'Mark Done';
             document.getElementById('trayDoneToggleBtn').onclick = () => { updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name); dismissMapDetailTrayHUDCard(); };
-            document.getElementById('trayStarToggleBtn').innerHTML = isStarredBool ? '<i class="fa-solid fa-star-half-stroke mr-1"></i> Unstar' : '<i class="fa-solid fa-star mr-1"></i> Star';
             document.getElementById('trayStarToggleBtn').onclick = () => { updateCloudAction(spotObj.rowid, 'toggle_priority', isStarredBool ? 'Normal' : 'Starred', spotObj.spot_name); dismissMapDetailTrayHUDCard(); };
 
-            document.getElementById('trayBackLongDescription').innerText = (spotObj.long_description && spotObj.long_description !== "N/A") ? spotObj.long_description : "Background details unpopulated.";
+            document.getElementById('trayBackLongDescription').innerText = (spotObj.long_description && spotObj.long_description !== "N/A") ? spotObj.long_description : "Background log data unpopulated.";
             const hoursGrid = document.getElementById('trayBackHoursGrid'); hoursGrid.innerHTML = '';
             if (spotObj.opening_hours && spotObj.opening_hours !== "N/A") {
-                spotObj.opening_hours.split(/[\n;]+/).forEach(token => {
-                    const rowDiv = document.createElement('div'); rowDiv.className = "py-0.5 border-b border-slate-900/40 last:border-0"; rowDiv.innerText = token.trim(); hoursGrid.appendChild(rowDiv);
+                spotObj.opening_hours.split(/[\n;]+/).forEach(t => {
+                    const r = document.createElement('div'); r.className = "py-0.5 border-b border-slate-900/40 last:border-0"; r.innerText = t.trim(); hoursGrid.appendChild(r);
                 });
-            } else { hoursGrid.innerHTML = `<div class="text-slate-500 italic text-[10px] p-1">Schedule data unavailable.</div>`; }
+            } else { hoursGrid.innerHTML = `<div class="text-slate-500 italic text-[10px] p-1">Schedule unpopulated.</div>`; }
 
-            const bookingString = (spotObj.booking_requirement || "").trim();
-            document.getElementById('trayBackBookingWarningCard').classList.toggle('hidden', bookingString === "" || bookingString === "N/A" || bookingString.toLowerCase() === "none");
-            document.getElementById('trayBackBookingValueText').innerText = bookingString;
+            const bString = (spotObj.booking_requirement || "").trim();
+            document.getElementById('trayBackBookingWarningCard').classList.toggle('hidden', bString === "" || bString === "N/A" || bString.toLowerCase() === "none");
+            document.getElementById('trayBackBookingValueText').innerText = bString;
             tray.classList.remove('hidden');
         }
 
         function dismissMapDetailTrayHUDCard() {
             document.getElementById('mapDetailTrayHUD').classList.add('hidden');
-            document.getElementById('dropdownBlurBackdrop').classList.add('hidden');
             document.getElementById('globalFloatingActionPlusButton').classList.remove('hidden');
         }
 
@@ -1790,20 +1218,19 @@
             document.getElementById('vaultDensityHUDLabelCounter').innerText = `Showing ${processed.length} / ${travelSpots.length} Spots`;
             
             if(processed.length === 0) {
-                const errorDiv = document.createElement('div'); errorDiv.className = "dynamic-empty-node text-center text-slate-600 py-12 text-xs w-full block shrink-0"; errorDiv.innerText = "No entries loaded matching these profiles.";
+                const errorDiv = document.createElement('div'); errorDiv.className = "dynamic-empty-node text-center text-slate-600 py-12 text-xs w-full block shrink-0"; errorDiv.innerText = "No records matched this view.";
                 scrollContainerFrame.appendChild(errorDiv); return;
             }
 
             processed.forEach((spot, idx) => {
                 const isDone = (spot.status || "").toLowerCase().trim() === "done";
                 const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
-                const hasValidMapDestination = (spot.maps_url && spot.maps_url !== "N/A") || (spot.latitude && String(spot.latitude).trim() !== "0");
                 const uniqueCardContainerId = `list-flip-wrapper-node-${idx}`;
-                let hoursHTMLTokens = '';
+                let hoursTokens = '';
 
                 if(spot.opening_hours && spot.opening_hours !== "N/A") {
-                    spot.opening_hours.split(/[\n;]+/).forEach(t => hoursHTMLTokens += `<div class="border-b border-slate-950 last:border-0 py-0.5"><span>${t.trim()}</span></div>`);
-                } else { hoursHTMLTokens = `<div class="text-slate-600 italic text-[10px]">Schedule unpopulated.</div>`; }
+                    spot.opening_hours.split(/[\n;]+/).forEach(t => hoursTokens += `<div class="border-b border-slate-950 last:border-0 py-0.5"><span>${t.trim()}</span></div>`);
+                } else { hoursTokens = `<div class="text-slate-600 italic text-[10px]">No calendar info.</div>`; }
 
                 const cardWrapper = document.createElement('div'); cardWrapper.id = uniqueCardContainerId; cardWrapper.className = "dynamic-card-node w-full min-h-[260px] h-auto flip-perspective-container transform shrink-0 block";
                 cardWrapper.innerHTML = `
@@ -1815,49 +1242,51 @@
                                         <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
                                         <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
                                     </div>
-                                    <span id="dist-badge-${spot.rowid}" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 bg-pink-500/10 text-pink-400">${spot.distStr}</span>
+                                    <span id="dist-badge-${spot.rowid}" class="text-xs font-mono font-bold px-2 py-1 rounded-lg bg-pink-500/10 text-pink-400 shrink-0 h-fit">${spot.distStr}</span>
                                 </div>
                                 <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px]">
-                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto subtle-scrollbar" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
+                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto subtle-scrollbar" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No notes parameters recorded.'}</p>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-2 mt-3">
                                 <div class="flex gap-2">
                                     <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
-                                    <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap h-12 bg-slate-950 border border-slate-800 text-slate-300 flex-1">
-                                        <i class="fa-solid fa-map mr-1.5 text-sm"></i> Directions
-                                    </button>
+                                    <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold h-12 flex-1">Directions</button>
                                 </div>
                                 <div class="flex gap-2 mt-1 justify-end items-center">
                                     <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'forward')" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto"><i class="fa-solid fa-circle-info mr-1"></i> Extra Info</button>
-                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold">${isDone ? '<i class="fa-solid fa-arrow-rotate-left mr-1"></i> Undo' : '<i class="fa-solid fa-check mr-1"></i> Mark Done'}</button>
-                                    <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? '<i class="fa-solid fa-star-half-stroke mr-1"></i> Unstar' : '<i class="fa-solid fa-star mr-1"></i> Star'}</button>
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold">${isDone ? 'Undo' : 'Mark Done'}</button>
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400"><i class="fa-solid fa-star"></i></button>
                                 </div>
                             </div>
                         </div>
                         <div class="flip-card-back-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between overflow-hidden">
-                            <div class="flex border-b border-slate-800/60 pb-1.5 shrink-0 items-center justify-between"><span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Extra Info</span></div>
+                            <div class="flex border-b border-slate-800/60 pb-1.5 shrink-0 items-center justify-between"><span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Extra Info Logs</span></div>
                             <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 space-y-3 text-[11px]">
-                                <p class="text-slate-300 leading-relaxed font-medium bg-slate-950/50 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No background summary recorded.'}</p>
-                                <div><div class="bg-slate-950/50 p-2.5 rounded-xl font-mono text-[10px] text-slate-400">${hoursHTMLTokens}</div></div>
+                                <p class="text-slate-300 bg-slate-950/50 p-2.5 rounded-xl border border-slate-950 leading-relaxed">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No comprehensive summary logs configuration recorded.'}</p>
+                                <div><div class="bg-slate-950/50 p-2.5 rounded-xl font-mono text-[10px] text-slate-400">${hoursTokens}</div></div>
                             </div>
-                            <div class="flex gap-2 justify-end pt-2 border-t border-slate-950 shrink-0"><button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'backward')" class="text-slate-400 bg-slate-950 border border-slate-800 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide"><i class="fa-solid fa-arrow-left mr-1"></i> Back</button></div>
+                            <div class="flex gap-2 justify-end pt-2 border-t border-slate-950 shrink-0"><button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'backward')" class="text-slate-400 bg-slate-950 border border-slate-800 px-2.5 py-1.5 rounded-lg text-[11px] font-black"><i class="fa-solid fa-arrow-left mr-1"></i> Back</button></div>
                         </div>
                     </div>`;
                 scrollContainerFrame.appendChild(cardWrapper);
             });
-            const tail = document.createElement('div'); tail.className = "dynamic-tailpiece-node w-full py-4 flex items-center justify-center gap-4 block shrink-0"; tail.innerHTML = `<div class="flex-grow border-t border-slate-900 max-w-[40px]"></div><span class="text-[9px] font-bold tracking-widest uppercase text-slate-600">End of filtered list</span><div class="flex-grow border-t border-slate-900 max-w-[40px]"></div>`;
+
+            const tail = document.createElement('div'); tail.className = "dynamic-tailpiece-node w-full py-4 flex items-center justify-center gap-4 block shrink-0";
+            tail.innerHTML = `<div class="flex-grow border-t border-slate-900 max-w-[40px]"></div><span class="text-[9px] font-bold tracking-widest text-slate-600 uppercase">Vault Endpoint</span><div class="flex-grow border-t border-slate-900 max-w-[40px]"></div>`;
             scrollContainerFrame.appendChild(tail);
+
+            // Locked Fixed Terminal Spacer to guarantee scannability past hardware overlays
+            const layoutSpacer = document.createElement('div'); layoutSpacer.className = "dynamic-spacer-node h-36 shrink-0 block w-full";
+            scrollContainerFrame.appendChild(layoutSpacer);
         }
 
         async function updateCloudAction(rowId, action, value, spotName) {
             const target = travelSpots.find(s => s.rowid === rowId);
             if (target) {
-                if (action === 'update_status') target.status = value;
-                if (action === 'toggle_priority') target.priority = value;
+                if (action === 'update_status') target.status = value; if (action === 'toggle_priority') target.priority = value;
                 renderList(); plotDynamicMarkersOnCanvasMap();
             }
-            silentPassiveHardwareLocationPingRefresh();
             try {
                 await fetch(API_URL, {
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
@@ -1898,6 +1327,18 @@
         }
 
         function toggleQuickAddModal(show) { document.getElementById('quickAddModal').classList.toggle('hidden', !show); }
+        let formPriorityState = "Normal";
+        function toggleFormPriorityState() {
+            const btn = document.getElementById('form-priority-btn');
+            if(formPriorityState === "Normal") {
+                formPriorityState = "Starred"; btn.innerText = 'Starred';
+                btn.className = "px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500 text-amber-400 font-extrabold";
+            } else {
+                formPriorityState = "Normal"; btn.innerText = 'Normal';
+                btn.className = "px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold";
+            }
+        }
+
         async function submitNewSpotToCloud() {
             const keyword = document.getElementById('new-keyword').value; if(!keyword) return;
             try {
@@ -1909,8 +1350,29 @@
             } catch(e){}
         }
 
+        async function syncData(isManualForce) {
+            try {
+                const response = await fetch(API_URL); const cloudData = await response.json();
+                if(Array.isArray(cloudData)) {
+                    travelSpots = cloudData; localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
+                    calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
+                    updateNetworkStatusHUD();
+                }
+            } catch (e) { document.getElementById('syncText').innerText = "Offline Cache"; }
+        }
+
+        function toggleSettingsMenu(show) { document.getElementById('settingsDrawer').classList.toggle('hidden', !show); }
+        function setupNetworkListeners() { window.addEventListener('online', updateNetworkStatusHUD); window.addEventListener('offline', updateNetworkStatusHUD); }
+        function updateNetworkStatusHUD() {
+            const indicator = document.getElementById('networkIndicator'); const text = document.getElementById('syncText');
+            if (navigator.onLine) { indicator.className = "w-1.5 h-1.5 rounded-full bg-emerald-500"; text.innerText = "Synced Live Data"; text.className = "text-[9px] font-mono text-slate-500"; } 
+            else { indicator.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"; text.innerText = "OFFLINE MODE"; text.className = "text-[9px] font-mono text-amber-400 font-bold"; }
+        }
+        function clearDeviceSessionAndLogout() { localStorage.clear(); window.location.reload(); }
+        function commitProfileRename() {}
+
         /* =========================================================================
-           V5 ADVANCED ITINERARY WORKSPACE MODULE (STABLE CORE ARCHITECTURE)
+           V5.1 REFINED ITINERARY WORKSPACE (CLEAN INTERACTION MAPPING)
            ========================================================================= */
         
         function renderItineraryMasterDashboardWorkspace() {
@@ -1920,20 +1382,20 @@
 
             if (userRoutes.length === 0) {
                 rootNode.innerHTML = `
-                    <div class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-5 shadow-2xl mt-4">
-                        <div class="w-16 h-16 mx-auto rounded-2xl bg-pink-500/5 border border-pink-500/20 flex items-center justify-center text-3xl"><i class="fa-solid fa-calendar-plus text-pink-500"></i></div>
-                        <div class="space-y-1.5">
-                            <h4 class="text-sm font-black text-slate-200 uppercase tracking-widest">Itinerary Vault Empty</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed font-medium max-w-xs mx-auto">Build non-overlapping daily paths driven by historical unvisited spot rollovers and active confirmation windows.</p>
+                    <div class="w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-4 mt-4 shadow-2xl">
+                        <div class="w-14 h-14 mx-auto rounded-2xl bg-pink-500/5 border border-pink-500/20 flex items-center justify-center text-2xl text-pink-500"><i class="fa-solid fa-calendar-plus"></i></div>
+                        <div class="space-y-1">
+                            <h4 class="text-sm font-black text-slate-200 uppercase tracking-widest">Itinerary Workspace Empty</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">Generate multi-day schedules prioritizing historical task gaps and ticket anchors smoothly.</p>
                         </div>
-                        <button onclick="initializeNewItineraryCreationFlow()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 font-black text-xs uppercase tracking-wider rounded-xl text-white shadow-xl"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Create Your First Itinerary</button>
+                        <button onclick="initializeNewItineraryCreationFlow()" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 font-black text-xs uppercase tracking-wider rounded-xl text-white shadow-xl"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Create Your First Itinerary</button>
                     </div>`;
                 return;
             }
 
             const headerRow = document.createElement('div');
-            headerRow.className = "flex justify-between items-center pb-2 border-b border-slate-800 shrink-0 mt-2";
-            headerRow.innerHTML = `<div class="flex items-center gap-2"><i class="fa-solid fa-route text-pink-500 text-sm"></i><h3 class="text-xs font-black uppercase text-slate-300 tracking-wider">My Saved Routing Timelines</h3></div><button onclick="initializeNewItineraryCreationFlow()" class="px-2.5 py-1.5 bg-pink-500/10 border border-pink-500/20 text-pink-400 font-black uppercase text-[9px] rounded-lg tracking-wide"><i class="fa-solid fa-plus mr-0.5"></i> Add New</button>`;
+            headerRow.className = "flex justify-between items-center pb-2 border-b border-slate-800 mt-2";
+            headerRow.innerHTML = `<div class="flex items-center gap-2"><i class="fa-solid fa-route text-pink-500 text-sm"></i><h3 class="text-xs font-black uppercase text-slate-300 tracking-wider">Saved Routing Timelines</h3></div><button onclick="initializeNewItineraryCreationFlow()" class="px-2.5 py-1.5 bg-pink-500/10 border border-pink-500/20 text-pink-400 font-black uppercase text-[9px] rounded-lg tracking-wide"><i class="fa-solid fa-plus mr-0.5"></i> Add New</button>`;
             rootNode.appendChild(headerRow);
 
             userRoutes.sort((a,b) => new Date(a.target_date) - new Date(b.target_date)).forEach(itin => {
@@ -1957,6 +1419,7 @@
                     </div>`;
                 rootNode.appendChild(card);
             });
+            const bottomSpacer = document.createElement('div'); bottomSpacer.className = "h-24 w-full block shrink-0"; rootNode.appendChild(bottomSpacer);
         }
 
         function generateTimelineSummaryStepsHTML(itinObj) {
@@ -1969,7 +1432,7 @@
 
                 html += `
                     <div class="flex items-center justify-between gap-2 text-[11px] font-medium py-1 border-b border-slate-900 last:border-0">
-                        <div class="flex items-center gap-2 truncate max-w-[85%]">
+                        <div class="flex items-center gap-2 truncate max-w-[90%]">
                             <button onclick="toggleItineraryStepCompletionState('${itinObj.itinerary_id}', '${rowId}')" class="text-xs shrink-0">
                                 ${isStepDone ? '<i class="fa-solid fa-square-check text-pink-500"></i>' : '<i class="fa-regular fa-square text-slate-600"></i>'}
                             </button>
@@ -1978,7 +1441,7 @@
                         </div>
                     </div>`;
             });
-            return html || `<div class="text-slate-600 italic text-[10px] text-center p-1">No markers mapped.</div>`;
+            return html || `<div class="text-slate-600 italic text-[10px] text-center p-1">No sequence points assigned.</div>`;
         }
 
         function initializeNewItineraryCreationFlow() {
@@ -1996,31 +1459,23 @@
             evaluatePastUnfinishedRolloverContext();
         }
 
-        /* =========================================================================
-           V5 ADVANCED BACKEND CONTEXT PARSING (TICKET ANCHORS & ROLLOVERS ENGINE)
-           ========================================================================= */
-
         function detectTicketAnchorConstraint(spot) {
-            const payloadText = `${spot.notes || ''} ${spot.booking_requirement || ''} ${spot.long_description || ''}`.toLowerCase();
-            return (payloadText.includes("ticket") || payloadText.includes("booked") || payloadText.includes("reservation") || payloadText.includes("confirmed"));
+            const combinedText = `${spot.notes || ''} ${spot.booking_requirement || ''} ${spot.long_description || ''}`.toLowerCase();
+            return (combinedText.includes("ticket") || combinedText.includes("booked") || combinedText.includes("reservation") || combinedText.includes("confirmed"));
         }
 
         function inferTemporalAnchorSlotIndex(spot) {
-            const text = `${spot.notes || ''} ${spot.booking_requirement || ''} ${spot.long_description || ''}`.toLowerCase();
-            if (text.match(/(0[7-9]|1[0-1]):\d\d/) || text.includes("am") || text.includes("morning")) return 0; // Morning Slot
-            if (text.match(/(1[2-4]):\d\d/) || text.includes("lunch") || text.includes("midday") || text.includes("noon")) return 1; // Midday Slot
-            if (text.match(/(1[5-7]):\d\d/) || text.includes("afternoon") || text.includes("pm")) return 2; // Afternoon Slot
-            if (text.match(/(1[8-9]|2[0-3]):\d\d/) || text.includes("evening") || text.includes("dinner") || text.includes("night")) return 3; // Evening Slot
+            const combinedText = `${spot.notes || ''} ${spot.booking_requirement || ''} ${spot.long_description || ''}`.toLowerCase();
+            if (combinedText.match(/(0[7-9]|1[0-1]):\d\d/) || combinedText.includes("am") || combinedText.includes("morning")) return 0;
+            if (combinedText.match(/(1[2-4]):\d\d/) || combinedText.includes("lunch") || combinedText.includes("noon")) return 1;
+            if (combinedText.match(/(1[5-7]):\d\d/) || combinedText.includes("afternoon") || combinedText.includes("pm")) return 2;
+            if (combinedText.match(/(1[8-9]|2[0-3]):\d\d/) || combinedText.includes("evening") || combinedText.includes("dinner")) return 3;
             return null;
         }
 
         function evaluatePastUnfinishedRolloverContext() {
-            const city = document.getElementById('itinFormTargetCityDropdown').value;
-            if(!city) return;
-
-            // Retrospective Sweep loop isolation logic
-            let finishedRowIds = new Set();
-            let mappedRowIds = new Set();
+            const city = document.getElementById('itinFormTargetCityDropdown').value; if(!city) return;
+            let finishedRowIds = new Set(); let mappedRowIds = new Set();
             
             savedItineraries.filter(i => i.username === currentUser).forEach(itin => {
                 (itin.route_sequence || []).forEach(id => mappedRowIds.add(String(id)));
@@ -2032,24 +1487,19 @@
             const card = document.getElementById('itinWizardRolloverWarningCard');
             const triggerBtn = document.getElementById('itinWizardRolloverTriggerBtn');
             if (itinWizardRolloverActiveRowIds.length > 0) {
-                document.getElementById('itinWizardRolloverCardMessage').innerText = `Found ${itinWizardRolloverActiveRowIds.length} unfinished past day tasks.`;
+                document.getElementById('itinWizardRolloverCardMessage').innerText = `Found ${itinWizardRolloverActiveRowIds.length} unfinished past day items.`;
                 card.classList.remove('hidden');
                 triggerBtn.className = itinWizardRolloverToggleEnabled ? "px-2.5 py-1.5 bg-pink-600 text-white font-black text-[10px] rounded-lg" : "px-2.5 py-1.5 bg-slate-950 border border-slate-800 text-[10px] font-black text-slate-300 rounded-lg";
                 triggerBtn.innerText = itinWizardRolloverToggleEnabled ? "Prioritized" : "Prioritize";
-            } else {
-                card.classList.add('hidden');
-            }
+            } else { card.classList.add('hidden'); }
         }
 
-        function toggleRolloverPrioritizationState() {
-            itinWizardRolloverToggleEnabled = !itinWizardRolloverToggleEnabled;
-            evaluatePastUnfinishedRolloverContext();
-        }
+        function toggleRolloverPrioritizationState() { itinWizardRolloverToggleEnabled = !itinWizardRolloverToggleEnabled; evaluatePastUnfinishedRolloverContext(); }
 
         function triggerEngineClientSideItinerarySynthesis() {
             const targetCity = document.getElementById('itinFormTargetCityDropdown').value;
             const targetDate = document.getElementById('itinFormExecutionDateField').value;
-            const routeLabelName = document.getElementById('itinFormRouteLabelField').value || `${targetCity} Route Run`;
+            const routeLabelName = document.getElementById('itinFormRouteLabelField').value || `${targetCity} Route`;
 
             if(!targetDate) return;
             let pool = travelSpots.filter(spot => String(spot.city).trim().toLowerCase() === targetCity.toLowerCase());
@@ -2058,35 +1508,27 @@
             let finalGeneratedSequenceRowIds = new Array(itinWizardSequenceBlueprint.length).fill(null);
             let preAllocatedRows = [];
 
-            // PHASE 1: FIXED TICKET ANCHOR PRE-ALLOCATION
+            // PHASE 1: FIXED TIME/TICKET ANCHOR PRE-ALLOCATION LOOKUP
             pool.forEach(spot => {
                 if (detectTicketAnchorConstraint(spot)) {
                     const inferredIndex = inferTemporalAnchorSlotIndex(spot);
                     if (inferredIndex !== null && inferredIndex < finalGeneratedSequenceRowIds.length) {
-                        finalGeneratedSequenceRowIds[inferredIndex] = String(spot.rowid);
-                        preAllocatedRows.push(String(spot.rowid));
+                        finalGeneratedSequenceRowIds[inferredIndex] = String(spot.rowid); preAllocatedRows.push(String(spot.rowid));
                     }
                 }
             });
 
             let currentAnchorLat = userLat; let currentAnchorLon = userLon;
 
-            // PHASE 2: GREEDY GREEDY DISTANCE RESOLUTION TRACKING
+            // PHASE 2: GREEDY PROXIMITY GENERATOR STEP ROUTER
             itinWizardSequenceBlueprint.forEach((categoryKey, index) => {
                 if (finalGeneratedSequenceRowIds[index] !== null) {
                     const anchorSpot = travelSpots.find(s => String(s.rowid) === finalGeneratedSequenceRowIds[index]);
-                    if (anchorSpot && anchorSpot.latitude) {
-                        currentAnchorLat = parseFloat(anchorSpot.latitude); currentAnchorLon = parseFloat(anchorSpot.longitude);
-                    }
+                    if (anchorSpot && anchorSpot.latitude) { currentAnchorLat = parseFloat(anchorSpot.latitude); currentAnchorLon = parseFloat(anchorSpot.longitude); }
                     return; 
                 }
 
-                let candidates = pool.filter(spot => {
-                    const isUsed = finalGeneratedSequenceRowIds.includes(String(spot.rowid)) || preAllocatedRows.includes(String(spot.rowid));
-                    return !isUsed && (spot.category || "").toLowerCase().includes(categoryKey.toLowerCase());
-                });
-
-                if(candidates.length === 0) candidates = pool.filter(spot => !finalGeneratedSequenceRowIds.includes(String(spot.rowid)));
+                let candidates = pool.filter(spot => !finalGeneratedSequenceRowIds.includes(String(spot.rowid)) && !preAllocatedRows.includes(String(spot.rowid)));
                 if(candidates.length === 0) return;
 
                 let optimalSpot = null; let highestCalculatedScore = -999999;
@@ -2101,9 +1543,9 @@
                         distanceMultiplierKM = distanceKM > 0.05 ? (10 / distanceKM) : 200;
                     }
 
-                    const starScoreBonus = isStarred ? 25 : 0;
-                    const rolloverBonus = (isRolloverItem && itinWizardRolloverToggleEnabled) ? 150 : 0; // Premium weight boost
-                    const finalScore = starScoreBonus + rolloverBonus + distanceMultiplierKM;
+                    const starBonus = isStarred ? 25 : 0;
+                    const rolloverBonus = (isRolloverItem && itinWizardRolloverToggleEnabled) ? 150 : 0;
+                    const finalScore = starBonus + rolloverBonus + distanceMultiplierKM;
 
                     if(finalScore > highestCalculatedScore) { highestCalculatedScore = finalScore; optimalSpot = cand; }
                 });
@@ -2114,26 +1556,19 @@
                 }
             });
 
-            // Clean down empty rows
             const cleanRowIds = finalGeneratedSequenceRowIds.filter(id => id !== null);
-
-            itinWizardEngineDraftProposal = {
-                itinerary_id: "ITIN-" + Math.random().toString(36).substring(2, 7).toUpperCase(),
-                username: currentUser, name: routeLabelName, target_date: targetDate, route_sequence: cleanRowIds, completed_steps: []
-            };
+            itinWizardEngineDraftProposal = { itinerary_id: "ITIN-" + Math.random().toString(36).substring(2, 7).toUpperCase(), username: currentUser, name: routeLabelName, target_date: targetDate, route_sequence: cleanRowIds, completed_steps: [] };
 
             let previewSlotsDataPayload = [];
             cleanRowIds.forEach((rowId, idx) => {
                 const s = travelSpots.find(spot => String(spot.rowid) === rowId);
-                const latVal = parseFloat(s.latitude) || 0;
-                let dLabel = "Tracking Position";
+                const latVal = parseFloat(s.latitude) || 0; let dLabel = "Tracking Match";
                 if(latVal !== 0) {
                     const dist = calculateDistance(userLat, userLon, latVal, parseFloat(s.longitude));
                     dLabel = dist < 1 ? `${Math.round(dist * 1000)}m away` : `${dist.toFixed(1)}km away`;
                 }
-                previewSlotsDataPayload.push({ spot: s, distanceLabel: dLabel, categoryKey: itinWizardSequenceBlueprint[idx] || "General" });
+                previewSlotsDataPayload.push({ spot: s, distanceLabel: dLabel, categoryKey: s.category || "General" });
             });
-
             renderEngineProposedPreviewOverlayCard(previewSlotsDataPayload);
         }
 
@@ -2156,17 +1591,17 @@
 
             slotsArray.forEach((slot, index) => {
                 const spotObj = slot.spot; const isAnchor = detectTicketAnchorConstraint(spotObj);
-                let validationHTML = isAnchor ? `<span class="text-sky-400 font-bold"><i class="fa-solid fa-lock"></i> Fixed Ticket Anchor Locked</span>` : `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Valid Slot Path</span>`;
+                let validationHTML = isAnchor ? `<span class="text-sky-400 font-bold"><i class="fa-solid fa-lock text-[10px]"></i> Fixed Ticket Anchor Locked</span>` : `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> Valid Slot Path</span>`;
                 if((spotObj.opening_hours || "").toLowerCase() === "n/a" || !(spotObj.opening_hours)) {
-                    validationHTML = `<span class="text-amber-400 font-bold"><i class="fa-solid fa-circle-exclamation"></i> Unverified schedule</span>`;
+                    validationHTML = `<span class="text-amber-400 font-bold"><i class="fa-solid fa-circle-exclamation"></i> Unverified schedule availability</span>`;
                 }
 
                 const itemRow = document.createElement('div'); itemRow.className = "w-full bg-slate-950/60 border border-slate-850 p-3 rounded-xl space-y-1.5";
                 itemRow.innerHTML = `
-                    <div class="flex justify-between items-center border-b border-slate-900 pb-1"><span class="text-[10px] font-mono uppercase tracking-widest text-slate-500 font-black">${phases[index] || "Night Block"}</span><span class="px-1.5 py-0.5 rounded bg-slate-900 font-bold text-[9px] text-pink-400 font-mono">${slot.categoryKey}</span></div>
+                    <div class="flex justify-between items-center border-b border-slate-900 pb-1"><span class="text-[10px] font-mono uppercase text-slate-500 font-black">${phases[index] || "Capture Block"}</span><span class="px-1.5 py-0.5 rounded bg-slate-900 font-bold text-[9px] text-pink-400 font-mono">${slot.categoryKey}</span></div>
                     <div class="flex justify-between items-start gap-2">
                         <div><h5 class="font-black text-slate-200 text-xs">${spotObj.spot_name}</h5><p class="text-[10px] text-slate-500 font-mono mt-0.5">${slot.distanceLabel} • ${spotObj.city}</p></div>
-                        <button onclick="triggerInlineSwapEngineSlotModification(${index})" class="px-2 py-1 bg-slate-900 border border-slate-800 text-sky-400 rounded-md text-[9px] font-bold tracking-wide shrink-0">Swap</button>
+                        <button onclick="triggerInlineSwapEngineSlotModification(${index})" class="px-2 py-1 bg-slate-900 border border-slate-800 text-sky-400 rounded-md text-[9px] font-bold shrink-0">Swap</button>
                     </div>
                     <div class="text-[9px] font-mono leading-tight">${validationHTML}</div>`;
                 scroller.appendChild(itemRow);
@@ -2176,12 +1611,10 @@
 
         function triggerInlineSwapEngineSlotModification(indexTarget) {
             const targetCity = document.getElementById('itinFormTargetCityDropdown').value;
-            const categoryKey = itinWizardSequenceBlueprint[indexTarget] || "General";
             const exclusionsList = itinWizardEngineDraftProposal.route_sequence;
             let pool = travelSpots.filter(spot => String(spot.city).trim().toLowerCase() === targetCity.toLowerCase()); if(pool.length === 0) pool = travelSpots;
 
-            let alternatives = pool.filter(spot => !exclusionsList.includes(String(spot.rowid)) && (spot.category || "").toLowerCase().includes(categoryKey.toLowerCase()));
-            if(alternatives.length === 0) alternatives = pool.filter(spot => !exclusionsList.includes(String(spot.rowid)));
+            let alternatives = pool.filter(spot => !exclusionsList.includes(String(spot.rowid)));
             if(alternatives.length === 0) return;
 
             const newSpotSelected = alternatives[Math.floor(Math.random() * alternatives.length)];
@@ -2190,12 +1623,12 @@
             let updatedSlotsDataPayload = [];
             itinWizardEngineDraftProposal.route_sequence.forEach((rowId, idx) => {
                 const currentSpot = travelSpots.find(s => String(s.rowid) === String(rowId));
-                let dLabel = "Tracking Match";
+                let dLabel = "Tracking Position";
                 if(currentSpot.latitude) {
                     const dist = calculateDistance(userLat, userLon, parseFloat(currentSpot.latitude), parseFloat(currentSpot.longitude));
                     dLabel = dist < 1 ? `${Math.round(dist * 1000)}m away` : `${dist.toFixed(1)}km away`;
                 }
-                updatedSlotsDataPayload.push({ spot: currentSpot, distanceLabel: dLabel, categoryKey: itinWizardSequenceBlueprint[idx] || "General" });
+                updatedSlotsDataPayload.push({ spot: currentSpot, distanceLabel: dLabel, categoryKey: currentSpot.category || "General" });
             });
             renderEngineProposedPreviewOverlayCard(updatedSlotsDataPayload);
         }
@@ -2204,10 +1637,7 @@
             if(!itinWizardEngineDraftProposal) return;
             savedItineraries.push(itinWizardEngineDraftProposal);
             localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
-            
-            // Post Itinerary Event log payload metrics straight into the spreadsheet sheet logs
-            pushItineraryTransactionHistoryLogToCloud("CREATE_ITINERARY", itinWizardEngineDraftProposal.name, itinWizardEngineDraftProposal.target_date);
-
+            pushItineraryTransactionHistoryLogToCloud("CREATE", itinWizardEngineDraftProposal.name, itinWizardEngineDraftProposal.target_date);
             document.getElementById('itineraryPreviewScreenModalContainer').classList.add('hidden');
             toggleItineraryWizardModalTray(false); renderItineraryMasterDashboardWorkspace();
         }
@@ -2216,87 +1646,84 @@
             if (!newDateValue) return; const target = savedItineraries.find(i => i.itinerary_id === itineraryId);
             if(target) {
                 target.target_date = newDateValue; localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
-                pushItineraryTransactionHistoryLogToCloud("MUTATE_DATE", target.name, newDateValue);
+                pushItineraryTransactionHistoryLogToCloud("MUTATE", target.name, newDateValue);
                 renderItineraryMasterDashboardWorkspace();
             }
         }
 
         function cloneItinerarySessionDuplicate(itineraryId) {
             const source = savedItineraries.find(i => i.itinerary_id === itineraryId); if(!source) return;
-            const targetNameString = prompt("Enter custom label name target for duplicated asset:", `${source.name} (Copy)`); if (targetNameString === null) return;
-
+            const targetNameString = prompt("Enter naming description label asset row name:", `${source.name} (Copy)`); if (targetNameString === null) return;
             let clonePayload = JSON.parse(JSON.stringify(source));
             clonePayload.itinerary_id = "ITIN-" + Math.random().toString(36).substring(2, 7).toUpperCase();
             clonePayload.name = targetNameString || `${source.name} (Copy)`;
             savedItineraries.push(clonePayload); localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
-            
-            pushItineraryTransactionHistoryLogToCloud("CLONE_ITINERARY", clonePayload.name, clonePayload.target_date);
+            pushItineraryTransactionHistoryLogToCloud("CLONE", clonePayload.name, clonePayload.target_date);
             renderItineraryMasterDashboardWorkspace();
         }
 
         function toggleItineraryStepCompletionState(itineraryId, rowId) {
             const target = savedItineraries.find(i => i.itinerary_id === itineraryId); if(!target) return;
             if(!target.completed_steps) target.completed_steps = [];
-            
             const isCompleted = target.completed_steps.includes(String(rowId));
             target.completed_steps = isCompleted ? target.completed_steps.filter(id => id !== String(rowId)) : [...target.completed_steps, String(rowId)];
             localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
-            
-            pushItineraryTransactionHistoryLogToCloud(isCompleted ? "STEP_UNDO" : "STEP_COMPLETE", target.name, `RowID: ${rowId}`);
+            pushItineraryTransactionHistoryLogToCloud(isCompleted ? "UNDO_STEP" : "FINISH_STEP", target.name, `Row: ${rowId}`);
             renderItineraryMasterDashboardWorkspace();
         }
 
         function purgeItineraryItemTarget(itineraryId) {
             const target = savedItineraries.find(i => i.itinerary_id === itineraryId); if(!target) return;
-            if(confirm("Purge deletion sequence code on this active routing timeline map?")) {
+            if(confirm("Confirm secure database deletion of this entire route mapping?")) {
                 savedItineraries = savedItineraries.filter(i => i.itinerary_id !== itineraryId);
                 localStorage.setItem('compass_itineraries', JSON.stringify(savedItineraries));
-                pushItineraryTransactionHistoryLogToCloud("DELETE_ITINERARY", target.name, target.target_date);
+                pushItineraryTransactionHistoryLogToCloud("PURGE", target.name, target.target_date);
                 if(activeMapItineraryId === itineraryId) deactivateItineraryRouteMapView();
                 renderItineraryMasterDashboardWorkspace();
             }
         }
 
-        async function pushItineraryTransactionHistoryLogToCloud(actionType, titleContext, timelineStampStr) {
+        async function pushItineraryTransactionHistoryLogToCloud(type, label, timestamp) {
             try {
                 await fetch(API_URL, {
                     method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rowId: "ITIN-LOG", action: `ITIN_${actionType}`, value: `${titleContext} [${timelineStampStr}]`, spot: currentUser, deviceMeta: cachedHardwareString })
+                    body: JSON.stringify({ rowId: "ITIN-LOG", action: `ITIN_${type}`, value: `${label} [${timestamp}]`, spot: currentUser, deviceMeta: cachedHardwareString })
                 });
             } catch(e){}
         }
 
         function activateItineraryRouteMapView(itineraryId) {
             const target = savedItineraries.find(i => i.itinerary_id === itineraryId); if(!target) return;
-            activeMapItineraryId = itineraryId; switchMasterMenuDashboardTab('map');
+            activeMapItineraryId = itineraryId; 
+            switchMasterMenuDashboardTab('map');
+            
             document.getElementById('mapItineraryActiveBannerLabel').innerText = target.name;
             document.getElementById('mapItineraryActiveOverlayBanner').classList.remove('hidden');
             plotDynamicMarkersOnCanvasMap();
 
             if(itineraryMapPolylineRef && leafletMapInstance) leafletMapInstance.removeLayer(itineraryMapPolylineRef);
-            let coordinatePointsVectorList = [];
+            let vectors = [];
             target.route_sequence.forEach(rowId => {
                 const spot = travelSpots.find(s => String(s.rowid) === String(rowId));
-                if(spot && spot.latitude && String(spot.latitude).trim() !== "0") coordinatePointsVectorList.push([parseFloat(spot.latitude), parseFloat(spot.longitude)]);
+                if(spot && spot.latitude && String(spot.latitude).trim() !== "0") vectors.push([parseFloat(spot.latitude), parseFloat(spot.longitude)]);
             });
 
-            if (coordinatePointsVectorList.length >= 2 && leafletMapInstance) {
-                itineraryMapPolylineRef = L.polyline(coordinatePointsVectorList, { color: '#ec4899', weight: 4, opacity: 0.85, dashArray: '8, 8', lineJoin: 'round' }).addTo(leafletMapInstance);
-                leafletMapInstance.fitBounds(L.latLngBounds(coordinatePointsVectorList), { padding: [60, 60], animate: true });
+            if (vectors.length >= 2 && leafletMapInstance) {
+                itineraryMapPolylineRef = L.polyline(vectors, { color: '#ec4899', weight: 4, opacity: 0.85, dashArray: '6, 6', lineJoin: 'round' }).addTo(leafletMapInstance);
+                leafletMapInstance.fitBounds(L.latLngBounds(vectors), { padding: [50, 50], animate: true });
             }
         }
 
         function deactivateItineraryRouteMapView() {
-            activeMapItineraryId = null; document.getElementById('mapItineraryActiveOverlayBanner').classList.add('hidden');
+            activeMapItineraryId = null; 
+            document.getElementById('mapItineraryActiveOverlayBanner').classList.add('hidden');
             if(itineraryMapPolylineRef && leafletMapInstance) { leafletMapInstance.removeLayer(itineraryMapPolylineRef); itineraryMapPolylineRef = null; }
             plotDynamicMarkersOnCanvasMap();
         }
 
         function toggleItineraryWizardModalTray(show) { document.getElementById('itineraryWizardModalContainer').classList.toggle('hidden', !show); document.getElementById('dropdownBlurBackdrop').classList.toggle('hidden', !show); }
-        function setItineraryWizardPaceConfiguration(modeKey) { itinWizardPaceMode = modeKey; document.getElementById('itinPaceBtn-max').className = modeKey === 'max' ? "py-2.5 text-center font-black rounded-lg text-pink-400 bg-pink-500/10" : "py-2.5 text-center font-black rounded-lg text-slate-500"; document.getElementById('itinPaceBtn-relaxed').className = modeKey === 'relaxed' ? "py-2.5 text-center font-black rounded-lg text-pink-400 bg-pink-500/10" : "py-2.5 text-center font-black rounded-lg text-slate-500"; itinWizardSequenceBlueprint = modeKey === 'max' ? ["Food", "Culture", "Nature", "Food"] : ["Food", "Viewpoint"]; rebuildWizardCategoryPillsHUDDeck(); }
-        function rebuildWizardCategoryPillsHUDDeck() { const pillsBucket = document.getElementById('itinWizardCategoryPillsBucket'); pillsBucket.innerHTML = ""; ["Food", "Culture", "Nature", "Viewpoint", "Photo", "Shopping", "Relax"].forEach(cat => { const pill = document.createElement('button'); pill.className = "px-2.5 py-1 bg-slate-950 border border-slate-800 text-slate-400 rounded-full text-[10px] font-bold"; pill.innerText = `+ ${cat}`; pill.onclick = () => { if (itinWizardSequenceBlueprint.length >= 4) return; itinWizardSequenceBlueprint.push(cat); syncWizardSequenceBlueprintQueueUI(); }; pillsBucket.appendChild(pill); }); syncWizardSequenceBlueprintQueueUI(); }
-        function syncWizardSequenceBlueprintQueueUI() { const queueHUD = document.getElementById('itinWizardSequenceQueueHUD'); queueHUD.innerHTML = ""; if(itinWizardSequenceBlueprint.length === 0) { queueHUD.innerHTML = `<span class="italic text-slate-600">Select blocks above to design layout...</span>`; return; } itinWizardSequenceBlueprint.forEach((token, index) => { const badge = document.createElement('span'); badge.className = "px-2 py-1 bg-pink-500/10 border border-pink-500/20 text-pink-400 rounded-lg font-black flex items-center gap-1.5 text-[10px]"; badge.innerHTML = `<span>${index+1}. ${token}</span><i class="fa-solid fa-circle-xmark text-pink-600 cursor-pointer text-xs" onclick="removeTokenFromWizardBlueprint(${index}); event.stopPropagation();"></i>`; queueHUD.appendChild(badge); }); }
-        function removeTokenFromWizardBlueprint(indexTarget) { itinWizardSequenceBlueprint.splice(indexTarget, 1); syncWizardSequenceBlueprintQueueUI(); }
+        function setItineraryWizardPaceConfiguration(modeKey) { itinWizardPaceMode = modeKey; document.getElementById('itinPaceBtn-max').className = modeKey === 'max' ? "py-2.5 text-center font-black rounded-lg text-pink-400 bg-pink-500/10" : "py-2.5 text-center font-black rounded-lg text-slate-500"; document.getElementById('itinPaceBtn-relaxed').className = modeKey === 'relaxed' ? "py-2.5 text-center font-black rounded-lg text-pink-400 bg-pink-500/10" : "py-2.5 text-center font-black rounded-lg text-slate-500"; itinWizardSequenceBlueprint = modeKey === 'max' ? ["Morning", "Midday", "Afternoon", "Evening"] : ["Morning", "Afternoon"]; }
+        function updateGpsHudStatus(state, msg) { const btn = document.getElementById('gpsBadgeButton'); const dot = document.getElementById('gpsDotSignal'); const text = document.getElementById('gpsBadgeText'); if(!btn) return; if(state==='active'){ btn.className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer relative z-[60]"; dot.className="w-1.5 h-1.5 rounded-full bg-emerald-400"; text.innerText=msg; }else if(state==='syncing'){ btn.className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer relative z-[60]"; dot.className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce"; text.innerText=msg; }else{ btn.className="px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-rose-500/5 border-rose-500/20 text-rose-400 cursor-pointer relative z-[60]"; dot.className="w-1.5 h-1.5 rounded-full bg-rose-500"; text.innerText=msg; } }
     </script>
 </body>
 </html>
