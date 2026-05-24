@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.6.5</title>
+    <title>Save2Go V3.7.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -21,20 +21,17 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
         
-        /* FORCED VISIBLE SUBTLE SCROLLBAR MATRIX */
         .subtle-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; display: block !important; }
         .subtle-scrollbar::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); border-radius: 10px; }
         .subtle-scrollbar::-webkit-scrollbar-thumb { background: rgba(236, 72, 153, 0.3); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
         .subtle-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(236, 72, 153, 0.5); }
 
-        /* HARDWARE ACCELERATED TILE RENDERING FIXES */
         .leaflet-tile-container {
             will-change: transform;
             transform-style: preserve-3d;
             -webkit-transform-style: preserve-3d;
         }
 
-        /* MASTER VIEWPORT PANEL SWITCHERS */
         .view-panel {
             position: absolute;
             top: 116px; 
@@ -53,7 +50,6 @@
             pointer-events: auto;
         }
 
-        /* ISOLATED 3D CSS CARD REVOLUTION TRANSFORM MATRIX */
         .flip-perspective-container {
             perspective: 1200px;
             -webkit-perspective: 1200px;
@@ -85,7 +81,6 @@
             position: absolute;
         }
 
-        /* CUSTOM CONTROLS PACK */
         .custom-map-cube {
             background: rgba(15, 23, 42, 0.95) !important;
             backdrop-filter: blur(8px);
@@ -280,7 +275,7 @@
                                 <h3 id="traySpotTitle" class="text-base font-black text-slate-200 mt-2 truncate max-w-[220px]">Spot Name</h3>
                             </div>
                             <div class="flex items-center gap-1.5 shrink-0">
-                                <span id="trayDistanceBadge" class="text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">0m</span>
+                                <span id="trayDistanceBadge" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400">0m</span>
                                 <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">✕</button>
                             </div>
                         </div>
@@ -343,8 +338,8 @@
 
         <div id="view-list" class="view-panel w-full h-full bg-slate-950 flex flex-col">
             <div id="gesture-touch-container" class="flex-1 overflow-y-auto subtle-scrollbar relative w-full h-full">
-                <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-bold text-slate-600 transition-all duration-200 bg-slate-950">
-                    <span class="animate-pulse">⬇️ Pull to check database streams...</span>
+                <div id="pullToRefreshIndicatorHUD" class="w-full h-0 overflow-hidden flex items-center justify-center text-[11px] font-black tracking-wider text-slate-600 transition-all duration-200 bg-slate-950">
+                    <span class="animate-pulse">Refresh...</span>
                 </div>
                 
                 <div class="px-4 pt-4 shrink-0">
@@ -484,7 +479,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.6.5";
+        const APP_VERSION = "v3.7.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -773,7 +768,7 @@
                     const checkState = () => {
                         if (status.state === 'denied') { 
                             gpsStatusCachedBool = false; 
- updateGpsHudStatus('off', "GPS Off"); 
+                            updateGpsHudStatus('off', "GPS Off"); 
                         } else if (status.state === 'granted') {
                             startLiveHardwareGPSTracking();
                         }
@@ -797,8 +792,9 @@
 
             GESTURE_CONTAINER.addEventListener('touchend', () => {
                 if (!isPulling) return; isPulling = false;
-                const currentHeight = parseInt(PULL_INDICATOR.style.height || 0); PULL_INDICATOR.style.height = '0px';
-                if (currentHeight >= 40) { syncData(true); }
+                // EXPLICIT SPRING RECOIL STATE CONSTRAINED DIRECTLY
+                PULL_INDICATOR.style.height = '0px';
+                syncData(true);
             }, { passive: true });
         }
 
@@ -911,10 +907,9 @@
             }, 2000);
         }
 
-        // TAB NAVIGATION HOOK (FORCES MAP CONTEXT TRAYS CLOSED IMMEDIATELY)
         function switchMasterMenuDashboardTab(targetTabID) {
             killLiveSpeechBubbleHUDState();
-            dismissMapDetailTrayHUDCard(); // FORCE SHUTS THE POPUP TRAY CANVAS OVERLAY ON WINDOW TRANSITIONS
+            dismissMapDetailTrayHUDCard();
 
             if(targetTabID === activeTabID) return;
             
@@ -1395,10 +1390,11 @@
             const distHUD = document.getElementById('trayDistanceBadge');
             distHUD.innerText = spotObj.distStr;
             
+            // DYNAMIC CLASSIFICATION UPDATES MATCHING THE UNIFIED SYSTEM STYLE SPEC
             if(spotObj.distStr === "Missing Location") {
-                distHUD.className = "text-xs font-mono font-bold bg-amber-500/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-500/20";
+                distHUD.className = "text-xs font-mono font-bold bg-amber-500/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-500/20 shrink-0 h-fit";
             } else {
-                distHUD.className = "text-xs font-mono font-bold bg-slate-950 px-2 py-1 rounded-lg border border-slate-800";
+                distHUD.className = "text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400";
             }
 
             document.getElementById('trayOpenReferenceBtn').href = spotObj.instagram_url || "#";
@@ -1429,7 +1425,6 @@
             const doneBtn = document.getElementById('trayDoneToggleBtn');
             const starBtn = document.getElementById('trayStarToggleBtn');
 
-            // REBRANDED LABELS
             doneBtn.innerText = isDone ? '↩ Undo' : '✓ Mark Done';
             doneBtn.onclick = function() {
                 updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
@@ -1584,7 +1579,7 @@
                 container.appendChild(cardWrapper);
             });
 
-            // "END OF LIST" SYSTEM CUE HOUSING BADGE (Replaces the fake card framework)
+            // FIXED TAILPIECE APPEND CONTEXT (Bypasses parent collection interrupts perfectly)
             const tailEndLabelDeckNode = document.createElement('div');
             tailEndLabelDeckNode.className = "w-full pt-4 pb-14 flex items-center justify-center shrink-0 block";
             tailEndLabelDeckNode.innerHTML = `
