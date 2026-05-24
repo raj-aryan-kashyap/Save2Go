@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V3.9.10</title>
+    <title>Save2Go V3.9.11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -329,7 +329,7 @@
                         
                         <div class="flex gap-2 justify-end pt-3 border-t border-slate-800/60 mt-1 items-center shrink-0">
                             <button id="trayFlipToFrontBtn" class="text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-slate-900">
-                                <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Back
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Back
                             </button>
                         </div>
                     </div>
@@ -381,7 +381,10 @@
     <div id="quickAddModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-end hidden transition-all duration-300">
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar shadow-2xl relative">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800">
-                <h3 class="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">🚀 Add New Spot to Vault</h3>
+                <h3 class="text-base font-black flex items-center gap-2">
+                    <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] rotate-12 transform origin-bottom-left"></i>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">Add New Spot</span>
+                </h3>
                 <button onclick="toggleQuickAddModal(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
@@ -482,7 +485,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "v3.9.10";
+        const APP_VERSION = "v3.9.11";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -908,7 +911,8 @@
             processed.forEach(spot => {
                 const distHUD = document.getElementById(`dist-badge-${spot.rowid}`);
                 if (distHUD) {
-                    distHUD.innerText = spot.distStr;
+                    // CRITICAL: Must use innerHTML here now that we are rendering the Font Awesome pin inside the JS string
+                    distHUD.innerHTML = spot.distStr;
                     
                     const latVal = spot.latitude ? String(spot.latitude).trim() : "";
                     const hasCoordinates = latVal !== "" && latVal !== "0";
@@ -1373,7 +1377,8 @@
                 const lngStr = spot.longitude ? String(spot.longitude).trim() : "";
                 const hasLatLon = latStr !== "" && latStr !== "0" && lngStr !== "" && lngStr !== "0";
                 
-                let distanceOutputLabel = !hasLatLon ? "Missing Location" : (!gpsStatusCachedBool ? "🛰️ GPS Off" : "");
+                // CRITICAL: Font Awesome upgrade inside Javascript Engine
+                let distanceOutputLabel = !hasLatLon ? "Missing Location" : (!gpsStatusCachedBool ? "<i class='fa-solid fa-location-dot mr-1'></i>GPS Off" : "");
                 let rawDistanceValue = 99999;
                 let stableDistanceZoneBucket = 4; 
 
@@ -1553,9 +1558,11 @@
             }
             
             const distHUD = document.getElementById('trayDistanceBadge');
-            distHUD.innerText = spotObj.distStr;
             
-            if(spotObj.distStr === "Missing Location") {
+            // CRITICAL: Safe injection via innerHTML to allow vector Font Awesome icons
+            distHUD.innerHTML = spotObj.distStr;
+            
+            if(spotObj.distStr.includes("Missing Location")) {
                 distHUD.className = "text-xs font-mono font-bold bg-amber-500/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-500/20 shrink-0 h-fit";
             } else {
                 distHUD.className = "text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400";
@@ -1755,7 +1762,7 @@
                             </div>
                             <div class="flex gap-2 justify-end pt-2 border-t border-slate-950 shrink-0 items-center">
                                 <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'backward')" class="text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-slate-900">
-                                    <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Back
+                                    <i class="fa-solid fa-arrow-left mr-1"></i> Back
                                 </button>
                             </div>
                         </div>
