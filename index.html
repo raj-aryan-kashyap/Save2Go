@@ -2774,29 +2774,35 @@
                 card.className = "w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden shrink-0";
                 
                 card.innerHTML = `
-                    <div class="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-pink-500 to-purple-600 opacity-80"></div>
-                    <div class="flex justify-between items-start gap-2 pl-1">
-                        <div class="max-w-[75%]">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="bg-slate-950 px-2 py-0.5 rounded text-[9px] uppercase font-black tracking-wider text-slate-400 border border-slate-850">Stop #${renderedIdx + 1} • ${spot.category || 'General'}</span>
-                                ${isHigh ? '<span class="text-[9px] font-black text-amber-400"><i class="fa-solid fa-star"></i></span>' : ''}
-                            </div>
-                            <h3 class="text-sm font-bold mt-2 truncate ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'}">${spot.spot_name || 'Unnamed'}</h3>
-                            <p class="text-[10px] text-slate-400 mt-0.5 font-medium"><i class="fa-solid fa-city opacity-40 mr-1"></i>${spot.city || 'Global Bound'}</p>
-                        </div>
-                        <button onclick="removeSpotFromItineraryDay(${spot.rowid})" class="text-slate-500 hover:text-rose-400 text-xs p-1 transition-colors"><i class="fa-solid fa-circle-minus"></i></button>
-                    </div>
+                    <div class="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-pink-500 to-purple-600 opacity-80 rounded-l-2xl"></div>
                     
-                    ${spot.notes ? `
-                    <div class="mt-2.5 bg-slate-950/40 p-2 rounded-xl border border-slate-900/60 ml-1">
-                        <p class="text-[11px] leading-relaxed ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} pr-1 line-clamp-2">${spot.notes}</p>
-                    </div>` : ''}
+                    <div class="flex items-start gap-3 w-full">
+                        <div class="flex flex-col items-center justify-start shrink-0 w-8 pt-1 pl-1">
+                            <button onclick="toggleActivityDoneState(${renderedIdx}, ${item.seqIdx})" class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${spot.isDone ? 'bg-pink-600 border-pink-600 text-white shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'border-slate-600 text-transparent hover:border-pink-500'}">
+                                <i class="fa-solid fa-check text-[12px]"></i>
+                            </button>
+                        </div>
 
-                    <div class="flex gap-2 mt-3 pl-1 justify-end items-center">
-                        <a href="${spot.instagram_url || '#'}" target="_blank" class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-300 active:bg-slate-900">Reference</a>
-                        <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/20 text-pink-400 rounded-lg text-[10px] font-black tracking-wide flex items-center gap-1">
-                            <i class="fa-solid fa-map text-[9px]"></i> Route Map
-                        </button>
+                        <div class="flex-1 min-w-0 pl-1">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex flex-col min-w-0">
+                                    <span class="text-[9px] font-mono font-bold text-pink-400 bg-pink-500/10 px-1.5 py-0.5 rounded w-fit mb-1 border border-pink-500/20 shadow-inner">${formatMinutesToTime(spot.sch_start)} - ${formatMinutesToTime(spot.sch_end)}</span>
+                                    <h3 class="text-[13px] font-black truncate text-slate-200 ${spot.isDone ? 'itin-done-text' : ''}">${spot.spot_name}</h3>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">${spot.category} ${spot.isAnchored ? '<span class="text-amber-400 ml-1"><i class="fa-solid fa-lock"></i> Fixed</span>' : ''}</p>
+                                </div>
+                                <button onclick="removeActivityFromTimeline(${renderedIdx}, ${item.seqIdx})" class="w-6 h-6 flex items-center justify-center bg-red-950/20 text-red-500 rounded-full shrink-0 text-xs hover:bg-red-900/60"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+
+                            ${spot.notes ? `
+                            <div class="mt-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60">
+                                <p class="text-[10px] leading-relaxed font-medium text-slate-400 line-clamp-2 ${spot.isDone ? 'itin-done-text' : ''}">${spot.notes}</p>
+                            </div>` : ''}
+
+                            <div class="flex gap-2 mt-3 justify-end items-center">
+                                <a href="${spot.instagram_url || '#'}" target="_blank" class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-300 active:bg-slate-900 ${spot.isDone ? 'opacity-50' : ''}">Reference</a>
+                                <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/20 text-pink-400 rounded-lg text-[10px] font-black tracking-wide active:bg-pink-600/20 ${spot.isDone ? 'opacity-50' : ''}"><i class="fa-solid fa-map mr-1"></i> Directions</button>
+                            </div>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
