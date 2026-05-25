@@ -2898,6 +2898,12 @@
                 `;
                 masterList.appendChild(card);
             });
+
+            // ADD FOOTER
+            masterList.innerHTML += `
+                <div class="text-center py-8 text-[10px] font-black text-slate-600 uppercase tracking-widest opacity-60 border-t border-slate-800/50 mt-4">
+                    End of Filtered Itinerary List
+                </div>`;
         }
 
         function openItineraryDetailView(itinId) {
@@ -2974,6 +2980,12 @@
                 `;
                 container.appendChild(card);
             });
+
+            // ADD FOOTER
+            container.innerHTML += `
+                <div class="text-center py-8 text-[10px] font-black text-slate-600 uppercase tracking-widest opacity-60 border-t border-slate-800/50 mt-4">
+                    End of Selected Day Itinerary List
+                </div>`;
         }
 
         // =====================================================================
