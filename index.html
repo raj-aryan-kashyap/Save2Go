@@ -592,7 +592,7 @@
                     <div id="itinModalSequenceQueryRowBox" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 min-h-[80px] flex gap-1.5 items-center flex-wrap subtle-scrollbar shadow-inner items-start content-start"></div>
                 </div>
 
-                <button id="buildItinerarySubmitBtn" onclick="generateIntelligentItinerary()" class="w-full mt-2 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg shadow-pink-600/20 text-xs uppercase tracking-wider active:scale-95 transition-transform opacity-50 pointer-events-none">
+                <button id="buildItinerarySubmitBtn" onclick="generateIntelligentItinerary()" class="w-full mt-2 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg shadow-pink-600/20 text-xs uppercase tracking-wider active:scale-95 transition-transform opacity-50 grayscale">
                     <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Build Itinerary
                 </button>
             </div>
@@ -615,6 +615,19 @@
             <button onclick="closeMultiDatePickerModal()" class="w-full mt-auto bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-xs uppercase tracking-wider">
                 Confirm Selection
             </button>
+        </div>
+    </div>
+    <div id="buildingItineraryLoaderPopup" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[99999] flex flex-col items-center justify-center hidden transition-all duration-300">
+        <div class="flex flex-col items-center justify-center space-y-6">
+            <div class="relative w-20 h-20 flex items-center justify-center">
+                <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-pink-500 rounded-full border-t-transparent animate-spin"></div>
+                <i class="fa-solid fa-wand-magic-sparkles text-2xl text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500"></i>
+            </div>
+            <div class="text-center space-y-2">
+                <h3 class="text-lg font-black uppercase tracking-widest text-slate-200">Building Itinerary</h3>
+                <p class="text-xs font-bold text-slate-500">Running spatial matrix engine...</p>
+            </div>
         </div>
     </div>
 
@@ -2841,96 +2854,138 @@
             return CATEGORY_DEFAULTS['default'];
         }
 
+        function showFormErrorSpeechBubble(missingFieldsArray) {
+            const bubble = document.getElementById('globalToastSpeechBubbleHUD');
+            const textNode = document.getElementById('speechBubbleTextContainer');
+            const btn = document.getElementById('buildItinerarySubmitBtn');
+            
+            // 1. Format the missing items into a clean, readable list
+            let msg = "<span class='text-pink-400'>Missing Information:</span><br><div class='text-left mt-1 space-y-0.5 ml-2 text-[10px]'>";
+            missingFieldsArray.forEach(field => msg += `<div><i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i> ${field}</div>`);
+            msg += "</div>";
+            
+            textNode.innerHTML = msg;
+            
+            // 2. Position the bubble perfectly above the button
+            const rect = btn.getBoundingClientRect();
+            bubble.style.left = "50%";
+            bubble.style.transform = "translateX(-50%)";
+            bubble.style.bottom = (window.innerHeight - rect.top + 15) + "px";
+            bubble.style.top = "auto";
+            
+            // 3. Show it, then hide it after 4 seconds
+            bubble.classList.remove('hidden');
+            setTimeout(() => bubble.classList.add('hidden'), 4000);
+        }
+
         function generateIntelligentItinerary() {
-            const title = document.getElementById('itin-new-name').value || `Trip to ${document.getElementById('itin-new-city').value}`;
+            const title = document.getElementById('itin-new-name').value.trim();
             const chosenCity = document.getElementById('itin-new-city').value;
             const startMins = parseTimeToMinutes(document.getElementById('itin-new-start').value || "09:00");
             const endMins = parseTimeToMinutes(document.getElementById('itin-new-end').value || "21:00");
 
-            if (!chosenCity || selectedMultiDatesArray.length === 0 || itinSelectedCategorySequence.length === 0) {
-                alert("Please ensure City, Dates, and Categories are filled out."); return;
+            // --- UX CHECK: Collect missing fields ---
+            let missing = [];
+            if (!title) missing.push("Itinerary Name");
+            if (!chosenCity) missing.push("City Selection");
+            if (selectedMultiDatesArray.length === 0) missing.push("Travel Dates");
+            if (itinSelectedCategorySequence.length === 0) missing.push("Category Sequence");
+
+            // If anything is missing, trigger the bubble and stop the engine
+            if (missing.length > 0) {
+                showFormErrorSpeechBubble(missing);
+                return; 
             }
 
-            const bufferMins = itinPacingMode === 'max' ? 15 : 45;
+            // --- SUCCESS: Trigger the beautiful loading screen ---
+            document.getElementById('buildingItineraryLoaderPopup').classList.remove('hidden');
             
-            let availablePool = travelSpots.filter(s => s.city === chosenCity).map(s => {
-                const logic = getCategoryLogic(s.category);
-                const anchoredMins = detectAnchoredTime(s.booking_requirement);
-                return { 
-                    ...s, 
-                    isAnchored: anchoredMins !== null, anchoredTime: anchoredMins,
-                    logicDur: itinPacingMode === 'max' ? logic.durationMax : logic.durationRelaxed,
-                    logicOpen: logic.open * 60, logicClose: logic.close * 60
-                };
-            });
+            // Run the heavy math on a slight delay so the UI loader has time to appear gracefully
+            setTimeout(() => {
+                const bufferMins = itinPacingMode === 'max' ? 15 : 45;
+                
+                let availablePool = travelSpots.filter(s => s.city === chosenCity).map(s => {
+                    const logic = getCategoryLogic(s.category);
+                    const anchoredMins = detectAnchoredTime(s.booking_requirement);
+                    return { 
+                        ...s, 
+                        isAnchored: anchoredMins !== null, anchoredTime: anchoredMins,
+                        logicDur: itinPacingMode === 'max' ? logic.durationMax : logic.durationRelaxed,
+                        logicOpen: logic.open * 60, logicClose: logic.close * 60
+                    };
+                });
 
-            let newItinerary = { id: Date.now().toString(), title: title, city: chosenCity, days: [] };
-            let usedSpotIds = new Set();
-            let sequenceIndex = 0;
+                let newItinerary = { id: Date.now().toString(), title: title, city: chosenCity, days: [] };
+                let usedSpotIds = new Set();
+                let sequenceIndex = 0;
 
-            selectedMultiDatesArray.sort().forEach(dateStr => {
-                let dailyTimeline = [];
-                let currentTime = startMins;
-                let lastCoords = null;
-                let sequenceAttempts = 0;
-                let maxAttempts = itinSelectedCategorySequence.length * 3; 
+                selectedMultiDatesArray.sort().forEach(dateStr => {
+                    let dailyTimeline = [];
+                    let currentTime = startMins;
+                    let lastCoords = null;
+                    let sequenceAttempts = 0;
+                    let maxAttempts = itinSelectedCategorySequence.length * 3; 
 
-                while (currentTime < endMins && sequenceAttempts < maxAttempts) {
-                    const targetCategory = itinSelectedCategorySequence[sequenceIndex];
-                    
-                    let candidates = availablePool.filter(spot => {
-                        if (usedSpotIds.has(spot.rowid)) return false;
-                        if (!(spot.category || "").toLowerCase().includes(targetCategory.toLowerCase())) return false;
-                        let fitsHours = (currentTime >= spot.logicOpen) && (currentTime + spot.logicDur <= spot.logicClose);
-                        if (spot.isAnchored) {
-                            if (spot.anchoredTime < currentTime) return false; 
-                            return true; 
-                        }
-                        return fitsHours; 
-                    });
-
-                    if (candidates.length > 0) {
-                        candidates.sort((a, b) => {
-                            let scoreA = 0; let scoreB = 0;
-                            scoreA += ['high','🔥','must do','starred'].includes((a.priority || "").toLowerCase()) ? -100 : 0;
-                            scoreB += ['high','🔥','must do','starred'].includes((b.priority || "").toLowerCase()) ? -100 : 0;
-                            if(a.isAnchored) scoreA -= 200; if(b.isAnchored) scoreB -= 200;
-
-                            if (lastCoords && a.latitude && a.longitude && b.latitude && b.longitude) {
-                                scoreA += (calculateDistance(lastCoords.lat, lastCoords.lon, a.latitude, a.longitude) * 5);
-                                scoreB += (calculateDistance(lastCoords.lat, lastCoords.lon, b.latitude, b.longitude) * 5);
+                    while (currentTime < endMins && sequenceAttempts < maxAttempts) {
+                        const targetCategory = itinSelectedCategorySequence[sequenceIndex];
+                        
+                        let candidates = availablePool.filter(spot => {
+                            if (usedSpotIds.has(spot.rowid)) return false;
+                            if (!(spot.category || "").toLowerCase().includes(targetCategory.toLowerCase())) return false;
+                            let fitsHours = (currentTime >= spot.logicOpen) && (currentTime + spot.logicDur <= spot.logicClose);
+                            if (spot.isAnchored) {
+                                if (spot.anchoredTime < currentTime) return false; 
+                                return true; 
                             }
-                            return scoreA - scoreB;
+                            return fitsHours; 
                         });
 
-                        const winner = candidates[0];
-                        if (winner.isAnchored && winner.anchoredTime > currentTime) currentTime = winner.anchoredTime;
+                        if (candidates.length > 0) {
+                            candidates.sort((a, b) => {
+                                let scoreA = 0; let scoreB = 0;
+                                scoreA += ['high','🔥','must do','starred'].includes((a.priority || "").toLowerCase()) ? -100 : 0;
+                                scoreB += ['high','🔥','must do','starred'].includes((b.priority || "").toLowerCase()) ? -100 : 0;
+                                if(a.isAnchored) scoreA -= 200; if(b.isAnchored) scoreB -= 200;
 
-                        dailyTimeline.push({ ...winner, sch_start: currentTime, sch_end: currentTime + winner.logicDur, isDone: false });
-                        usedSpotIds.add(winner.rowid);
-                        if (winner.latitude) lastCoords = { lat: winner.latitude, lon: winner.longitude };
-                        
-                        currentTime += winner.logicDur + bufferMins;
-                        sequenceAttempts = 0; 
-                    } else {
-                        sequenceAttempts++;
+                                if (lastCoords && a.latitude && a.longitude && b.latitude && b.longitude) {
+                                    scoreA += (calculateDistance(lastCoords.lat, lastCoords.lon, a.latitude, a.longitude) * 5);
+                                    scoreB += (calculateDistance(lastCoords.lat, lastCoords.lon, b.latitude, b.longitude) * 5);
+                                }
+                                return scoreA - scoreB;
+                            });
+
+                            const winner = candidates[0];
+                            if (winner.isAnchored && winner.anchoredTime > currentTime) currentTime = winner.anchoredTime;
+
+                            dailyTimeline.push({ ...winner, sch_start: currentTime, sch_end: currentTime + winner.logicDur, isDone: false });
+                            usedSpotIds.add(winner.rowid);
+                            if (winner.latitude) lastCoords = { lat: winner.latitude, lon: winner.longitude };
+                            
+                            currentTime += winner.logicDur + bufferMins;
+                            sequenceAttempts = 0; 
+                        } else {
+                            sequenceAttempts++;
+                        }
+                        sequenceIndex = (sequenceIndex + 1) % itinSelectedCategorySequence.length;
                     }
-                    sequenceIndex = (sequenceIndex + 1) % itinSelectedCategorySequence.length;
-                }
 
-                dailyTimeline.sort((a, b) => a.sch_start - b.sch_start);
-                newItinerary.days.push({ date: dateStr, timeline: dailyTimeline });
-            });
+                    dailyTimeline.sort((a, b) => a.sch_start - b.sch_start);
+                    newItinerary.days.push({ date: dateStr, timeline: dailyTimeline });
+                });
 
-            savedItineraries.push(newItinerary);
-            activeItineraryId = newItinerary.id;
-            activeItineraryDayTracker = 0;
-            
-            localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
-            localStorage.setItem('compass_active_itinerary_id', activeItineraryId);
-            
-            toggleItineraryCreationDrawerForm(false);
-            switchMasterMenuDashboardTab('itinerary');
+                savedItineraries.push(newItinerary);
+                activeItineraryId = newItinerary.id;
+                activeItineraryDayTracker = 0;
+                
+                localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                localStorage.setItem('compass_active_itinerary_id', activeItineraryId);
+                
+                // --- CLEANUP: Hide the loader, close the drawer, and show the result! ---
+                document.getElementById('buildingItineraryLoaderPopup').classList.add('hidden');
+                toggleItineraryCreationDrawerForm(false);
+                switchMasterMenuDashboardTab('itinerary');
+                
+            }, 800); // 800ms delay to let the animation play smoothly
         }
 
         function getActiveItinerary() { return savedItineraries.find(i => i.id === activeItineraryId); }
@@ -3008,11 +3063,10 @@
             const btn = document.getElementById('buildItinerarySubmitBtn');
             
             if (btn) {
-                // Check if all 4 required parameters have data
                 if (name && city && hasDates && hasSequence) {
-                    btn.classList.remove('opacity-50', 'pointer-events-none');
+                    btn.classList.remove('opacity-50', 'grayscale');
                 } else {
-                    btn.classList.add('opacity-50', 'pointer-events-none');
+                    btn.classList.add('opacity-50', 'grayscale');
                 }
             }
         }
