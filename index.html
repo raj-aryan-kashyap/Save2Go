@@ -3019,8 +3019,146 @@
                 });
                 localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
                 closeInlineUnscheduledSpotDrawer(); renderItineraryMasterDashboardWorkspace();
+                }
+        }
+
+        // --- ITINERARY WIZARD AND MODAL INTERACTION CONTROLS ---
+        function toggleItineraryCreationDrawerForm(show) { 
+            document.getElementById('itineraryCreationDrawerModal').classList.toggle('hidden', !show); 
+        }
+        
+        function openItineraryCreationDrawerForm() {
+            toggleItineraryCreationDrawerForm(true);
+            let defaultFoodCategory = 'Food Spot'; 
+            if (travelSpots && travelSpots.length > 0) {
+                let uniqueCategories = new Set(); 
+                travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
+                for (let cat of uniqueCategories) { if (cat.toLowerCase().includes('food')) { defaultFoodCategory = cat; break; } }
+            }
+            itinSelectedCategorySequence = [defaultFoodCategory];
+            
+            const selectCity = document.getElementById('itin-new-city'); 
+            if (selectCity) {
+                selectCity.innerHTML = '';
+                let citySet = new Set(); 
+                travelSpots.forEach(spot => { if (spot.city) citySet.add(spot.city.trim()); });
+                citySet.forEach(city => { selectCity.innerHTML += `<option value="${city}">${city}</option>`; });
+            }
+            renderItineraryFormCategoriesAndQueryRows();
+        }
+
+        function setItinPacingMode(mode) {
+            itinPacingMode = mode;
+            document.getElementById('itinPacingToggleMax').className = mode === 'max' ? "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors" : "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent";
+            document.getElementById('itinPacingToggleRelaxed').className = mode === 'relaxed' ? "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors" : "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent";
+        }
+
+        function renderItineraryFormCategoriesAndQueryRows() {
+            const gridContainer = document.getElementById('itinModalCategoryGridContainer'); 
+            const rowBox = document.getElementById('itinModalSequenceQueryRowBox');
+            if (!gridContainer || !rowBox) return;
+            gridContainer.innerHTML = ''; 
+            rowBox.innerHTML = '';
+
+            let countsMap = {}; 
+            itinSelectedCategorySequence.forEach(cat => { countsMap[cat] = (countsMap[cat] || 0) + 1; });
+            let uniqueCategories = travelSpots.length > 0 ? new Set() : new Set(['Food Spot', 'Culture', 'Viewpoint', 'Activity']);
+            travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
+
+            uniqueCategories.forEach(catName => {
+                const count = countsMap[catName] || 0; 
+                const isSelected = count > 0;
+                const btn = document.createElement('button');
+                btn.className = isSelected ? "px-2 py-1.5 rounded-lg text-[10px] font-black flex items-center justify-between min-h-[30px] bg-pink-500/10 border border-dashed border-pink-500 text-pink-400 shadow-sm" : "px-2 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-between min-h-[30px] bg-slate-950/60 border border-dashed border-slate-700 text-slate-400 hover:bg-slate-900";
+                btn.onclick = function() { itinSelectedCategorySequence.push(catName); renderItineraryFormCategoriesAndQueryRows(); };
+                btn.innerHTML = `<span class="truncate pr-1.5">${catName}</span> ${isSelected ? `<span class="text-[8px] bg-pink-600 text-white font-mono px-1 py-0.5 rounded shrink-0">x${count}</span>` : `<i class="fa-solid fa-plus text-[8px] opacity-40 shrink-0"></i>`}`;
+                gridContainer.appendChild(btn);
+            });
+
+            itinSelectedCategorySequence.forEach((cat, idx) => {
+                const pill = document.createElement('div');
+                pill.className = "flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-2 shrink-0 text-[10px] font-bold text-slate-300 shadow";
+                pill.innerHTML = `<span>${cat}</span><button onclick="itinSelectedCategorySequence.splice(${idx}, 1); renderItineraryFormCategoriesAndQueryRows();" class="w-4 h-4 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-[8px] hover:bg-red-900/60 transition-colors"><i class="fa-solid fa-xmark"></i></button>`;
+                rowBox.appendChild(pill);
+                if (idx < itinSelectedCategorySequence.length - 1) rowBox.innerHTML += `<span class="text-pink-500 font-black text-[14px] shrink-0 mx-0.5 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">→</span>`;
+            });
+        }
+
+        function openMultiDatePickerModal() { 
+            document.getElementById('itinCalendarModal').classList.remove('hidden'); 
+            renderMultiDateCalendarGrid(); 
+        }
+        
+        function closeMultiDatePickerModal() { 
+            document.getElementById('itinCalendarModal').classList.add('hidden'); 
+            const display = document.getElementById('itin-date-display'); 
+            const meta = document.getElementById('itin-date-meta');
+            if (!display || !meta) return;
+            if (selectedMultiDatesArray.length === 0) { display.innerText = "Select Dates"; meta.classList.add('hidden'); }
+            else if (selectedMultiDatesArray.length === 1) { display.innerText = selectedMultiDatesArray[0]; meta.classList.add('hidden'); }
+            else { display.innerText = `${selectedMultiDatesArray.length} Days Selected`; meta.classList.remove('hidden'); }
+        }
+        
+        function toggleMultiDateSelection(dateStr) { 
+            if (selectedMultiDatesArray.includes(dateStr)) {
+                selectedMultiDatesArray = selectedMultiDatesArray.filter(d => d !== dateStr);
+            } else {
+                selectedMultiDatesArray.push(dateStr);
+            }
+            renderMultiDateCalendarGrid(); 
+        }
+        
+        function changeMultiCalendarMonth(offset) { 
+            calMonth += offset; 
+            if (calMonth < 0) { calMonth = 11; calYear--; } 
+            else if (calMonth > 11) { calMonth = 0; calYear++; } 
+            renderMultiDateCalendarGrid(); 
+        }
+        
+        function renderMultiDateCalendarGrid() {
+            const grid = document.getElementById('calendarDaysGrid');
+            if (!grid) return;
+            grid.innerHTML = ''; 
+            document.getElementById('calendarMonthTitle').innerText = `${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][calMonth]} ${calYear}`;
+            for (let i = 0; i < new Date(calYear, calMonth, 1).getDay(); i++) grid.innerHTML += `<div></div>`;
+            for (let i = 1; i <= new Date(calYear, calMonth + 1, 0).getDate(); i++) {
+                let dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                let isSelected = selectedMultiDatesArray.includes(dateStr);
+                grid.innerHTML += `<div onclick="toggleMultiDateSelection('${dateStr}')" class="${isSelected ? "w-8 h-8 rounded-full bg-pink-600 text-white font-bold text-xs flex items-center justify-center mx-auto shadow-lg shadow-pink-600/30 transform scale-110 transition-transform" : "w-8 h-8 rounded-full bg-slate-900 text-slate-300 font-medium text-xs flex items-center justify-center mx-auto border border-slate-800 cursor-pointer hover:bg-slate-800"}">${i}</div>`;
             }
         }
+        function recalculateFutureItineraryTimeline() { 
+            alert("Recalculate logic triggered: Ready for logic expansion to roll-over unfinished items."); 
+        }
+
+        // --- SYSTEM SETTINGS & NETWORK CONTROLS ---
+        function toggleSettingsMenu(show) { 
+            document.getElementById('settingsDrawer').classList.toggle('hidden', !show); 
+        }
+        
+        function setupNetworkListeners() { 
+            window.addEventListener('online', updateNetworkStatusHUD); 
+            window.addEventListener('offline', updateNetworkStatusHUD); 
+        }
+        
+        function updateNetworkStatusHUD() {
+            const indicator = document.getElementById('networkIndicator'); 
+            const syncText = document.getElementById('syncText');
+            if(!indicator || !syncText) return;
+            if (navigator.onLine) {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-emerald-500"; 
+                syncText.className = "text-[9px] font-mono text-slate-500"; 
+                syncText.innerText = "Synced Live Data";
+            } else {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"; 
+                syncText.className = "text-[9px] font-mono text-amber-400 font-black tracking-wide"; 
+                syncText.innerText = "OFFLINE MODE";
+            }
+        }
+        
+        async function triggerSecureServerHistoryPurgeVault() {}
+        function clearDeviceSessionAndLogout() {}
+        function commitProfileRename() {}
     </script>
 </body>
 </html>
