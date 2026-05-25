@@ -653,20 +653,6 @@
             </button>
         </div>
     </div>
-    <div id="thematicConfirmModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[99999] flex items-center justify-center hidden transition-all duration-300 p-4 opacity-0 pointer-events-none">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center space-y-4 scale-95 transition-transform duration-300" id="thematicConfirmBox">
-            <div id="thematicConfirmIcon" class="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto mb-2 border"></div>
-            <div class="space-y-1.5">
-                <h3 id="thematicConfirmTitle" class="text-sm font-black text-slate-200 tracking-wide uppercase">Are you sure?</h3>
-                <p id="thematicConfirmDesc" class="text-[11px] text-slate-400 font-medium leading-relaxed">This action cannot be undone.</p>
-            </div>
-            <div class="flex gap-2 pt-2">
-                <button onclick="closeThematicConfirm()" class="flex-1 py-3.5 bg-slate-800 text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest active:bg-slate-700 transition-colors">Cancel</button>
-                <button id="thematicConfirmActionBtn" class="flex-1 py-3.5 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform">Confirm</button>
-            </div>
-        </div>
-    </div>
-
     <div id="buildingItineraryLoaderPopup" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[99999] flex flex-col items-center justify-center hidden transition-all duration-300">
         <div class="flex flex-col items-center justify-center space-y-6">
             <div class="relative w-20 h-20 flex items-center justify-center">
@@ -676,18 +662,35 @@
             </div>
             <div class="text-center space-y-2">
                 <h3 class="text-lg font-black uppercase tracking-widest text-slate-200">Building Itinerary</h3>
-                <p class="text-xs font-bold text-slate-500">Running spatial matrix engine...</p>
+                <p class="text-xs font-bold text-slate-500">Thinking...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="thematicConfirmModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[99999] flex items-center justify-center hidden transition-all duration-300 p-4 opacity-0 pointer-events-none">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center space-y-4 scale-95 transition-transform duration-300 relative" id="thematicConfirmBox">
+            <button onclick="closeThematicConfirm()" class="absolute top-4 right-4 w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold active:bg-slate-700 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+            <div id="thematicConfirmIcon" class="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto mb-2 border mt-2"></div>
+            <div class="space-y-1.5 pt-4">
+                <h3 id="thematicConfirmTitle" class="text-sm font-black text-slate-200 tracking-wide uppercase">Are you sure?</h3>
+                <p id="thematicConfirmDesc" class="text-[11px] text-slate-400 font-medium leading-relaxed">This action cannot be undone.</p>
+            </div>
+            <div class="flex justify-center pt-2">
+                <button id="thematicConfirmActionBtn" class="w-full max-w-[200px] py-3.5 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform">Confirm</button>
             </div>
         </div>
     </div>
 
     <div id="inlineUnscheduledSpotsDrawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[999] flex items-end hidden transition-all duration-300">
         <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto subtle-scrollbar shadow-2xl relative flex flex-col">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-800 shrink-0">
-                <h3 class="text-sm font-black text-slate-200">Unscheduled Spots</h3>
-                <button onclick="closeInlineUnscheduledSpotDrawer()" class="w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex justify-between items-start pb-2 border-b border-slate-800 shrink-0">
+                <div class="flex flex-col">
+                    <h3 class="text-sm font-black text-slate-200">Unscheduled Spots</h3>
+                    <span class="text-[9px] font-bold text-slate-500 mt-0.5">Showing places according to selected city filter.</span>
+                </div>
+                <button onclick="closeInlineUnscheduledSpotDrawer()" class="w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold active:bg-slate-700 transition-colors shrink-0"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="unscheduledSpotsContainer" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+            <div id="unscheduledSpotsContainer" class="flex-1 overflow-y-auto pr-1 flex flex-col"></div>
         </div>
     </div>
     <script>
@@ -2779,17 +2782,17 @@
         // =====================================================================
         let pendingConfirmCallback = null;
         
-        function openThematicConfirm(title, desc, confirmText, callback, isDestructive = true) {
+        function openThematicConfirm(title, desc, confirmText, callback, theme = 'pink') {
             document.getElementById('thematicConfirmTitle').innerText = title;
             document.getElementById('thematicConfirmDesc').innerText = desc;
             const btn = document.getElementById('thematicConfirmActionBtn');
             const icon = document.getElementById('thematicConfirmIcon');
             btn.innerText = confirmText;
             
-            if (!isDestructive) {
-                btn.className = "flex-1 py-3.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 active:scale-95 transition-transform";
-                icon.className = "w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500 text-2xl mx-auto mb-2 border border-amber-500/20";
-                icon.innerHTML = '<i class="fa-solid fa-rotate"></i>';
+            if (theme === 'pink') {
+                btn.className = "w-full max-w-[200px] py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-pink-600/20 active:scale-95 transition-transform";
+                icon.className = "w-16 h-16 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 text-2xl mx-auto mb-2 border border-pink-500/20";
+                icon.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
             } else {
                 btn.className = "flex-1 py-3.5 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-600/20 active:scale-95 transition-transform";
                 icon.className = "w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 text-2xl mx-auto mb-2 border border-red-500/20";
@@ -2825,7 +2828,7 @@
                 savedItineraries = []; activeItineraryId = null;
                 localStorage.removeItem('compass_saved_itineraries'); localStorage.removeItem('compass_active_itinerary_id');
                 if (activeTabID === 'itinerary') renderItineraryMasterDashboardWorkspace();
-            });
+            }, 'red');
         }
 
         function promptDeleteItinerary() {
@@ -2834,7 +2837,7 @@
                 activeItineraryId = null;
                 localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
                 closeItineraryDetailView();
-            });
+            }, 'red');
         }
 
         // =====================================================================
@@ -3249,25 +3252,74 @@
             if(!activeItin) return;
 
             drawer.classList.remove('hidden'); container.innerHTML = '';
-            let allUsedIds = new Set(); activeItin.days.forEach(day => day.timeline.forEach(s => allUsedIds.add(s.rowid)));
-            const unusedSpots = travelSpots.filter(s => s.city === activeItin.city && !allUsedIds.has(s.rowid));
 
-            if (unusedSpots.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8">All saved spots for ${activeItin.city} are already in this itinerary.</div>`; return;
+            // BUG FIX: Match cities safely ignoring casing or trailing spaces
+            const targetCity = (activeItin.city || "").trim().toLowerCase();
+            const citySpots = travelSpots.filter(s => (s.city || "").trim().toLowerCase() === targetCity);
+
+            // Build map of where spots are currently used
+            let currentItinUsedMap = {}; 
+            activeItin.days.forEach((day, idx) => { day.timeline.forEach(s => currentItinUsedMap[s.rowid] = idx); });
+
+            let otherItinUsedMap = {}; 
+            savedItineraries.forEach(itin => {
+                if (itin.id !== activeItin.id) { itin.days.forEach(day => day.timeline.forEach(s => otherItinUsedMap[s.rowid] = itin.title)); }
+            });
+
+            let unusedSpots = [];
+            let usedSpots = [];
+
+            citySpots.forEach(spot => {
+                if (currentItinUsedMap[spot.rowid] !== undefined) {
+                    // Spot is in THIS itinerary. Skip if it's already in the CURRENT day.
+                    if (currentItinUsedMap[spot.rowid] !== activeItineraryDayTracker) {
+                        usedSpots.push({ spot, label: `Assigned to Day ${currentItinUsedMap[spot.rowid] + 1}` });
+                    }
+                } else if (otherItinUsedMap[spot.rowid]) {
+                    usedSpots.push({ spot, label: `Used in ${otherItinUsedMap[spot.rowid]}` });
+                } else {
+                    unusedSpots.push({ spot });
+                }
+            });
+
+            if (unusedSpots.length === 0 && usedSpots.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8 mt-4">No places found in ${activeItin.city} to add.</div>`; return;
             }
 
-            unusedSpots.forEach(spot => {
-                const el = document.createElement('div');
-                el.className = "flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-800 shadow";
-                el.innerHTML = `
-                    <div class="flex-1 min-w-0 pr-2">
-                        <h4 class="text-xs font-bold text-slate-200 truncate">${spot.spot_name}</h4>
-                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">${spot.category}</span>
-                    </div>
-                    <button onclick="injectUnscheduledSpot(${spot.rowid})" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/30 text-pink-400 rounded-lg text-[10px] font-black tracking-wider shadow">Add</button>
-                `;
-                container.appendChild(el);
-            });
+            // Render Unused Spots Section
+            if (unusedSpots.length > 0) {
+                const freshDeck = document.createElement('div');
+                freshDeck.className = "space-y-2 mb-6";
+                unusedSpots.forEach(item => {
+                    freshDeck.innerHTML += `
+                        <div class="flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-800 shadow">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <h4 class="text-xs font-bold text-slate-200 truncate">${item.spot.spot_name}</h4>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">${item.spot.category}</span>
+                            </div>
+                            <button onclick="injectUnscheduledSpot(${item.spot.rowid})" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/30 text-pink-400 rounded-lg text-[10px] font-black tracking-wider shadow active:scale-95 transition-transform">Add</button>
+                        </div>`;
+                });
+                container.appendChild(freshDeck);
+            }
+
+            // Render Used Spots Section (Visually distinct)
+            if (usedSpots.length > 0) {
+                const usedDeck = document.createElement('div');
+                usedDeck.className = "space-y-2 pb-6";
+                usedDeck.innerHTML = `<h4 class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5"><i class="fa-solid fa-link"></i> Already Added Elsewhere</h4>`;
+                usedSpots.forEach(item => {
+                    usedDeck.innerHTML += `
+                        <div class="flex justify-between items-center bg-slate-950/40 p-3 rounded-xl border border-slate-800/60 shadow opacity-80">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <h4 class="text-xs font-bold text-slate-300 truncate">${item.spot.spot_name}</h4>
+                                <span class="text-[8px] font-bold text-amber-500/80 uppercase tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 mt-1 inline-block">${item.label}</span>
+                            </div>
+                            <button onclick="injectUnscheduledSpot(${item.spot.rowid})" class="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-[10px] font-black tracking-wider shadow active:scale-95 transition-transform">Move Here</button>
+                        </div>`;
+                });
+                container.appendChild(usedDeck);
+            }
         }
 
         function closeInlineUnscheduledSpotDrawer() { document.getElementById('inlineUnscheduledSpotsDrawer').classList.add('hidden'); }
@@ -3275,19 +3327,60 @@
         function injectUnscheduledSpot(rowId) {
             const spot = travelSpots.find(s => s.rowid === rowId);
             const activeItin = getActiveItinerary();
-            if(spot && activeItin) {
-                let tl = activeItin.days[activeItineraryDayTracker].timeline;
-                let lastEnd = tl.length > 0 ? tl[tl.length-1].sch_end : parseTimeToMinutes("09:00");
-                const logic = getCategoryLogic(spot.category);
-                tl.push({
-                    ...spot,
-                    sch_start: lastEnd + (itinPacingMode === 'max' ? 15 : 30),
-                    sch_end: lastEnd + (itinPacingMode === 'max' ? 15 : 30) + (itinPacingMode === 'max' ? logic.durationMax : logic.durationRelaxed),
-                    isDone: false
+            if(!spot || !activeItin) return;
+
+            // 1. Check if it's being moved from an old day inside this itinerary
+            let oldDayIndex = -1;
+            let oldSpotIndex = -1;
+            activeItin.days.forEach((day, dIdx) => {
+                day.timeline.forEach((s, sIdx) => { if (s.rowid === rowId) { oldDayIndex = dIdx; oldSpotIndex = sIdx; } });
+            });
+
+            // 2. Calculate time block for the current day
+            let tl = activeItin.days[activeItineraryDayTracker].timeline;
+            let lastEnd = tl.length > 0 ? tl[tl.length-1].sch_end : parseTimeToMinutes("09:00");
+            const logic = getCategoryLogic(spot.category);
+            const duration = itinPacingMode === 'max' ? logic.durationMax : logic.durationRelaxed;
+            
+            tl.push({
+                ...spot,
+                logicDur: duration,
+                sch_start: lastEnd + (itinPacingMode === 'max' ? 15 : 30),
+                sch_end: lastEnd + (itinPacingMode === 'max' ? 15 : 30) + duration,
+                isDone: false
+            });
+
+            // 3. Remove from old day & Trigger Background Rebalance
+            if (oldDayIndex !== -1 && oldDayIndex !== activeItineraryDayTracker) {
+                activeItin.days[oldDayIndex].timeline.splice(oldSpotIndex, 1);
+
+                // Intelligently rebalance the old day forward to close the time gap seamlessly
+                let recalcTime = parseTimeToMinutes("09:00");
+                activeItin.days[oldDayIndex].timeline.forEach(s => {
+                    s.sch_start = recalcTime;
+                    s.sch_end = recalcTime + s.logicDur;
+                    recalcTime = s.sch_end + (itinPacingMode === 'max' ? 15 : 30);
                 });
+
                 localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
-                closeInlineUnscheduledSpotDrawer(); renderItineraryMasterDashboardWorkspace();
-                }
+                closeInlineUnscheduledSpotDrawer();
+                renderDetailViewTimeline();
+                
+                openThematicConfirm(
+                    "Spot Moved Successfully",
+                    `Moved ${spot.spot_name} to Day ${activeItineraryDayTracker + 1}. The previous day has been automatically rebalanced.`,
+                    "Okay",
+                    null,
+                    'pink'
+                );
+            } else {
+                // Completely new spot or copied from a different trip entirely
+                localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                closeInlineUnscheduledSpotDrawer(); 
+                renderDetailViewTimeline();
+                
+                openThematicConfirm("Spot Added", `${spot.spot_name} was added to your schedule.`, "Okay", null, 'pink');
+            }
         }
 
         // --- ITINERARY WIZARD AND MODAL INTERACTION CONTROLS ---
