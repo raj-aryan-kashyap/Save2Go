@@ -385,12 +385,13 @@
         </div>
 
         <div id="view-itinerary" class="view-panel w-full bg-slate-950 flex flex-col h-full overflow-hidden">
-            <div id="itineraryTopNavHeaderBar" class="px-4 py-2 bg-slate-900/60 backdrop-blur border-b border-slate-800 shrink-0 flex items-center justify-center transition-all duration-300">
+            <div id="itineraryTopNavHeaderBar" class="px-4 py-2 bg-slate-900/60 backdrop-blur border-b border-slate-800 shrink-0 flex items-center justify-between transition-all duration-300">
+                <span id="activeItineraryTitleHUD" class="text-[11px] font-black uppercase tracking-wider text-slate-300 truncate max-w-[180px]">No Itinerary</span>
                 <button onclick="openItineraryCreationDrawerForm()" class="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-xl text-[11px] font-black uppercase tracking-wider text-white shadow-lg shadow-pink-600/20 flex items-center gap-2">
                     <i class="fa-solid fa-route"></i> Build Itinerary
                 </button>
             </div>
-            <div id="itineraryTimelineScrollContainer" class="flex-1 min-h-0 overflow-y-auto w-full subtle-scrollbar px-4 pt-3 flex flex-col gap-3 select-none pb-24 justify-center"></div>
+            <div id="itineraryTimelineScrollContainer" class="flex-1 min-h-0 overflow-y-auto w-full subtle-scrollbar px-4 pt-3 flex flex-col gap-3 select-none pb-24 relative justify-start"></div>
         </div>
     </div>
 
@@ -2713,98 +2714,102 @@
         function renderItineraryMasterDashboardWorkspace() {
             const container = document.getElementById('itineraryTimelineScrollContainer');
             const topHeaderBar = document.getElementById('itineraryTopNavHeaderBar');
-            if (!container) return;
-            container.innerHTML = '';
+            const titleHUD = document.getElementById('activeItineraryTitleHUD');
+            
+            const activeItin = getActiveItinerary();
 
-            if (isItineraryCacheWhollyEmpty()) {
-                if (topHeaderBar) topHeaderBar.classList.add('hidden');
+            // 1. EMPTY STATE
+            if (!activeItin || activeItin.days.length === 0) {
+                if (topHeaderBar) topHeaderBar.classList.add('hidden'); 
+                if (titleHUD) titleHUD.innerText = "No Active Itinerary";
                 
                 container.className = "absolute inset-0 flex flex-col justify-center items-center text-center px-6 select-none";
                 container.innerHTML = `
-                    <div class="max-w-xs space-y-4 animate-fade-in -mt-10">
-                        <div class="w-16 h-16 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 text-2xl mx-auto filter drop-shadow-[0_0_15px_rgba(236,72,153,0.2)]">
-                            <i class="fa-solid fa-route"></i>
-                        </div>
-                        <div class="space-y-1.5">
-                            <h2 class="text-base font-black uppercase tracking-wider text-slate-200">Build Your First Itinerary</h2>
-                            <p class="text-xs text-slate-400 leading-relaxed font-medium">
-                                Create daily schedules using saved spots and notes from your database.
-                            </p>
-                        </div>
-                        <button onclick="openItineraryCreationDrawerForm()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-pink-600/20 active:scale-98 transform transition-all duration-150 mt-2">
-                            Let's Go!
-                        </button>
-                    </div>
-                `;
+                    <div class="max-w-xs space-y-4 -mt-10">
+                        <div class="w-16 h-16 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 text-2xl mx-auto filter drop-shadow-[0_0_15px_rgba(236,72,153,0.3)]"><i class="fa-solid fa-route"></i></div>
+                        <div class="space-y-1.5"><h2 class="text-base font-black uppercase tracking-wider text-slate-200">Build Your First Itinerary</h2><p class="text-xs text-slate-400 leading-relaxed font-medium">Create daily schedules using saved spots.</p></div>
+                        <button onclick="openItineraryCreationDrawerForm()" class="w-full py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-pink-600/20 active:scale-95 transition-transform mt-2">Let's Go!</button>
+                    </div>`;
                 return;
             }
 
+            // 2. ACTIVE STATE SETUP
+            if (titleHUD) titleHUD.innerText = activeItin.title;
             if (topHeaderBar) topHeaderBar.classList.remove('hidden');
-            container.className = "flex-1 min-h-0 overflow-y-auto w-full subtle-scrollbar px-4 pt-3 flex flex-col gap-3 select-none pb-24";
+            
+            // This class string fixes the scroll lock by ensuring it behaves as a scrolling flex-child
+            container.className = "flex-1 min-h-0 overflow-y-auto w-full subtle-scrollbar px-4 pt-3 flex flex-col gap-3 select-none pb-32 relative justify-start";
+            container.innerHTML = '';
+            
+            let hasActivities = false;
 
-            const activeCityFilterArray = checkedCitiesStateArray;
-            let dayTrackRowIds = itineraryItems[activeItineraryDayTracker] || [];
-
-            let filteredTrackSpots = dayTrackRowIds.map((id, seqIdx) => {
-                const spotObj = travelSpots.find(s => parseInt(s.rowid) === parseInt(id));
-                return { spotObj, seqIdx };
-            }).filter(item => {
-                if (!item.spotObj) return false;
-                if (activeCityFilterArray.length > 0 && !activeCityFilterArray.includes(item.spotObj.city)) return false;
-                return true;
-            });
-
-            if (filteredTrackSpots.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center text-slate-600 py-16 text-xs font-medium space-y-2">
-                        <div class="text-3xl opacity-30"><i class="fa-solid fa-route"></i></div>
-                        <p>No operational matrices mapped to Day ${activeItineraryDayTracker}.</p>
-                        <p class="text-[10px] text-slate-500 font-mono">Use map drawers or wizard arrays to populate tracks.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            filteredTrackSpots.forEach((item, idx) => {
-                const spot = item.spotObj;
-                
-                const card = document.createElement('div');
-                card.className = "w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden shrink-0";
-                
-                card.innerHTML = `
-                    <div class="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-pink-500 to-purple-600 opacity-80 rounded-l-2xl"></div>
+            // 3. CONTINUOUS SCROLL RENDERING (All Days)
+            activeItin.days.forEach((dayObj, dayIndex) => {
+                if (dayObj.timeline.length > 0) {
+                    hasActivities = true;
                     
-                    <div class="flex items-start gap-3 w-full">
-                        <div class="flex flex-col items-center justify-start shrink-0 w-8 pt-1 pl-1">
-                            <button onclick="toggleActivityDoneState(${activeItineraryDayTracker}, ${idx})" class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${spot.isDone ? 'bg-pink-600 border-pink-600 text-white shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'border-slate-600 text-transparent hover:border-pink-500'}">
-                                <i class="fa-solid fa-check text-[12px]"></i>
-                            </button>
+                    // Add a Sticky Day Divider
+                    const dateStr = new Date(dayObj.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    container.innerHTML += `
+                        <div class="sticky top-0 z-10 bg-slate-950/95 backdrop-blur py-2 w-full -mx-4 px-4 flex items-center gap-2">
+                            <div class="h-px bg-slate-800 flex-1"></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Day ${dayIndex + 1} • ${dateStr}</span>
+                            <div class="h-px bg-slate-800 flex-1"></div>
                         </div>
+                    `;
 
-                        <div class="flex-1 min-w-0 pl-1">
-                            <div class="flex justify-between items-start gap-2">
-                                <div class="flex flex-col min-w-0">
-                                    <span class="text-[9px] font-mono font-bold text-pink-400 bg-pink-500/10 px-1.5 py-0.5 rounded w-fit mb-1 border border-pink-500/20 shadow-inner">${formatMinutesToTime(spot.sch_start)} - ${formatMinutesToTime(spot.sch_end)}</span>
-                                    <h3 class="text-[13px] font-black truncate text-slate-200 ${spot.isDone ? 'itin-done-text' : ''}">${spot.spot_name}</h3>
-                                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">${spot.category} ${spot.isAnchored ? '<span class="text-amber-400 ml-1"><i class="fa-solid fa-lock"></i> Fixed</span>' : ''}</p>
+                    // Render each spot for this day with the rich card design
+                    dayObj.timeline.forEach((spot, spotIndex) => {
+                        const card = document.createElement('div');
+                        card.className = `w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 relative flex items-center gap-3 shrink-0 transition-all ${spot.isDone ? 'itin-done-card border-slate-900' : ''}`;
+                        
+                        card.innerHTML = `
+                            <div class="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-pink-500 to-purple-600 opacity-80 rounded-l-2xl"></div>
+                            
+                            <div class="flex items-start gap-3 w-full">
+                                <div class="flex flex-col items-center justify-start shrink-0 w-8 pt-1 pl-1">
+                                    <button onclick="toggleActivityDoneState(${dayIndex}, ${spotIndex})" class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${spot.isDone ? 'bg-pink-600 border-pink-600 text-white shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'border-slate-600 text-transparent hover:border-pink-500'}">
+                                        <i class="fa-solid fa-check text-[12px]"></i>
+                                    </button>
                                 </div>
-                                <button onclick="removeActivityFromTimeline(${activeItineraryDayTracker}, ${idx})" class="w-6 h-6 flex items-center justify-center bg-red-950/20 text-red-500 rounded-full shrink-0 text-xs hover:bg-red-900/60 transition-colors"><i class="fa-solid fa-xmark"></i></button>
-                            </div>
 
-                            ${spot.notes ? `
-                            <div class="mt-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60">
-                                <p class="text-[10px] leading-relaxed font-medium text-slate-400 line-clamp-2 ${spot.isDone ? 'itin-done-text' : ''}">${spot.notes}</p>
-                            </div>` : ''}
+                                <div class="flex-1 min-w-0 pl-1">
+                                    <div class="flex justify-between items-start gap-2">
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-[9px] font-mono font-bold text-pink-400 bg-pink-500/10 px-1.5 py-0.5 rounded w-fit mb-1 border border-pink-500/20 shadow-inner">${formatMinutesToTime(spot.sch_start)} - ${formatMinutesToTime(spot.sch_end)}</span>
+                                            <h3 class="text-[13px] font-black truncate text-slate-200 ${spot.isDone ? 'itin-done-text' : ''}">${spot.spot_name}</h3>
+                                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 flex items-center gap-1">
+                                                ${spot.category} 
+                                                ${spot.isAnchored ? '<span class="text-amber-400 ml-1 flex items-center gap-0.5"><i class="fa-solid fa-lock text-[8px]"></i> Fixed</span>' : ''}
+                                            </p>
+                                        </div>
+                                        <button onclick="removeActivityFromTimeline(${dayIndex}, ${spotIndex})" class="w-6 h-6 flex items-center justify-center bg-red-950/20 text-red-500 rounded-full shrink-0 text-xs hover:bg-red-900/60 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
 
-                            <div class="flex gap-2 mt-3 justify-end items-center">
-                                <a href="${spot.instagram_url || spot.reference_link || '#'}" target="_blank" class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-300 active:bg-slate-900 transition-colors ${spot.isDone ? 'opacity-50' : ''}">Reference</a>
-                                <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/20 text-pink-400 rounded-lg text-[10px] font-black tracking-wide active:bg-pink-600/20 transition-colors ${spot.isDone ? 'opacity-50' : ''}"><i class="fa-solid fa-map mr-1"></i> Directions</button>
+                                    ${spot.notes ? `
+                                    <div class="mt-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60">
+                                        <p class="text-[10px] leading-relaxed font-medium text-slate-400 line-clamp-2 ${spot.isDone ? 'itin-done-text' : ''}">${spot.notes}</p>
+                                    </div>` : ''}
+
+                                    <div class="flex gap-2 mt-3 justify-end items-center">
+                                        <a href="${spot.instagram_url || spot.reference_link || '#'}" target="_blank" class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-300 active:bg-slate-900 transition-colors ${spot.isDone ? 'opacity-50 pointer-events-none' : ''}">Reference</a>
+                                        <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/20 text-pink-400 rounded-lg text-[10px] font-black tracking-wide active:bg-pink-600/20 transition-colors ${spot.isDone ? 'opacity-50 pointer-events-none' : ''}"><i class="fa-solid fa-map mr-1"></i> Directions</button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
+                        `;
+                        container.appendChild(card);
+                    });
+                }
             });
+
+            // 4. FALLBACK & PADDING
+            if (!hasActivities) {
+                container.innerHTML = `<div class="text-center text-slate-600 py-16 text-xs font-medium space-y-3"><div class="text-4xl opacity-30"><i class="fa-solid fa-mug-hot"></i></div><p>No activities scheduled for this itinerary.</p><button onclick="openInlineUnscheduledSpotDrawer()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-plus mr-1.5"></i> Add Spot</button></div>`;
+            }
+            
+            // Add bottom padding buffer so the bottom nav bar doesn't hide the last card
+            container.innerHTML += `<div class="h-20 w-full shrink-0"></div>`;
         }
         // =====================================================================
         // V5 ITINERARY MATRIX ENGINE (BRAINS)
