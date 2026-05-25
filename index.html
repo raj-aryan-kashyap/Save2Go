@@ -546,13 +546,13 @@
             <div class="space-y-3 text-xs w-full">
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Name</label>
-                    <input type="text" id="itin-new-name" placeholder="e.g., Paris Day 1" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none text-xs font-semibold">
+                    <input type="text" id="itin-new-name" oninput="validateItineraryForm()" placeholder="e.g., Paris Exploration" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none text-xs font-semibold">
                 </div>
 
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Pacing</label>
                     <div class="bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden transition-all duration-200">
-                        <button onclick="setItinPacingMode('max')" id="itinPacingToggleMax" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors"><i class="fa-solid fa-rocket"></i> Max Exploration</button>
+                        <button onclick="setItinPacingMode('max')" id="itinPacingToggleMax" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors"><i class="fa-solid fa-rocket"></i> Max</button>
                         <button onclick="setItinPacingMode('relaxed')" id="itinPacingToggleRelaxed" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent"><i class="fa-solid fa-mug-hot"></i> Relaxed</button>
                     </div>
                 </div>
@@ -561,20 +561,20 @@
                     <div>
                         <div class="flex items-center justify-between mb-1">
                             <label class="block text-slate-400 font-bold uppercase tracking-wider text-[10px]">Schedule</label>
-                            <span id="itin-date-meta" class="text-[8px] font-black uppercase text-amber-200 tracking-wider hidden"></span>
+                            <span id="itin-date-meta" class="text-[6px] font-black uppercase text-amber-200 hidden">Non-Sequential Days</span>
                         </div>
-                        <div onclick="openMultiDatePickerModal()" class="w-full bg-slate-950 px-2.5 rounded-xl border border-slate-800 text-slate-200 flex flex-col justify-center h-[38px] cursor-pointer shadow-inner relative">
+                        <div onclick="openMultiDatePickerModal()" class="w-full bg-slate-950 px-2.5 rounded-xl border border-slate-800 text-slate-200 flex flex-col justify-center h-[38px] cursor-pointer shadow-inner">
                             <span id="itin-date-display" class="text-[11px] font-mono font-semibold text-slate-300">Select Dates</span>
                         </div>
                     </div>
                     <div>
                         <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">City</label>
-                        <select id="itin-new-city" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-200 focus:outline-none h-[38px] text-[11px] font-bold block appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:8px_auto] bg-[right_10px_center] bg-no-repeat pr-6 shadow-inner"></select>
+                        <select id="itin-new-city" onchange="validateItineraryForm()" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-200 focus:outline-none h-[38px] text-[11px] font-bold block appearance-none bg-no-repeat pr-6 shadow-inner"></select>
                     </div>
                 </div>
 
                 <div class="mt-3">
-                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Time Window</label>
+                    <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Daily Time Window</label>
                     <div class="flex gap-1 items-center w-full">
                         <input type="time" id="itin-new-start" value="09:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[11px] font-mono h-[38px] shadow-inner">
                         <span class="text-slate-600 font-black px-1">-</span>
@@ -584,7 +584,7 @@
 
                 <div>
                     <label class="block text-slate-400 font-bold mb-1 uppercase tracking-wider text-[10px]">Categories Sequence</label>
-                    <div id="itinModalCategoryGridContainer" class="flex flex-wrap gap-2 max-h-24 overflow-y-auto subtle-scrollbar p-2.5 bg-slate-950/40 rounded-xl border border-slate-900/60 w-full"></div>
+                    <div id="itinModalCategoryGridContainer" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto subtle-scrollbar p-2.5 bg-slate-950/40 rounded-xl border border-slate-900/60 w-full"></div>
                 </div>
 
                 <div>
@@ -592,7 +592,7 @@
                     <div id="itinModalSequenceQueryRowBox" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 min-h-[80px] flex gap-1.5 items-center flex-wrap subtle-scrollbar shadow-inner items-start content-start"></div>
                 </div>
 
-                <button onclick="compileItineraryFromSequencePatternForm()" class="w-full mt-2 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-xs uppercase tracking-wider">
+                <button id="buildItinerarySubmitBtn" onclick="generateIntelligentItinerary()" class="w-full mt-2 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg shadow-pink-600/20 text-xs uppercase tracking-wider active:scale-95 transition-transform opacity-50 pointer-events-none">
                     <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Build Itinerary
                 </button>
             </div>
@@ -3000,6 +3000,23 @@
         }
 
         // --- ITINERARY WIZARD AND MODAL INTERACTION CONTROLS ---
+        function validateItineraryForm() {
+            const name = document.getElementById('itin-new-name')?.value.trim();
+            const city = document.getElementById('itin-new-city')?.value;
+            const hasDates = selectedMultiDatesArray.length > 0;
+            const hasSequence = itinSelectedCategorySequence.length > 0;
+            const btn = document.getElementById('buildItinerarySubmitBtn');
+            
+            if (btn) {
+                // Check if all 4 required parameters have data
+                if (name && city && hasDates && hasSequence) {
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
+                } else {
+                    btn.classList.add('opacity-50', 'pointer-events-none');
+                }
+            }
+        }
+
         function toggleItineraryCreationDrawerForm(show) { 
             document.getElementById('itineraryCreationDrawerModal').classList.toggle('hidden', !show); 
         }
@@ -3022,6 +3039,7 @@
                 citySet.forEach(city => { selectCity.innerHTML += `<option value="${city}">${city}</option>`; });
             }
             renderItineraryFormCategoriesAndQueryRows();
+            validateItineraryForm();
         }
 
         function setItinPacingMode(mode) {
@@ -3059,6 +3077,7 @@
                 rowBox.appendChild(pill);
                 if (idx < itinSelectedCategorySequence.length - 1) rowBox.innerHTML += `<span class="text-pink-500 font-black text-[14px] shrink-0 mx-0.5 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">→</span>`;
             });
+            validateItineraryForm();
         }
 
         function openMultiDatePickerModal() { 
@@ -3074,6 +3093,7 @@
             if (selectedMultiDatesArray.length === 0) { display.innerText = "Select Dates"; meta.classList.add('hidden'); }
             else if (selectedMultiDatesArray.length === 1) { display.innerText = selectedMultiDatesArray[0]; meta.classList.add('hidden'); }
             else { display.innerText = `${selectedMultiDatesArray.length} Days Selected`; meta.classList.remove('hidden'); }
+            validateItineraryForm();
         }
         
         function toggleMultiDateSelection(dateStr) { 
