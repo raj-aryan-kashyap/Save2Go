@@ -2845,8 +2845,9 @@
         function promptDeleteItinerary() {
             openThematicConfirm("Delete Itinerary", "Are you sure you want to delete this specific itinerary?", "Delete", () => {
                 savedItineraries = savedItineraries.filter(i => i.id !== activeItineraryId);
-                activeItineraryId = null;
                 localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                syncItineraryToCloud({id: activeItineraryId}, 'delete');
+                activeItineraryId = null;
                 closeItineraryDetailView();
             }, 'red');
         }
@@ -3006,6 +3007,7 @@
             if(!itin) return;
             itin.days[dayIndex].timeline[spotIndex].isDone = !itin.days[dayIndex].timeline[spotIndex].isDone;
             localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+            syncItineraryToCloud(itin, 'save');
             renderDetailViewTimeline();
         }
 
@@ -3297,6 +3299,7 @@
                 
                 localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
                 localStorage.setItem('compass_active_itinerary_id', activeItineraryId);
+                syncItineraryToCloud(newItinerary, 'save');
                 
                 // --- CLEANUP: Hide the loader, close the drawer, and show the result! ---
                 document.getElementById('buildingItineraryLoaderPopup').classList.add('hidden');
@@ -3670,6 +3673,49 @@
         async function triggerSecureServerHistoryPurgeVault() {}
         function clearDeviceSessionAndLogout() {}
         function commitProfileRename() {}
+
+        // =====================================================================
+        // ITINERARY CLOUD SYNC ENGINE
+        // =====================================================================
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec";
+
+        // 1. PUSH TO CLOUD
+        async function syncItineraryToCloud(itinData, method = 'save') {
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Essential for Apps Script redirects
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'sync_itinerary',
+                        user: localStorage.getItem('active_user') || "Explorer",
+                        itin_id: itinData.id,
+                        method: method,
+                        data: itinData
+                    })
+                });
+                console.log("Sync request sent to backend.");
+            } catch (err) {
+                console.error("Sync failed, caching locally:", err);
+            }
+        }
+
+        // 2. FETCH FROM CLOUD
+        async function loadUserItineraries() {
+            const user = localStorage.getItem('active_user') || "Explorer";
+            try {
+                const response = await fetch(`${BACKEND_URL}?action=get_itineraries&user=${user}`);
+                const results = await response.json();
+                
+                if (results && results.length > 0) {
+                    savedItineraries = results.map(r => r.data);
+                    localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                    renderItineraryMasterDashboardWorkspace();
+                }
+            } catch (err) {
+                console.error("Cloud fetch failed, using local storage.");
+            }
+        }
     </script>
 </body>
 </html>
