@@ -403,7 +403,7 @@
                         <button onclick="closeItineraryDetailView()" class="w-8 h-8 flex items-center justify-center bg-slate-800 rounded-full text-slate-300"><i class="fa-solid fa-arrow-left"></i></button>
                         <h2 id="detailItineraryTitle" class="text-[13px] font-black text-slate-200 truncate"></h2>
                         <div class="flex items-center gap-2">
-                            <button onclick="openEditItineraryModal()" class="w-8 h-8 flex items-center justify-center bg-slate-800 rounded-full text-slate-300">
+                            <button onclick="openEditItineraryModal(activeItineraryId)" class="w-8 h-8 flex items-center justify-center bg-slate-800 rounded-full text-slate-300">
                                 <i class="fa-solid fa-pencil text-[10px]"></i>
                             </button>
                             <button onclick="promptDeleteItinerary()" class="w-8 h-8 flex items-center justify-center bg-red-950/30 text-red-400 rounded-full">
@@ -542,11 +542,11 @@
             
             <div class="space-y-3 pt-2 text-left">
                 <div id="loginDropdownContainer">
-                    <select id="loginDropdown" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block appearance-none h-12 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_16px_center] bg-no-repeat pr-10"></select>
+                    <select id="user-dropdown-select" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block appearance-none h-12 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_16px_center] bg-no-repeat pr-10"></select>
                 </div>
                 <div id="loginDividerLine" class="relative flex items-center justify-center my-2">
                     <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase">Or Register New</span>
-                    <hr class="w-full border-slate-900">
+
                 </div>
                 <div>
                     <input type="text" id="customUsernameInput" placeholder="Type name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none">
@@ -826,7 +826,7 @@
             document.getElementById('meta-version').innerText = `Version: ${APP_VERSION}`;
             
             initLeafletMapEngineCanvas();
-            fetchRegisteredDatabaseUsers(); 
+            populateUserDropdown(); 
             syncPriorityFilterViewModeUI();
             
             document.getElementById('trayFlipToBackBtn').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('mapDetailTrayHUD').classList.add('flipped'); assembleTrayInlineAssignorRow(); });
@@ -942,40 +942,25 @@
             }, { passive: true });
         }
 
-        async function fetchRegisteredDatabaseUsers() {
+        async function populateUserDropdown() {
+            const select = document.getElementById('user-dropdown-select');
             try {
-                const response = await fetch(`${API_URL}?action=get_users`);
-                const userList = await response.json();
-                if (Array.isArray(userList) && userList.length > 0) {
-                    populateUserUIDropdowns(userList);
-                } else {
-                    populateUserUIDropdowns(["Global Traveller"]);
-                }
+                const response = await fetch(`${BACKEND_URL}?action=get_users`);
+                if (!response.ok) throw new Error('Failed to reach server');
+                const users = await response.json();
+                
+                select.innerHTML = '<option value="">Select User</option>';
+                users.forEach(user => {
+                    const opt = document.createElement('option');
+                    opt.value = user;
+                    opt.textContent = user;
+                    select.appendChild(opt);
+                });
             } catch (err) {
-                populateUserUIDropdowns(["Global Traveller", "Paris Scout", "Echo User"]);
-            }
-        }
-
-        function populateUserUIDropdowns(usersArray) {
-            const loginSelect = document.getElementById('loginDropdown');
-            const settingsSelect = document.getElementById('settingsSwitchUserDropdown');
-            
-            if(loginSelect) {
-                loginSelect.innerHTML = '';
-                usersArray.forEach(user => {
-                    const opt = document.createElement('option');
-                    opt.value = user; opt.innerText = user;
-                    loginSelect.appendChild(opt);
-                });
-            }
-            if(settingsSelect) {
-                settingsSelect.innerHTML = '';
-                usersArray.forEach(user => {
-                    const opt = document.createElement('option');
-                    opt.value = user; opt.innerText = user;
-                    if(user === currentUser) opt.selected = true;
-                    settingsSelect.appendChild(opt);
-                });
+                // We log the error, but we do NOT inject dummy users. 
+                // The dropdown stays empty so you know the connection failed.
+                console.error("Failed to load users:", err);
+                select.innerHTML = '<option value="">Error: Server Unreachable</option>';
             }
         }
 
@@ -1429,7 +1414,7 @@
         }
 
         async function handleInitialLoginSubmit() {
-            const chosenUser = document.getElementById('loginDropdown').value || "Global Traveller";
+            const chosenUser = document.getElementById('user-dropdown-select').value || "Global Traveller";
             localStorage.setItem('compass_user', chosenUser); currentUser = chosenUser;
             document.getElementById('userModal').classList.add('hidden');
             initializeSessionDashboard();
@@ -2858,33 +2843,38 @@
 
         function renderItineraryMasterDashboardWorkspace() {
             const masterList = document.getElementById('itineraryMasterListScroll');
-            if (!masterList) return; 
-            const topHeaderBar = masterList.previousElementSibling;
+            const container = document.getElementById('itineraryMasterListView');
+            
+            // CRITICAL FIX: Ensure the container is visible
+            container.classList.remove('hidden');
+            document.getElementById('itineraryDetailView').classList.add('hidden');
+            
+            if (!masterList) return;
             masterList.innerHTML = '';
 
-            document.getElementById('itineraryDetailView').classList.add('hidden');
-            document.getElementById('itineraryMasterListView').classList.remove('hidden');
+            // Check if itineraries are truly empty (either from fetch or empty local storage)
+            if (!savedItineraries || savedItineraries.length === 0) {
+                const topHeaderBar = masterList.previousElementSibling;
+                if (topHeaderBar) topHeaderBar.classList.add('hidden');
 
-            if (savedItineraries.length === 0) {
-                topHeaderBar.classList.add('hidden');
                 masterList.innerHTML = `
-                    <div class="absolute inset-0 flex flex-col justify-center items-center text-center px-6 select-none pb-20">
-                        <div class="max-w-xs space-y-5">
-                            <div class="w-20 h-20 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 text-3xl mx-auto filter drop-shadow-[0_0_15px_rgba(236,72,153,0.3)]">
+                    <div class="flex flex-col justify-center items-center h-full text-center px-6">
+                        <div class="max-w-xs space-y-4">
+                            <div class="w-16 h-16 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 text-2xl mx-auto">
                                 <i class="fa-solid fa-route"></i>
                             </div>
-                            <div class="space-y-2">
-                                <h2 class="text-lg font-black text-slate-200">Build Your First Itinerary</h2>
-                                <p class="text-sm text-slate-400 leading-relaxed font-medium px-4">Create daily schedules using saved spots.</p>
-                            </div>
-                            <button onclick="openItineraryCreationDrawerForm()" class="w-full py-4 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-lg shadow-pink-600/20 active:scale-95 transition-transform mt-2">
+                            <h2 class="text-lg font-black text-slate-200">Build Your First Itinerary</h2>
+                            <p class="text-sm text-slate-400">Create daily schedules using saved spots.</p>
+                            <button onclick="openItineraryCreationDrawerForm()" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl text-xs font-black uppercase text-white shadow-lg">
                                 + New Itinerary
                             </button>
                         </div>
                     </div>`;
                 return;
             }
-            topHeaderBar.classList.remove('hidden');
+            const topHeaderBar = masterList.previousElementSibling;
+            if (topHeaderBar) topHeaderBar.classList.remove('hidden');
+
 
             savedItineraries.forEach(itin => {
                 // FILTER LOGIC: Apply city filter if cities are selected in the master filter
@@ -3692,7 +3682,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'sync_itinerary',
-                        user: localStorage.getItem('active_user') || "Explorer",
+                        user: localStorage.getItem('compass_user') || "Explorer",
                         itin_id: itinData.id,
                         method: method,
                         data: itinData
@@ -3708,7 +3698,7 @@
         async function loadUserItineraries() {
             // 1. Get user directly from the UI dropdown instead of localStorage
             const dropdown = document.getElementById('user-dropdown-select'); 
-            const user = dropdown ? dropdown.value : localStorage.getItem('active_user');
+            const user = dropdown ? dropdown.value : localStorage.getItem('compass_user');
             
             if (!user || user === "undefined") return; // Safety guard
 
