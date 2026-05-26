@@ -154,7 +154,7 @@
         <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
             <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
                 <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded View</span>
-                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="noteExpandedOverlayScrollBox" class="max-h-[50vh] overflow-y-auto subtle-scrollbar pr-1">
                 <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap select-text"></p>
@@ -175,7 +175,7 @@
 
     <div id="thematicUXModalDeckHUD" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[99999] flex items-center justify-center hidden p-4 transition-all duration-300">
         <div id="thematicUXModalCardHUD" class="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center space-y-5 scale-95 transition-transform duration-300 relative">
-            <button onclick="dismissThematicUXModalHUD()" class="absolute top-4 right-4 w-7 h-7 bg-slate-800/80 border border-slate-700/50 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold active:bg-slate-700 transition-colors">
+            <button onclick="dismissThematicUXModalHUD()" class="absolute top-4 right-4 w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:bg-red-500/20 transition-colors">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <div id="thematicUXIconHUD" class="w-14 h-14 rounded-full flex items-center justify-center text-xl mx-auto border mt-2"></div>
@@ -183,10 +183,9 @@
                 <h3 id="thematicUXTitleHUD" class="text-sm font-black text-slate-100 tracking-wide uppercase">Are you sure?</h3>
                 <p id="thematicUXDescHUD" class="text-[11px] text-slate-400 font-medium leading-relaxed px-2"></p>
             </div>
-            <div id="thematicUXInputWrapperHUD" class="hidden px-2 w-full"></div>
-            <div class="flex gap-2.5 pt-1 px-1">
-                <button onclick="dismissThematicUXModalHUD()" id="thematicUXCancelBtnHUD" class="flex-1 py-3 bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-black rounded-xl text-[10px] uppercase tracking-wider transition-all border border-slate-700/40">Cancel</button>
-                <button id="thematicUXActionBtnHUD" class="flex-1 py-3 text-white font-black rounded-xl text-[10px] uppercase tracking-wider transition-all disabled:opacity-30 disabled:pointer-events-none">Confirm</button>
+            <div id="thematicUXInputWrapperHUD" class="px-2 w-full"></div>
+            <div class="pt-1 px-1 flex justify-center w-full">
+                <button id="thematicUXActionBtnHUD" class="w-full py-3.5 text-white font-black rounded-xl text-[10px] uppercase tracking-wider transition-all disabled:opacity-30 disabled:pointer-events-none">Confirm</button>
             </div>
         </div>
     </div>
@@ -279,12 +278,12 @@
                         <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-lg"><i class="fa-solid fa-moon text-slate-200"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Dark</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('light')" id="styleCard-light" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
+                    <button onclick="setMapBaseLayerProviderSource('light')" id="styleCard-light" class="flex flex-col items-center gap-1 p-1 bg-slate-955 rounded-xl border border-slate-800">
                         <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-lg"><i class="fa-solid fa-sun text-amber-500"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Light</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('terrain')" id="styleCard-terrain" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-955 flex items-center justify-center text-lg"><i class="fa-solid fa-mountain text-emerald-500"></i></div>
+                    <button onclick="setMapBaseLayerProviderSource('terrain')" id="styleCard-terrain" class="flex flex-col items-center gap-1 p-1 bg-slate-955 rounded-xl border border-slate-800">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center text-lg"><i class="fa-solid fa-mountain text-emerald-500"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Terrain</span>
                     </button>
                     <button onclick="setMapBaseLayerProviderSource('satellite')" id="styleCard-satellite" class="flex flex-col items-center gap-1 p-1 bg-slate-955 rounded-xl border border-slate-800 text-blue-400">
@@ -306,7 +305,7 @@
             <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 flip-perspective-container bg-transparent z-[999] hidden max-w-md mx-auto h-[480px] pointer-events-auto transition-transform">
                 <div class="flip-card-inner-rotator w-full h-full">
                     
-                    <div class="flip-card-front-face w-full h-full p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden bg-slate-900 border border-slate-800">
+                    <div class="flip-card-front-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden">
                         <div class="flex justify-between items-start gap-2 shrink-0">
                             <div>
                                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -318,7 +317,7 @@
                             </div>
                             <div class="flex items-center gap-1.5 shrink-0">
                                 <span id="trayDistanceBadge" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400">0m</span>
-                                <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                                <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                         </div>
                         
@@ -331,7 +330,7 @@
                                 <a id="trayOpenReferenceBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3.5 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
                                 <button id="trayActionBtn" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold h-12 gap-1.5"><i class="fa-solid fa-map text-sm"></i> Directions</button>
                             </div>
-                            <div id="trayTicketRow" class="hidden">
+                            <div id="ticketRow" class="hidden">
                                 <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
                             </div>
                             
@@ -345,7 +344,7 @@
                         </div>
                     </div>
 
-                    <div class="flip-card-back-face w-full h-full p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden bg-slate-900 border border-slate-800">
+                    <div class="flip-card-back-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden">
                         <div class="flex border-b border-slate-800/60 pb-2 shrink-0 items-center justify-between">
                             <h4 class="text-xs font-black uppercase tracking-wider text-slate-300">Extra Info</h4>
                         </div>
@@ -386,7 +385,7 @@
             </div>
         </div>
 
-        <div id="view-list" class="view-panel w-full bg-slate-950 flex flex-col">
+        <div id="view-list" class="view-panel w-full bg-slate-955 flex flex-col">
             
             <div class="w-full px-4 bg-slate-950 shrink-0 z-20 relative">
                 <div class="max-w-md mx-auto bg-slate-900/90 backdrop-blur-xl border-x border-b border-slate-800/80 px-3.5 py-1 rounded-b-xl flex justify-between items-center h-7 shadow-md -mt-[1px]">
@@ -402,7 +401,7 @@
             </div>
         </div>
 
-        <div id="view-itinerary" class="view-panel w-full bg-slate-950 flex flex-col h-full overflow-hidden relative">
+        <div id="view-itinerary" class="view-panel w-full bg-slate-955 flex flex-col h-full overflow-hidden relative">
             
             <div id="itineraryMasterListView" class="flex flex-col h-full w-full absolute inset-0 z-10 bg-slate-950">
                 <div class="px-4 py-3 bg-slate-900/60 backdrop-blur border-b border-slate-800 shrink-0 flex items-center justify-between">
@@ -1105,8 +1104,7 @@
                 maxZoom: 20,
                 preload: true,
                 keepBuffer: 4, 
-                updateWhenIdle: false, 
-                updateWhenZooming: false
+                updateWhenIdle: false, updateWhenZooming: false
             };
             let visibleLabel = "Style: Dark";
 
@@ -2160,7 +2158,7 @@
                                 <span class="text-[8px] text-slate-600 font-mono">ID: #${spot.rowid}</span>
                             </div>
                             <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 pr-0.5 space-y-3 text-[11px]">
-                                <p class="text-slate-300 Stadium leading-relaxed font-medium bg-slate-950/50 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No background summary recorded.'}</p>
+                                <p class="text-slate-300 Stadium leading-relaxed font-medium bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No background summary recorded.'}</p>
                                 
                                 <div class="space-y-1">
                                     <span class="text-[8px] font-black uppercase tracking-widest text-pink-500 block">Itinerary Mapping Tracker</span>
@@ -2176,7 +2174,7 @@
 
                                 <div>
                                     <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Schedule</span>
-                                    <div class="bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl font-mono text-[10px] text-slate-400 space-y-0.5">${hoursHTMLTokens}</div>
+                                    <div class="bg-slate-955/50 border border-slate-950 p-2.5 rounded-xl font-mono text-[10px] text-slate-400 space-y-0.5">${hoursHTMLTokens}</div>
                                 </div>
                                 ${(spot.booking_requirement && spot.booking_requirement !== "N/A" && spot.booking_requirement.toLowerCase() !== "none") ? `
                                 <div class="p-2.5 bg-amber-500/5 border border-amber-500/20 rounded-xl">
@@ -2389,8 +2387,10 @@
                 
                 if (switchUserBox && mainSelectionBox) {
                     switchUserBox.innerHTML = mainSelectionBox.innerHTML;
+                    
                     if (currentUser) {
                         switchUserBox.value = currentUser;
+                        
                         const renameField = document.getElementById('settingsRenameField');
                         if (renameField) {
                             renameField.value = '';
@@ -2406,7 +2406,7 @@
             window.addEventListener('online', updateNetworkStatusHUD); 
             window.addEventListener('offline', updateNetworkStatusHUD); 
         }
-        
+
         function updateNetworkStatusHUD() {
             const indicator = document.getElementById('networkIndicator'); const syncText = document.getElementById('syncText');
             if(!indicator || !syncText) return;
@@ -2417,7 +2417,7 @@
             }
         }
 
-        // --- THEMATIC CONTROLLER MODAL ENGINE ---
+        // --- THEMATIC CONTROLLER MODAL ENGINE (RESIZED & BALANCED SINGLE-CENTER BUTTON ACTIONS) ---
         function openThematicUXModalHUD(config) {
             const deck = document.getElementById('thematicUXModalDeckHUD');
             const card = document.getElementById('thematicUXModalCardHUD');
@@ -2431,18 +2431,16 @@
             desc.innerText = config.desc || "";
             actionBtn.innerText = config.confirmText || "Confirm";
             
-            // Apply theme variations cleanly
             if (config.theme === 'red') {
-                actionBtn.className = "flex-1 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white font-black rounded-xl text-[10px] uppercase tracking-wider shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-30 disabled:pointer-events-none";
+                actionBtn.className = "w-full max-w-[220px] py-3.5 bg-gradient-to-r from-red-600 to-rose-600 text-white font-black rounded-xl text-[10px] uppercase tracking-wider shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-35 disabled:pointer-events-none";
                 icon.className = "w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 text-xl mx-auto border border-red-500/20";
                 icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
             } else {
-                actionBtn.className = "flex-1 py-3 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-black rounded-xl text-[10px] uppercase tracking-wider shadow-lg shadow-pink-600/20 active:scale-95 transition-all disabled:opacity-30 disabled:pointer-events-none";
+                actionBtn.className = "w-full max-w-[220px] py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-black rounded-xl text-[10px] uppercase tracking-wider shadow-lg shadow-pink-600/20 active:scale-95 transition-all disabled:opacity-35 disabled:pointer-events-none";
                 icon.className = "w-14 h-14 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 text-xl mx-auto border border-pink-500/20";
                 icon.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
             }
             
-            // Set up dynamic inputs if requested
             if (config.htmlInput) {
                 inputContainer.innerHTML = config.htmlInput;
                 inputContainer.classList.remove('hidden');
@@ -2475,7 +2473,7 @@
             setTimeout(() => deck.classList.add('hidden'), 250);
         }
 
-        // --- SETTINGS HUD VALIDATION HANDLERS ---
+        // --- SETTINGS HUD INLINE VALIDATION HANDLERS ---
         function evaluateInlineProfileValidationHUD(val) {
             const helperHUD = document.getElementById('settingsRenameHelperHUD');
             const submitBtn = document.getElementById('settingsRenameSubmitBtn');
@@ -2510,7 +2508,6 @@
             const oldName = currentUser || "Global Traveller";
             const newName = renameField.value.trim();
             
-            // Safe inline alert modal route switch
             openThematicUXModalHUD({
                 title: "Update Label Identity",
                 desc: `Are you sure you want to change your profile identity from "${oldName}" to "${newName}"?`,
@@ -2540,7 +2537,6 @@
                     toggleSettingsMenu(false);
                     syncData(true);
                     
-                    // Fire sequential custom success splash screen HUD
                     setTimeout(() => {
                         openThematicUXModalHUD({
                             title: "Resource Synced",
@@ -2575,7 +2571,6 @@
                     const adminPassword = passField ? passField.value.trim() : "";
                     dismissThematicUXModalHUD();
                     
-                    // Show immediate processing transition backdrop loader
                     document.getElementById('buildingItineraryLoaderPopup').classList.remove('hidden');
                     
                     try {
@@ -2652,8 +2647,8 @@
         }
 
         /* ==========================================================================
-           PURE ADDITIVE JS LAYER: V5 SCHEDULING SEQUENCE TIMELINE ENGINE
-           ========================================================================== */
+            PURE ADDITIVE JS LAYER: V5 SCHEDULING SEQUENCE TIMELINE ENGINE
+            ========================================================================== */
 
         function isItineraryCacheWhollyEmpty() {
             return (!itineraryItems["1"] || itineraryItems["1"].length === 0) &&
@@ -2699,9 +2694,9 @@
             const currentRowId = actionBtn.getAttribute('data-row-id');
             if (!currentRowId) { container.innerHTML = ''; return; }
             container.innerHTML = `
-                <button onclick="injectActiveSpotToItineraryDay(1, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D1</button>
-                <button onclick="injectActiveSpotToItineraryDay(2, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D2</button>
-                <button onclick="injectActiveSpotToItineraryDay(3, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D3</button>
+                <button onclick="injectActiveSpotToItineraryDay(1, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-855">D1</button>
+                <button onclick="injectActiveSpotToItineraryDay(2, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-855">D2</button>
+                <button onclick="injectActiveSpotToItineraryDay(3, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-855">D3</button>
             `;
         }
 
