@@ -175,7 +175,7 @@
 
     <div id="thematicUXModalDeckHUD" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[99999] flex items-center justify-center hidden p-4 transition-all duration-300">
         <div id="thematicUXModalCardHUD" class="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center space-y-5 scale-95 transition-transform duration-300 relative">
-            <button onclick="dismissThematicUXModalHUD()" class="w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:bg-red-555/20 transition-colors absolute top-4 right-4">
+            <button onclick="dismissThematicUXModalHUD()" class="absolute top-4 right-4 w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-black active:bg-red-555/20 transition-all">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <div id="thematicUXIconHUD" class="w-14 h-14 rounded-full flex items-center justify-center text-xl mx-auto border mt-2"></div>
@@ -195,7 +195,7 @@
             <div class="flex flex-col items-start pl-1">
                 <h1 class="text-lg font-black flex items-center gap-2 select-none">
                     <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] rotate-12 transform origin-bottom-left"></i>
-                    <span class="text-transparent bg-clip-text bg-gradient-r from-pink-500 to-violet-500 tracking-tight">Save2Go</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500 tracking-tight">Save2Go</span>
                 </h1>
                 <div class="flex items-center gap-1.5 mt-0.5 pl-0.5">
                     <span id="networkIndicator" class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
@@ -735,11 +735,13 @@
                      !event.target.closest('#filterMenuTriggerBtn')) {
                      closeAllActiveHUDDropdownOverlays();
                  }
-                 // Outside Click Style closer fix mapped
+                 
+                 // Clean Tap Closer Fix for Map Style Drawer Element Container
                  if (!event.target.closest('#mapLayerStyleDropdownDeck') && !event.target.closest('button[onclick*="mapLayerStyleDropdownDeck"]')) {
                      const deck = document.getElementById('mapLayerStyleDropdownDeck');
                      if (deck) deck.classList.add('hidden');
                  }
+                 
                  const settingsMenu = document.getElementById('settingsDrawer');
                  if (settingsMenu && !settingsMenu.classList.contains('hidden')) {
                      if (!event.target.closest('#settingsDrawerContentBody') && !event.target.closest('button[onclick="toggleSettingsMenu(true)"]')) {
@@ -822,7 +824,7 @@
                     sharedOptionsHTML += `<option value="${user}">${user}</option>`;
                 });
                 
-                // Populate both containers simultaneously on initialization fetch return
+                // Synchronize dropdown building on very first network initialization response cycle
                 if (select) {
                     select.innerHTML = sharedOptionsHTML;
                     if (currentUser) select.value = currentUser;
@@ -1294,7 +1296,7 @@
             document.getElementById('dropdownBlurBackdrop').classList.add('hidden');
         }
 
-        // --- THEMATIC CONTROLLER MODAL ENGINE (RESIZED & BALANCED SINGLE-CENTER BUTTON ACTIONS) ---
+        // --- THEMATIC CONTROLLER MODAL ENGINE ---
         function openThematicUXModalHUD(config) {
             const deck = document.getElementById('thematicUXModalDeckHUD');
             const card = document.getElementById('thematicUXModalCardHUD');
@@ -1623,6 +1625,57 @@
             renderItineraryMasterDashboardWorkspace();
         }
 
+        // --- DESTRUCTIVE PURGES LOGIC CORRECTION ---
+        function triggerClearItineraryData() {
+            openThematicUXModalHUD({
+                title: "Incinerate Cached Schedules",
+                desc: "This will permanently incinerate all travel spot sequence routes and offline calendar entries. This operation is non-reversible.",
+                confirmText: "Scrub Caches",
+                theme: "red",
+                onConfirm: async function() {
+                    dismissThematicUXModalHUD();
+                    const targetedUserIdentity = currentUser || "";
+                    if (targetedUserIdentity && Array.isArray(savedItineraries) && savedItineraries.length > 0) {
+                        for (const itin of savedItineraries) {
+                            try {
+                                await fetch(BACKEND_URL, {
+                                    method: 'POST',
+                                    mode: 'no-cors',
+                                    body: JSON.stringify({
+                                        action: 'sync_itinerary',
+                                        method: 'delete',
+                                        user: targetedUserIdentity,
+                                        itin_id: itin.id
+                                    })
+                                });
+                            } catch (err) {
+                                console.error("Failed to sync matrix purge downstream:", err);
+                            }
+                        }
+                    }
+
+                    localStorage.removeItem('compass_saved_itineraries');
+                    localStorage.removeItem('compass_itinerary_cache');
+                    localStorage.removeItem('compass_active_itinerary_id');
+                    savedItineraries = [];
+                    itineraryItems = { "1": [], "2": [], "3": [] };
+                    activeItineraryId = null;
+
+                    renderItineraryMasterDashboardWorkspace();
+                    
+                    setTimeout(() => {
+                        openThematicUXModalHUD({
+                            title: "Itineraries Purged",
+                            desc: "Offline timeline blocks have been cleared and spreadsheet storage configurations have been updated.",
+                            confirmText: "Continue",
+                            theme: "pink",
+                            onConfirm: function() { dismissThematicUXModalHUD(); }
+                        });
+                    }, 350);
+                }
+            });
+        }
+
         function removeSpotFromItineraryDay(rowId) {
             if (!itineraryItems[activeItineraryDayTracker]) return;
             itineraryItems[activeItineraryDayTracker] = itineraryItems[activeItineraryDayTracker].filter(id => id !== parseInt(rowId));
@@ -1689,8 +1742,6 @@
         // =====================================================================
         // ITINERARY CLOUD SYNC ENGINE
         // =====================================================================
-        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec";
-
         // 1. PUSH TO CLOUD
         async function syncItineraryToCloud(itinData, method = 'save', targetUser = null) {
             const userToSync = targetUser || localStorage.getItem('compass_user') || "Explorer";
@@ -1747,57 +1798,6 @@
                 } catch(e) { savedItineraries = []; }
                 renderItineraryMasterDashboardWorkspace();
             }
-        }
-
-        // 🌐 MATRIX REGISTRY PURGE ENGINE
-        function triggerClearItineraryData() {
-            openThematicUXModalHUD({
-                title: "Incinerate Cached Schedules",
-                desc: "This will permanently incinerate all travel spot sequence routes and offline calendar entries. This operation is non-reversible.",
-                confirmText: "Scrub Caches",
-                theme: "red",
-                onConfirm: async function() {
-                    dismissThematicUXModalHUD();
-                    const targetedUserIdentity = currentUser || "";
-                    if (targetedUserIdentity && Array.isArray(savedItineraries) && savedItineraries.length > 0) {
-                        for (const itin of savedItineraries) {
-                            try {
-                                await fetch(BACKEND_URL, {
-                                    method: 'POST',
-                                    mode: 'no-cors',
-                                    body: JSON.stringify({
-                                        action: 'sync_itinerary',
-                                        method: 'delete',
-                                        user: targetedUserIdentity,
-                                        itin_id: itin.id
-                                    })
-                                });
-                            } catch (err) {
-                                console.error("Failed to sync matrix purge downstream:", err);
-                            }
-                        }
-                    }
-
-                    localStorage.removeItem('compass_saved_itineraries');
-                    localStorage.removeItem('compass_itinerary_cache');
-                    localStorage.removeItem('compass_active_itinerary_id');
-                    savedItineraries = [];
-                    itineraryItems = { "1": [], "2": [], "3": [] };
-                    activeItineraryId = null;
-
-                    renderItineraryMasterDashboardWorkspace();
-                    
-                    setTimeout(() => {
-                        openThematicUXModalHUD({
-                            title: "Itineraries Purged",
-                            desc: "Offline timeline blocks have been cleared and spreadsheet storage configurations have been updated.",
-                            confirmText: "Continue",
-                            theme: "pink",
-                            onConfirm: function() { dismissThematicUXModalHUD(); }
-                        });
-                    }, 350);
-                }
-            });
         }
     </script>
 </body>
