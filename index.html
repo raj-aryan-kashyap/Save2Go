@@ -704,7 +704,7 @@
     <script>
         const ENABLE_MAP_ROTATION = false; 
 
-        const APP_VERSION = "v5.0.0";
+        const APP_VERSION = "v5.0.10";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -2863,27 +2863,27 @@
             if (!masterList) return;
             masterList.innerHTML = '';
 
+            const topHeaderBar = document.getElementById('itineraryWorkspaceHeaderNavPanel');
+
             // Check if itineraries are truly empty (either from fetch or empty local storage)
             if (!savedItineraries || savedItineraries.length === 0) {
-                const topHeaderBar = masterList.previousElementSibling;
                 if (topHeaderBar) topHeaderBar.classList.add('hidden');
 
                 masterList.innerHTML = `
-                    <div class="flex flex-col justify-center items-center h-full text-center px-6">
+                    <div class="flex flex-col justify-center items-center py-12 text-center px-6">
                         <div class="max-w-xs space-y-4">
                             <div class="w-16 h-16 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 text-2xl mx-auto">
                                 <i class="fa-solid fa-route"></i>
                             </div>
                             <h2 class="text-lg font-black text-slate-200">Build Your First Itinerary</h2>
                             <p class="text-sm text-slate-400">Create daily schedules using saved spots.</p>
-                            <button onclick="openItineraryCreationDrawerForm()" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl text-xs font-black uppercase text-white shadow-lg">
+                            <button onclick="openItineraryCreationDrawerForm(true)" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl text-xs font-black uppercase text-white shadow-lg">
                                 + New Itinerary
                             </button>
                         </div>
                     </div>`;
                 return;
             }
-            const topHeaderBar = masterList.previousElementSibling;
             if (topHeaderBar) topHeaderBar.classList.remove('hidden');
 
 
@@ -3749,30 +3749,27 @@
         async function nukeAllSavedData() {
             if (!confirm("🚨 ABSOLUTE DESTRUCTION PROTOCOL:\n\nThis will permanently incinerate ALL offline travel spots, custom markers, notes, and local app cache data.\n\nAre you absolutely sure?")) return;
             
-            const targetedUserIdentity = currentUser || ""; // Use currentUser as the primary source
+            const targetedUserIdentity = activeExplorerProfileIdentityName || currentUser || "";
 
             // If we have an active identity profile and saved itineraries, clean up the database rows first
             if (targetedUserIdentity && Array.isArray(savedItineraries) && savedItineraries.length > 0) {
                 for (const itin of savedItineraries) {
-                    await syncItineraryToCloud({id: itin.id}, 'delete', targetedUserIdentity); // Use the new sync function
+                    try {
+                        await fetch(API_URL, {
+                            method: 'POST',
+                            mode: 'cors',
+                            body: JSON.stringify({
+                                action: 'sync_itinerary',
+                                method: 'delete',
+                                user: targetedUserIdentity,
+                                itin_id: itin.id
+                            })
+                        });
+                    } catch (err) {
+                        console.error("Failed to delete itinerary from cloud database during wipe:", err);
+                    }
                 }
             }
-
-            localStorage.clear();
-            travelSpots = [];
-            savedItineraries = [];
-            itineraryItems = {};
-            
-            // Clear user tracking states cleanly
-            currentUser = ""; // Reset currentUser
-            if (document.getElementById('currentProfileIdentityBadgeHUD')) { // Assuming this element exists for displaying current user
-                document.getElementById('currentProfileIdentityBadgeHUD').innerText = "Guest Explorer";
-            }
-
-            renderList();
-            plotDynamicMarkersOnCanvasMap();
-            renderItineraryMasterDashboardWorkspace();
-            alert("Local storage and connected database itineraries successfully wiped.");
         }
     </script>
 </body>
