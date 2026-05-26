@@ -3675,7 +3675,13 @@
         const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec";
 
         // 1. PUSH TO CLOUD
-        async function syncItineraryToCloud(itinData, method = 'save') {
+        async function syncItineraryToCloud(itinData, method = 'save', targetUser = null) {
+            const userToSync = targetUser || localStorage.getItem('compass_user') || "Explorer";
+            if (!userToSync) {
+                console.warn("No user identified for itinerary sync. Skipping cloud operation.");
+                return;
+            }
+
             try {
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
@@ -3683,13 +3689,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'sync_itinerary',
-                        user: localStorage.getItem('compass_user') || "Explorer",
+                        user: userToSync,
                         itin_id: itinData.id,
                         method: method,
                         data: itinData
                     })
                 });
                 console.log("Sync request sent to backend.");
+                // For no-cors, we can't read response. Check status via other means if needed.
+                // The actual success/failure will be handled by the Apps Script.
             } catch (err) {
                 console.error("Sync failed, caching locally:", err);
             }
@@ -3697,24 +3705,64 @@
 
         // 2. FETCH FROM CLOUD
         async function loadUserItineraries() {
-            // 1. Get user directly from the UI dropdown instead of localStorage
-            const dropdown = document.getElementById('user-dropdown-select'); 
-            const user = dropdown ? dropdown.value : localStorage.getItem('compass_user');
-            
-            if (!user || user === "undefined") return; // Safety guard
+            const userToFetch = currentUser || ""; // Use currentUser as the primary source
+            if (!userToFetch) {
+                savedItineraries = [];
+                localStorage.setItem('compass_saved_itineraries', JSON.stringify([]));
+                renderItineraryMasterDashboardWorkspace();
+                return;
+            }
 
             try {
-                const response = await fetch(`${BACKEND_URL}?action=get_itineraries&user=${encodeURIComponent(user)}`);
+                const response = await fetch(`${BACKEND_URL}?action=get_itineraries&user=${encodeURIComponent(userToFetch)}`);
                 const results = await response.json();
                 
                 // Ensure results are clean
-                savedItineraries = (Array.isArray(results)) ? results.map(r => r.data) : [];
+                if (Array.isArray(results) && results.length > 0) {
+                    savedItineraries = results.map(r => r.data);
+                } else {
+                    savedItineraries = [];
+                }
                 localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
                 
                 renderItineraryMasterDashboardWorkspace();
             } catch (err) {
                 console.error("Cloud fetch failed, using local storage.");
+                // Fallback to local storage state if network fails
+                try {
+                    savedItineraries = JSON.parse(localStorage.getItem('compass_saved_itineraries')) || [];
+                } catch(e) { savedItineraries = []; }
+                renderItineraryMasterDashboardWorkspace();
             }
+        }
+
+        async function nukeAllSavedData() {
+            if (!confirm("🚨 ABSOLUTE DESTRUCTION PROTOCOL:\n\nThis will permanently incinerate ALL offline travel spots, custom markers, notes, and local app cache data.\n\nAre you absolutely sure?")) return;
+            
+            const targetedUserIdentity = currentUser || ""; // Use currentUser as the primary source
+
+            // If we have an active identity profile and saved itineraries, clean up the database rows first
+            if (targetedUserIdentity && Array.isArray(savedItineraries) && savedItineraries.length > 0) {
+                for (const itin of savedItineraries) {
+                    await syncItineraryToCloud({id: itin.id}, 'delete', targetedUserIdentity); // Use the new sync function
+                }
+            }
+
+            localStorage.clear();
+            travelSpots = [];
+            savedItineraries = [];
+            itineraryItems = {};
+            
+            // Clear user tracking states cleanly
+            currentUser = ""; // Reset currentUser
+            if (document.getElementById('currentProfileIdentityBadgeHUD')) { // Assuming this element exists for displaying current user
+                document.getElementById('currentProfileIdentityBadgeHUD').innerText = "Guest Explorer";
+            }
+
+            renderList();
+            plotDynamicMarkersOnCanvasMap();
+            renderItineraryMasterDashboardWorkspace();
+            alert("Local storage and connected database itineraries successfully wiped.");
         }
     </script>
 </body>
