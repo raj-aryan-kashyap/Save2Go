@@ -726,7 +726,10 @@
         let gpsStatusCachedBool = false; let activeTabID = 'map';
 
         // --- V5 ITINERARY ENGINE MEMORY ---
-        let savedItineraries = JSON.parse(localStorage.getItem('compass_saved_itineraries')) || [];
+        let savedItineraries = [];
+        try {
+            savedItineraries = JSON.parse(localStorage.getItem('compass_saved_itineraries')) || [];
+        } catch(e) { savedItineraries = []; }
         let activeItineraryId = localStorage.getItem('compass_active_itinerary_id') || null;
         let activeItineraryDayTracker = 1; 
         let itineraryItems = JSON.parse(localStorage.getItem('compass_itinerary_cache')) || { "1": [], "2": [], "3": [] };
@@ -2821,13 +2824,8 @@
             closeThematicConfirm();
         });
 
-        function triggerClearItineraryData() {
-            openThematicConfirm("Clear Itinerary Data", "This will permanently delete all saved itineraries. This cannot be undone.", "Delete All", () => {
-                savedItineraries = []; activeItineraryId = null;
-                localStorage.removeItem('compass_saved_itineraries'); localStorage.removeItem('compass_active_itinerary_id');
-                if (activeTabID === 'itinerary') renderItineraryMasterDashboardWorkspace();
-            }, 'red');
-        }
+        
+        
 
         function promptDeleteItinerary() {
             openThematicConfirm("Delete Itinerary", "Are you sure you want to delete this specific itinerary?", "Delete", () => {
