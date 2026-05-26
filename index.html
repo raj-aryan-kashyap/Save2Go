@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Save2Go V4.7.4 - Integrated Matrix Engine Production Baseline</title>
+    <title>Save2Go V5.0.0 </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link class="map-core-css" rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -704,7 +704,7 @@
     <script>
         const ENABLE_MAP_ROTATION = false; 
 
-        const APP_VERSION = "v4.7.4";
+        const APP_VERSION = "v5.0.0";
         const API_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec"; 
         
         let currentUser = localStorage.getItem('compass_user');
@@ -851,6 +851,11 @@
                 renderList();
                 plotDynamicMarkersOnCanvasMap();
                 buildItinerarySubMenuChecklist();
+                
+                // Unhide layout layers safely before performing the initial empty-state check render
+                const masterListViewInit = document.getElementById('itineraryMasterListView');
+                if (masterListViewInit) masterListViewInit.classList.remove('hidden');
+                
                 renderItineraryMasterDashboardWorkspace();
             }
             
@@ -1368,6 +1373,11 @@
                 if (priorityEl) priorityEl.classList.add('opacity-35', 'pointer-events-none');
                 if (typeEl) typeEl.classList.add('opacity-35', 'pointer-events-none');
                 closeAllActiveHUDDropdownOverlays();
+
+                // Ensure the workspace layout sub-containers are unhidden
+                const masterListView = document.getElementById('itineraryMasterListView');
+                if (masterListView) masterListView.classList.remove('hidden');
+                renderItineraryMasterDashboardWorkspace();
             } else {
                 if (priorityEl) priorityEl.classList.remove('opacity-35', 'pointer-events-none');
                 if (typeEl) typeEl.classList.remove('opacity-35', 'pointer-events-none');
