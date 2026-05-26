@@ -2335,7 +2335,10 @@
                     localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
                     calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
                     buildItinerarySubMenuChecklist();
-                    renderItineraryMasterDashboardWorkspace();
+                    
+                    // Fetch itineraries immediately after getting the main vault spots
+                    await loadUserItineraries();
+                    
                     updateNetworkStatusHUD();
                 }
             } catch (e) { 
