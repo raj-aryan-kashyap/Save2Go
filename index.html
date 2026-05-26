@@ -141,7 +141,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col overflow-hidden selection:bg-transparent select-none">
 
-    <div id="dropdownBlurBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[450] hidden transition-all duration-300"></div>
+    <div id="dropdownBlurBackdrop" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[500] hidden transition-all duration-300"></div>
 
     <div id="globalToastSpeechBubbleHUD" class="fixed z-[99999] pointer-events-none hidden max-w-[240px] w-full filter drop-shadow-xl h-0 w-0 overflow-visible">
         <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700 text-slate-200 text-[11px] font-bold p-3 rounded-2xl text-center relative shadow-2xl leading-relaxed w-[240px]">
@@ -154,7 +154,7 @@
         <div id="noteExpandedOverlayCard" class="w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
             <div class="flex justify-between items-center border-b border-slate-800/60 pb-2">
                 <span class="text-[10px] uppercase font-black tracking-widest text-pink-500">Expanded View</span>
-                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold active:bg-red-500/20"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="manuallyCloseNoteOverlayHUD()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div id="noteExpandedOverlayScrollBox" class="max-h-[50vh] overflow-y-auto subtle-scrollbar pr-1">
                 <p id="noteExpandedOverlayText" class="text-xs text-slate-200 leading-relaxed font-medium whitespace-pre-wrap select-text"></p>
@@ -170,23 +170,6 @@
                 Your device location setting is turned off or blocked. Please enable device location inside your phone settings dashboard and try again.
             </p>
             <button onclick="document.getElementById('gpsInstructionsOverlayModal').classList.add('hidden')" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 font-bold text-xs uppercase tracking-wider rounded-xl text-white">Got It</button>
-        </div>
-    </div>
-
-    <div id="thematicUXModalDeckHUD" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[99999] flex items-center justify-center hidden p-4 transition-all duration-300">
-        <div id="thematicUXModalCardHUD" class="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center space-y-5 scale-95 transition-transform duration-300 relative">
-            <button onclick="dismissThematicUXModalHUD()" class="absolute top-4 right-4 w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-black active:bg-red-555/20 transition-all">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <div id="thematicUXIconHUD" class="w-14 h-14 rounded-full flex items-center justify-center text-xl mx-auto border mt-2"></div>
-            <div class="space-y-2">
-                <h3 id="thematicUXTitleHUD" class="text-sm font-black text-slate-100 tracking-wide uppercase">Are you sure?</h3>
-                <p id="thematicUXDescHUD" class="text-[11px] text-slate-400 font-medium leading-relaxed px-2"></p>
-            </div>
-            <div id="thematicUXInputWrapperHUD" class="px-2 w-full"></div>
-            <div class="pt-1 px-1 flex justify-center w-full">
-                <button id="thematicUXActionBtnHUD" class="w-full py-3.5 text-white font-black rounded-xl text-[10px] uppercase tracking-wider transition-all disabled:opacity-30 disabled:pointer-events-none">Confirm</button>
-            </div>
         </div>
     </div>
 
@@ -278,16 +261,16 @@
                         <div class="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center text-lg"><i class="fa-solid fa-moon text-slate-200"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Dark</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('light')" id="styleCard-light" class="flex flex-col items-center gap-1 p-1 bg-slate-955 rounded-xl border border-slate-800">
+                    <button onclick="setMapBaseLayerProviderSource('light')" id="styleCard-light" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
                         <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-lg"><i class="fa-solid fa-sun text-amber-500"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Light</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('terrain')" id="styleCard-terrain" class="flex flex-col items-center gap-1 p-1 bg-slate-955 rounded-xl border border-slate-800">
+                    <button onclick="setMapBaseLayerProviderSource('terrain')" id="styleCard-terrain" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800">
                         <div class="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center text-lg"><i class="fa-solid fa-mountain text-emerald-500"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Terrain</span>
                     </button>
-                    <button onclick="setMapBaseLayerProviderSource('satellite')" id="styleCard-satellite" class="flex flex-col items-center gap-1 p-1 bg-slate-955 rounded-xl border border-slate-800 text-blue-400">
-                        <div class="w-10 h-10 rounded-lg bg-blue-955 flex items-center justify-center text-base"><i class="fa-solid fa-location-dot"></i></div>
+                    <button onclick="setMapBaseLayerProviderSource('satellite')" id="styleCard-satellite" class="flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-blue-400">
+                        <div class="w-10 h-10 rounded-lg bg-blue-950 flex items-center justify-center text-base"><i class="fa-solid fa-location-dot"></i></div>
                         <span class="text-[8px] font-bold tracking-tight text-slate-400">Sat</span>
                     </button>
                 </div>
@@ -305,7 +288,7 @@
             <div id="mapDetailTrayHUD" class="fixed top-1/2 left-4 right-4 -translate-y-1/2 flip-perspective-container bg-transparent z-[999] hidden max-w-md mx-auto h-[480px] pointer-events-auto transition-transform">
                 <div class="flip-card-inner-rotator w-full h-full">
                     
-                    <div class="flip-card-front-face w-full h-full p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden bg-slate-900 border border-slate-800">
+                    <div class="flip-card-front-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden">
                         <div class="flex justify-between items-start gap-2 shrink-0">
                             <div>
                                 <div class="flex items-center gap-1.5 flex-wrap">
@@ -317,7 +300,7 @@
                             </div>
                             <div class="flex items-center gap-1.5 shrink-0">
                                 <span id="trayDistanceBadge" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400">0m</span>
-                                <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                                <button onclick="dismissMapDetailTrayHUDCard()" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
                             </div>
                         </div>
                         
@@ -327,10 +310,10 @@
                         
                         <div class="flex flex-col gap-2 shrink-0">
                             <div class="flex gap-2">
-                                <a id="trayOpenReferenceBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
+                                <a id="trayOpenReferenceBtn" href="#" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3.5 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
                                 <button id="trayActionBtn" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold h-12 gap-1.5"><i class="fa-solid fa-map text-sm"></i> Directions</button>
                             </div>
-                            <div id="ticketRow" class="hidden">
+                            <div id="trayTicketRow" class="hidden">
                                 <a id="trayTicketBtn" href="#" target="_blank" class="w-full bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>
                             </div>
                             
@@ -344,7 +327,7 @@
                         </div>
                     </div>
 
-                    <div class="flip-card-back-face w-full h-full p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden bg-slate-900 border border-slate-800">
+                    <div class="flip-card-back-face w-full h-full bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden">
                         <div class="flex border-b border-slate-800/60 pb-2 shrink-0 items-center justify-between">
                             <h4 class="text-xs font-black uppercase tracking-wider text-slate-300">Extra Info</h4>
                         </div>
@@ -423,7 +406,7 @@
                             <button onclick="openEditItineraryModal(activeItineraryId)" class="w-8 h-8 flex items-center justify-center bg-slate-800 rounded-full text-slate-300">
                                 <i class="fa-solid fa-pencil text-[10px]"></i>
                             </button>
-                            <button onclick="promptDeleteItinerary()" class="w-8 h-8 flex items-center justify-center bg-red-955/30 text-red-400 rounded-full">
+                            <button onclick="promptDeleteItinerary()" class="w-8 h-8 flex items-center justify-center bg-red-950/30 text-red-400 rounded-full">
                                 <i class="fa-solid fa-trash text-[10px]"></i>
                             </button>
                         </div>
@@ -473,7 +456,7 @@
                     <i class="fa-solid fa-map-pin text-xl bg-clip-text text-transparent bg-gradient-to-tr from-pink-500 to-violet-500 filter drop-shadow-[0_2px_8px_rgba(236,72,153,0.3)] rotate-12 transform origin-bottom-left"></i>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">Add New Spot</span>
                 </h3>
-                <button onclick="toggleQuickAddModal(false)" class="w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="toggleQuickAddModal(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="space-y-3 text-xs">
@@ -516,37 +499,29 @@
 
     <div id="settingsDrawer" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[999] hidden flex justify-end">
         <div id="settingsDrawerContentBody" class="w-72 bg-slate-900 h-full border-l border-slate-800 p-6 flex flex-col justify-between shadow-2xl overflow-y-auto no-scrollbar pb-24">
-            <div class="space-y-5">
+            <div class="space-y-6">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-800">
                     <h3 class="text-sm font-black text-slate-200 uppercase tracking-wider">Settings</h3>
-                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-red-955/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="toggleSettingsMenu(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                
-                <div class="space-y-2 pt-1">
+                <div class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Change My Profile Name</label>
-                    <input type="text" id="settingsRenameField" oninput="evaluateInlineProfileValidationHUD(this.value)" placeholder="Type name..." class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-200 focus:outline-none">
-                    <div id="settingsRenameHelperHUD" class="hidden text-[9px] font-bold mt-1 tracking-wide items-center gap-1 transition-all"></div>
-                    <button onclick="commitProfileRename()" id="settingsRenameSubmitBtn" disabled class="w-full py-2 bg-slate-800 text-slate-500 border border-slate-750 rounded-lg text-[11px] font-bold opacity-40 transition-all pointer-events-none">Update Profile Label</button>
+                    <input type="text" id="settingsRenameField" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs text-slate-200 focus:outline-none">
+                    <button onclick="commitProfileRename()" class="w-full py-2 bg-slate-800 rounded-lg text-[11px] font-bold">Update Profile Label</button>
                 </div>
-                
                 <hr class="border-slate-800">
                 <div id="settingsSwitchUserSection" class="space-y-2">
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Active User</label>
                     <select id="settingsSwitchUserDropdown" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs text-slate-300 focus:outline-none block appearance-none h-11 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_12px_center] bg-no-repeat pr-8"></select>
-                    <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white shadow-md">Swap Active User</button>
+                    <button id="settingsSwitchUserBtn" onclick="switchUserSessionViaSettings()" class="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 rounded-lg text-[11px] font-bold text-white">Swap Active User</button>
                 </div>
-                
                 <hr class="border-slate-800">
-                <div class="space-y-2.5">
-                    <button onclick="triggerClearItineraryData()" class="w-full py-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 shadow-inner">
+                <div class="space-y-2">
+                    <button onclick="triggerClearItineraryData()" class="w-full py-3 bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-black uppercase tracking-widest rounded-xl mt-4 hover:bg-red-500/20 transition-colors flex items-center justify-center gap-2">
                         <i class="fa-solid fa-trash-can"></i> Clear Itinerary Data
                     </button>
-                    <button onclick="openThematicPurgeModalHUD()" class="w-full py-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 shadow-inner">
-                        <i class="fa-solid fa-fire-burner"></i> Purge Cloud Logs
-                    </button>
-                    <button onclick="openThematicLogoutModalHUD()" class="w-full py-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 shadow-inner">
-                        <i class="fa-solid fa-right-from-bracket"></i> Logout Session
-                    </button>
+                    <button onclick="triggerSecureServerHistoryPurgeVault()" class="w-full py-2 bg-red-950/20 text-red-400 border border-red-900/40 text-[11px] font-bold rounded-lg">Purge Cloud Logs</button>
+                    <button onclick="clearDeviceSessionAndLogout()" class="w-full mt-2 py-2 bg-slate-950 border border-slate-800 text-slate-400 text-[11px] font-bold rounded-lg">Logout Session</button>
                 </div>
             </div>
             <div id="deviceMetaText" class="text-[9px] text-center text-slate-500 font-mono space-y-0.5">
@@ -557,6 +532,175 @@
         </div>
     </div>
 
+    <div id="userModal" class="fixed inset-0 bg-slate-950 z-[9999] flex flex-col justify-center items-center p-6 hidden">
+        <div class="text-center w-full max-w-xs space-y-6">
+            <div class="text-6xl filter drop-shadow-[0_0_15px_rgba(244,63,94,0.2)]"><i class="fa-solid fa-earth-americas text-pink-500"></i></div>
+            <div class="space-y-1">
+                <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-violet-400">Save2Go</h2>
+                <p class="text-xs text-slate-400 font-semibold tracking-wide">Who is holding the map right now?</p>
+            </div>
+            
+            <div class="space-y-3 pt-2 text-left">
+                <div id="loginDropdownContainer">
+                    <select id="user-dropdown-select" class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 font-medium text-xs focus:outline-none block appearance-none h-12 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239cbdca%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5%201.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_16px_center] bg-no-repeat pr-10"></select>
+                </div>
+                <div id="loginDividerLine" class="relative flex items-center justify-center my-2">
+                    <span class="absolute px-2 bg-slate-950 text-[10px] text-slate-600 font-bold uppercase">Or Register New</span>
+
+                </div>
+                <div>
+                    <input type="text" id="customUsernameInput" placeholder="Type name..." class="w-full bg-slate-900 p-3 rounded-xl border border-slate-800 text-slate-200 placeholder-slate-600 text-xs focus:outline-none">
+                </div>
+                <button onclick="handleInitialLoginSubmit()" id="beginSessionBtn" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-center font-black py-3.5 rounded-xl text-white text-xs uppercase tracking-wider">
+                    Begin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="itineraryWizardModalTray" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <h3 class="text-xs font-black tracking-wide text-pink-400 flex items-center gap-1">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Sequence Matrix Wizard
+                </h3>
+                <button onclick="toggleItineraryWizardModalTray(false)" class="w-6 h-6 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-relaxed font-medium">
+                Select items from your synchronized repository to populate the daily execution matrix route.
+            </p>
+            <div id="wizardBlueprintSlotsContainer" class="space-y-2 overflow-y-auto subtle-scrollbar flex-1 pr-1 py-1"></div>
+            <button onclick="saveGeneratedWizardSequenceToActiveDay()" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 font-bold text-xs uppercase tracking-wider rounded-xl text-white shadow-lg shadow-pink-600/20"><i class="fa-solid fa-floppy-disk mr-1.5"></i> Compile Sequence</button>
+        </div>
+    </div>
+
+    <div id="itineraryCreationDrawerModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[999] flex items-end hidden transition-all duration-300">
+        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[95vh] overflow-y-auto no-scrollbar shadow-2xl relative">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+                <h3 class="text-sm font-black flex items-center gap-2 text-pink-400">
+                    <i class="fa-solid fa-route"></i> Build Your Itinerary
+                </h3>
+                <button onclick="toggleItineraryCreationDrawerForm(false)" class="w-7 h-7 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-xs font-bold"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="space-y-3 text-xs w-full">
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 tracking-wide text-[10px]">Name</label>
+                    <input type="text" id="itin-new-name" oninput="validateItineraryForm()" placeholder="e.g., Paris Exploration" class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 focus:outline-none text-xs font-semibold">
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 tracking-wide text-[10px]">Pacing</label>
+                    <div class="bg-slate-950 p-1 rounded-xl border border-slate-800/80 flex h-[38px] relative overflow-hidden transition-all duration-200">
+                        <button onclick="setItinPacingMode('max')" id="itinPacingToggleMax" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors"><i class="fa-solid fa-rocket"></i> Max</button>
+                        <button onclick="setItinPacingMode('relaxed')" id="itinPacingToggleRelaxed" class="flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent"><i class="fa-solid fa-mug-hot"></i> Relaxed</button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-slate-400 font-bold tracking-wide text-[10px]">Schedule</label>
+                        </div>
+                        <div onclick="openMultiDatePickerModal()" class="w-full bg-slate-950 px-2.5 rounded-xl border border-slate-800 text-slate-200 flex flex-col justify-center h-[38px] cursor-pointer shadow-inner">
+                            <span id="itin-date-display" class="text-[11px] font-mono font-semibold text-slate-300">Select Dates</span>
+                        </div>
+                        <span id="itin-date-meta" class="text-[8px] font-black text-amber-500 hidden mt-1.5 flex items-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Non Sequential Days
+                        </span>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 font-bold mb-1 tracking-wide text-[10px]">City</label>
+                        <select id="itin-new-city" onchange="validateItineraryForm()" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-slate-200 focus:outline-none h-[38px] text-[11px] font-bold block appearance-none bg-no-repeat pr-6 shadow-inner"></select>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <label class="block text-slate-400 font-bold mb-1 tracking-wide text-[10px]">Daily Time Window</label>
+                    <div class="flex gap-1 items-center w-full">
+                        <input type="time" id="itin-new-start" value="09:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[11px] font-mono h-[38px] shadow-inner">
+                        <span class="text-slate-600 font-black px-1">-</span>
+                        <input type="time" id="itin-new-end" value="21:00" class="w-full bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-slate-200 focus:outline-none text-[11px] font-mono h-[38px] shadow-inner">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 tracking-wide text-[10px]">Categories Sequence</label>
+                    <div id="itinModalCategoryGridContainer" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto subtle-scrollbar p-2.5 bg-slate-950/40 rounded-xl border border-slate-900/60 w-full"></div>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 font-bold mb-1 tracking-wide text-[10px]">Selected Categories Sequence</label>
+                    <div id="itinModalSequenceQueryRowBox" class="w-full bg-slate-950 p-2.5 rounded-xl border border-slate-800 min-h-[80px] flex gap-1.5 items-center flex-wrap subtle-scrollbar shadow-inner items-start content-start"></div>
+                </div>
+
+                <button id="buildItinerarySubmitBtn" onclick="generateIntelligentItinerary()" class="w-full mt-2 bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg shadow-pink-600/20 text-xs uppercase tracking-wider active:scale-95 transition-transform opacity-50 grayscale">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Build Itinerary
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="itinCalendarModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[9999] flex flex-col items-center justify-center hidden p-4">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-2xl flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="changeMultiCalendarMonth(-1)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 bg-slate-800 rounded-full"><i class="fa-solid fa-chevron-left"></i></button>
+                <h3 id="calendarMonthTitle" class="text-sm font-black text-slate-200 tracking-wide">Month Year</h3>
+                <button onclick="changeMultiCalendarMonth(1)" class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-slate-200 bg-slate-800 rounded-full"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                <span class="text-[9px] font-black text-slate-500">Sun</span><span class="text-[9px] font-black text-slate-500">Mon</span><span class="text-[9px] font-black text-slate-500">Tue</span>
+                <span class="text-[9px] font-black text-slate-500">Wed</span><span class="text-[9px] font-black text-slate-500">Thu</span><span class="text-[9px] font-black text-slate-500">Fri</span><span class="text-[9px] font-black text-slate-500">Sat</span>
+            </div>
+            <div id="calendarDaysGrid" class="grid grid-cols-7 gap-y-2 gap-x-1 text-center mb-6"></div>
+            
+            <button onclick="closeMultiDatePickerModal()" class="w-full mt-auto bg-gradient-to-r from-pink-600 to-purple-600 text-center font-black py-3.5 rounded-xl text-white shadow-lg text-xs uppercase tracking-wider">
+                Confirm Selection
+            </button>
+        </div>
+    </div>
+    <div id="buildingItineraryLoaderPopup" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[99999] flex flex-col items-center justify-center hidden transition-all duration-300">
+        <div class="flex flex-col items-center justify-center space-y-6">
+            <div class="relative w-20 h-20 flex items-center justify-center">
+                <div class="absolute inset-0 border-4 border-slate-800 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-pink-500 rounded-full border-t-transparent animate-spin"></div>
+                <i class="fa-solid fa-wand-magic-sparkles text-2xl text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500"></i>
+            </div>
+            <div class="text-center space-y-2">
+                <h3 class="text-lg font-black tracking-widest text-slate-200">Building Itinerary</h3>
+                <p class="text-xs font-bold text-slate-500">Thinking...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="thematicConfirmModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[99999] flex items-center justify-center hidden transition-all duration-300 p-4 opacity-0 pointer-events-none">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl max-w-sm w-full text-center space-y-4 scale-95 transition-transform duration-300 relative" id="thematicConfirmBox">
+            <button onclick="closeThematicConfirm()" class="absolute top-4 right-4 w-8 h-8 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold active:bg-slate-700 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="thematicConfirmIcon" class="w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto mb-2 border mt-2"></div>
+            <div class="space-y-1.5 pt-4">
+                <h3 id="thematicConfirmTitle" class="text-sm font-black text-slate-200 tracking-wide">Are you sure?</h3>
+                <p id="thematicConfirmDesc" class="text-[11px] text-slate-400 font-medium leading-relaxed">This action cannot be undone.</p>
+            </div>
+            <div class="flex justify-center pt-2">
+                <button id="thematicConfirmActionBtn" class="w-full max-w-[200px] py-3.5 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="inlineUnscheduledSpotsDrawer" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[999] flex items-end hidden transition-all duration-300">
+        <div class="w-full bg-slate-900 border-t border-slate-800 rounded-t-3xl p-6 space-y-4 max-h-[85vh] overflow-y-auto subtle-scrollbar shadow-2xl relative flex flex-col">
+            <div class="flex justify-between items-start pb-2 border-b border-slate-800 shrink-0">
+                <div class="flex flex-col">
+                    <h3 class="text-sm font-black text-slate-200">Unscheduled Spots</h3>
+                    <span class="text-[9px] font-bold text-slate-500 mt-0.5">Showing places according to selected city filter.</span>
+                </div>
+                <button onclick="closeInlineUnscheduledSpotDrawer()" class="w-7 h-7 bg-slate-800 rounded-full flex items-center justify-center text-slate-400 text-xs font-bold active:bg-slate-700 transition-colors shrink-0"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="unscheduledSpotsContainer" class="flex-1 overflow-y-auto pr-1 flex flex-col"></div>
+        </div>
+    </div>
     <script>
         const ENABLE_MAP_ROTATION = false; 
 
@@ -606,7 +750,7 @@
             'viewpoint': { open: 0, close: 24, durationMax: 45, durationRelaxed: 75 },
             'nature': { open: 0, close: 24, durationMax: 60, durationRelaxed: 120 },
             'activity': { open: 9, close: 20, durationMax: 90, durationRelaxed: 150 },
-            'shopping': { open: 10, close: 20, durationMax: 60, durationRelaxest: 120 },
+            'shopping': { open: 10, close: 20, durationMax: 60, durationRelaxed: 120 },
             'nightlife': { open: 20, close: 28, durationMax: 120, durationRelaxed: 180 },
             'default': { open: 9, close: 18, durationMax: 60, durationRelaxed: 90 }
         };
@@ -708,6 +852,7 @@
                 plotDynamicMarkersOnCanvasMap();
                 buildItinerarySubMenuChecklist();
                 
+                // Unhide layout layers safely before performing the initial empty-state check render
                 const masterListViewInit = document.getElementById('itineraryMasterListView');
                 if (masterListViewInit) masterListViewInit.classList.remove('hidden');
                 
@@ -724,7 +869,9 @@
             setupNativePullToRefreshGestures();
             setupV4TwoFingerRotationListeners();
             
+            // Combined click listener
             document.addEventListener('click', (event) => {
+                 // Safety Guard: If a user is interacting with an alert or a destructive delete action, freeze auto-close sequences
                  if (event.target.closest('button[onclick*="nukeAllSavedData"]') || event.target.closest('#itineraryCreationDrawerModal')) {
                      return;
                  }
@@ -735,13 +882,10 @@
                      !event.target.closest('#filterMenuTriggerBtn')) {
                      closeAllActiveHUDDropdownOverlays();
                  }
-                 
-                 // Clean Tap Closer Fix for Map Style Drawer Element Container
                  if (!event.target.closest('#mapLayerStyleDropdownDeck') && !event.target.closest('button[onclick*="mapLayerStyleDropdownDeck"]')) {
                      const deck = document.getElementById('mapLayerStyleDropdownDeck');
                      if (deck) deck.classList.add('hidden');
                  }
-                 
                  const settingsMenu = document.getElementById('settingsDrawer');
                  if (settingsMenu && !settingsMenu.classList.contains('hidden')) {
                      if (!event.target.closest('#settingsDrawerContentBody') && !event.target.closest('button[onclick="toggleSettingsMenu(true)"]')) {
@@ -813,31 +957,23 @@
 
         async function populateUserDropdown() {
             const select = document.getElementById('user-dropdown-select');
-            const switchUserBox = document.getElementById('settingsSwitchUserDropdown');
             try {
                 const response = await fetch(`${BACKEND_URL}?action=get_users`);
                 if (!response.ok) throw new Error('Failed to reach server');
                 const users = await response.json();
                 
-                let sharedOptionsHTML = '<option value="">Select User</option>';
+                select.innerHTML = '<option value="">Select User</option>';
                 users.forEach(user => {
-                    sharedOptionsHTML += `<option value="${user}">${user}</option>`;
+                    const opt = document.createElement('option');
+                    opt.value = user;
+                    opt.textContent = user;
+                    select.appendChild(opt);
                 });
-                
-                // Synchronize dropdown building on very first network initialization response cycle
-                if (select) {
-                    select.innerHTML = sharedOptionsHTML;
-                    if (currentUser) select.value = currentUser;
-                }
-                if (switchUserBox) {
-                    switchUserBox.innerHTML = sharedOptionsHTML;
-                    if (currentUser) switchUserBox.value = currentUser;
-                }
             } catch (err) {
+                // We log the error, but we do NOT inject dummy users. 
+                // The dropdown stays empty so you know the connection failed.
                 console.error("Failed to load users:", err);
-                const errorFallbackHTML = '<option value="">Error: Server Unreachable</option>';
-                if (select) select.innerHTML = errorFallbackHTML;
-                if (switchUserBox) switchUserBox.innerHTML = errorFallbackHTML;
+                select.innerHTML = '<option value="">Error: Server Unreachable</option>';
             }
         }
 
@@ -960,7 +1096,8 @@
                 maxZoom: 20,
                 preload: true,
                 keepBuffer: 4, 
-                updateWhenIdle: false, updateWhenZooming: false
+                updateWhenIdle: false, 
+                updateWhenZooming: false
             };
             let visibleLabel = "Style: Dark";
 
@@ -989,7 +1126,7 @@
                     if(k === styleKey) {
                         card.className = "flex flex-col items-center gap-1 p-1 bg-slate-900 rounded-xl border-2 border-pink-500 shadow-lg scale-105 transform duration-150";
                     } else {
-                        card.className = "flex flex-col items-center gap-1 p-1 bg-slate-955 rounded-xl border border-slate-800/80 hover:bg-slate-900 transition-all duration-150 opacity-70";
+                        card.className = "flex flex-col items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800/80 hover:bg-slate-900 transition-all duration-150 opacity-70";
                     }
                 }
             });
@@ -1242,6 +1379,7 @@
                 if (typeEl) typeEl.classList.add('opacity-35', 'pointer-events-none');
                 closeAllActiveHUDDropdownOverlays();
 
+                // Clear view visibility flags cleanly across dashboard wrapper decks using structural selectors
                 const masterListView = document.getElementById('itineraryMasterListView');
                 if (masterListView) masterListView.classList.remove('hidden');
                 const detailView = document.getElementById('itineraryDetailView');
@@ -1296,238 +1434,1067 @@
             document.getElementById('dropdownBlurBackdrop').classList.add('hidden');
         }
 
-        // --- THEMATIC CONTROLLER MODAL ENGINE ---
-        function openThematicUXModalHUD(config) {
-            const deck = document.getElementById('thematicUXModalDeckHUD');
-            const card = document.getElementById('thematicUXModalCardHUD');
-            const title = document.getElementById('thematicUXTitleHUD');
-            const desc = document.getElementById('thematicUXDescHUD');
-            const icon = document.getElementById('thematicUXIconHUD');
-            const actionBtn = document.getElementById('thematicUXActionBtnHUD');
-            const inputContainer = document.getElementById('thematicUXInputWrapperHUD');
-            
-            title.innerText = config.title || "Confirm Action";
-            desc.innerText = config.desc || "";
-            actionBtn.innerText = config.confirmText || "Confirm";
-            
-            if (config.theme === 'red') {
-                actionBtn.className = "w-full max-w-[220px] py-3.5 bg-gradient-to-r from-red-600 to-rose-600 text-white font-black rounded-xl text-[10px] uppercase tracking-wider shadow-lg shadow-red-600/20 active:scale-95 transition-all disabled:opacity-35 disabled:pointer-events-none";
-                icon.className = "w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 text-xl mx-auto border border-red-500/20";
-                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-            } else {
-                actionBtn.className = "w-full max-w-[220px] py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-black rounded-xl text-[10px] uppercase tracking-wider shadow-lg shadow-pink-600/20 active:scale-95 transition-all disabled:opacity-35 disabled:pointer-events-none";
-                icon.className = "w-14 h-14 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 text-xl mx-auto border border-pink-500/20";
-                icon.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+        async function handleInitialLoginSubmit() {
+            const chosenUser = document.getElementById('user-dropdown-select').value || "Global Traveller";
+            localStorage.setItem('compass_user', chosenUser); currentUser = chosenUser;
+            document.getElementById('userModal').classList.add('hidden');
+            initializeSessionDashboard();
+        }
+
+        function switchUserSessionViaSettings() {
+            const selectedUser = document.getElementById('settingsSwitchUserDropdown').value;
+            if(selectedUser) {
+                localStorage.setItem('compass_user', selectedUser);
+                currentUser = selectedUser;
+                toggleSettingsMenu(false);
+                syncData(true);
             }
+        }
+
+        function handleGpsBadgeClickAction(event) {
+            if(event) event.stopPropagation();
+            killLiveSpeechBubbleHUDState();
+            updateGpsHudStatus('syncing', "Re-pinging...");
             
-            if (config.htmlInput) {
-                inputContainer.innerHTML = config.htmlInput;
-                inputContainer.classList.remove('hidden');
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    gpsStatusCachedBool = true;
+                    lastGpsSuccessTime = Date.now();
+                    cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                    userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                    updateGpsHudStatus('active', "GPS Active");
+                    isCameraLocked = true;
+                    syncCameraLockVisualUIState();
+                    if (leafletMapInstance) leafletMapInstance.setView([userLat, userLon], 18); 
+                    startLiveHardwareGPSTracking();
+                },
+                (err) => {
+                    gpsStatusCachedBool = false;
+                    updateGpsHudStatus('off', "GPS Off");
+                    document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
+                },
+                { enableHighAccuracy: true, timeout: 6000 }
+            );
+        }
+
+        function handleAdaptiveDirectionClick(buttonElement, event) {
+            if (event) event.stopPropagation();
+            const rowId = buttonElement.getAttribute('data-row-id');
+            const targetSpot = travelSpots.find(s => String(s.rowid) === String(rowId));
+            if (!targetSpot) return;
+
+            const mapsUrl = targetSpot.maps_url ? String(targetSpot.maps_url).trim() : "";
+            const lat = targetSpot.latitude ? String(targetSpot.latitude).trim() : "";
+            const lng = targetSpot.longitude ? String(targetSpot.longitude).trim() : "";
+            
+            if (mapsUrl !== "" && mapsUrl !== "N/A") {
+                window.open(mapsUrl, '_blank');
+            } else if (lat !== "" && lat !== "0" && lng !== "" && lng !== "0") {
+                window.open(`https://maps.google.com/?q=${lat},${lng}`, '_blank');
             } else {
-                inputContainer.innerHTML = '';
-                inputContainer.classList.add('hidden');
+                triggerCuteSpeechBubbleHUD("Map data missing in database!", buttonElement, event);
             }
-            
-            actionBtn.disabled = !!config.startDisabled;
-            
-            actionBtn.onclick = function() {
-                if (config.onConfirm) {
-                    config.onConfirm();
+        }
+
+        function triggerRecenterToGpsHardwareAction(event) {
+            if(event) event.stopPropagation();
+            killLiveSpeechBubbleHUDState();
+            if (!leafletMapInstance) return;
+
+            if (ENABLE_MAP_ROTATION) {
+                currentMapBearingAngle = 0;
+                const pane = document.querySelector('.leaflet-map-pane');
+                if (pane) pane.style.transform = 'rotate(0deg)';
+            }
+
+            const emojiSpinnerNode = document.getElementById('innerCompassEmojiSpinnerSpan');
+            if (emojiSpinnerNode) {
+                emojiSpinnerNode.style.transform = 'rotate(180deg) scale(0.85)';
+                setTimeout(() => { emojiSpinnerNode.style.transform = 'rotate(0deg) scale(1)'; }, 350);
+            }
+
+            isCameraLocked = true;
+            syncCameraLockVisualUIState();
+
+            if (cachedUserCoords) {
+                const currentCenterPos = leafletMapInstance.getCenter();
+                const currentZoomScale = leafletMapInstance.getZoom();
+                
+                const isMatchingLat = Math.abs(currentCenterPos.lat - cachedUserCoords.lat) < 0.00001;
+                const isMatchingLng = Math.abs(currentCenterPos.lng - cachedUserCoords.lon) < 0.00001;
+                const isExactlyLevel18 = (currentZoomScale === 18);
+
+                if (!(isMatchingLat && isMatchingLng && isExactlyLevel18)) {
+                    leafletMapInstance.setView([cachedUserCoords.lat, cachedUserCoords.lon], 18, { animate: true }); 
                 }
+            }
+
+            const executeHardwareQuery = () => {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        gpsStatusCachedBool = true;
+                        lastGpsSuccessTime = Date.now();
+                        
+                        const incomingLat = pos.coords.latitude;
+                        const incomingLon = pos.coords.longitude;
+                        
+                        cachedUserCoords = { lat: incomingLat, lon: incomingLon };
+                        userLat = incomingLat; userLon = incomingLon;
+                        updateGpsHudStatus('active', "GPS Active");
+                        
+                        if (userPositionPulseCircle) {
+                            userPositionPulseCircle.setLatLng([userLat, userLon]);
+                        } else {
+                            userPositionPulseCircle = L.circleMarker([userLat, userLon], { 
+                                radius: 8, fillColor: '#3b82f6', fillOpacity: 0.8, color: '#ffffff', weight: 2 
+                            }).addTo(leafletMapInstance);
+                        }
+                        
+                        if (isCameraLocked) {
+                            const innerCenter = leafletMapInstance.getCenter();
+                            const innerZoom = leafletMapInstance.getZoom();
+                            const subLat = Math.abs(innerCenter.lat - userLat) < 0.00001;
+                            const subLng = Math.abs(innerCenter.lng - userLon) < 0.00001;
+                            const subZoom = (innerZoom === 18);
+
+                            if (!(subLat && subLng && subZoom)) {
+                                leafletMapInstance.setView([userLat, userLon], 18, { animate: true }); 
+                            }
+                        }
+                    },
+                    (err) => {
+                        gpsStatusCachedBool = false;
+                        isCameraLocked = false;
+                        syncCameraLockVisualUIState();
+                        updateGpsHudStatus('off', "GPS Off");
+                        document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
+                    },
+                    { enableHighAccuracy: true }
+                );
             };
-            
-            deck.classList.remove('hidden');
-            setTimeout(() => {
-                deck.classList.remove('opacity-0', 'pointer-events-none');
-                card.classList.remove('scale-95'); card.classList.add('scale-100');
-            }, 10);
+
+            if (navigator.permissions && navigator.permissions.query) {
+                navigator.permissions.query({ name: 'geolocation' }).then(status => {
+                    if (status.state === 'denied') {
+                        gpsStatusCachedBool = false;
+                        isCameraLocked = false;
+                        syncCameraLockVisualUIState();
+                        updateGpsHudStatus('off', "GPS Off");
+                        document.getElementById('gpsInstructionsOverlayModal').classList.remove('hidden');
+                    } else {
+                        executeHardwareQuery();
+                    }
+                });
+            } else {
+                executeHardwareQuery();
+            }
         }
 
-        function dismissThematicUXModalHUD() {
-            const deck = document.getElementById('thematicUXModalDeckHUD');
-            const card = document.getElementById('thematicUXModalCardHUD');
-            if (!deck || !card) return;
-            deck.classList.add('opacity-0', 'pointer-events-none');
-            card.classList.remove('scale-100'); card.classList.add('scale-95');
-            setTimeout(() => deck.classList.add('hidden'), 250);
+        function syncCameraLockVisualUIState() {
+            const compassBtn = document.getElementById('hardwareCompassRecenterButtonNode');
+            if (!compassBtn) return;
+            if (isCameraLocked) {
+                compassBtn.className = "w-12 h-12 bg-slate-900 border-2 border-pink-500 rounded-full shadow-[0_0_10px_rgba(236,72,153,0.3)] flex items-center justify-center text-slate-300 active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative text-[19px]";
+            } else {
+                compassBtn.className = "w-12 h-12 bg-slate-900/95 border border-slate-800 rounded-full shadow-2xl flex items-center justify-center text-slate-300 active:bg-slate-800 transition-all duration-300 select-none overflow-hidden relative text-[19px]";
+            }
         }
 
-        // --- SETTINGS HUD INLINE VALIDATION HANDLERS ---
-        function evaluateInlineProfileValidationHUD(val) {
-            const helperHUD = document.getElementById('settingsRenameHelperHUD');
-            const submitBtn = document.getElementById('settingsRenameSubmitBtn');
-            const cleanText = val.trim();
+        function snapMapViewportToSelectedCityBounds(event) {
+            if(event) event.stopPropagation();
+            killLiveSpeechBubbleHUDState();
+            if (!leafletMapInstance || travelSpots.length === 0) return;
             
-            if (cleanText.length === 0) {
-                helperHUD.className = "hidden";
-                submitBtn.disabled = true;
-                submitBtn.className = "w-full py-2 bg-slate-800 text-slate-500 border border-slate-750 rounded-lg text-[11px] font-bold opacity-40 transition-all pointer-events-none";
+            if (checkedCitiesStateArray.length === 0) {
+                triggerCuteSpeechBubbleHUD("Select a city filter first!", document.getElementById('shortcutMagnifyingButton'), event);
                 return;
             }
-            
-            helperHUD.classList.remove('hidden');
-            if (cleanText.length < 3) {
-                helperHUD.className = "text-[9px] font-bold mt-1.5 tracking-wide flex items-center gap-1 text-amber-400 bg-amber-500/5 p-1.5 rounded-lg border border-amber-500/10";
-                helperHUD.innerHTML = '<i class="fa-solid fa-circle-exclamation text-amber-500"></i> Minimum 3 characters required';
-                submitBtn.disabled = true;
-                submitBtn.className = "w-full py-2 bg-slate-800 text-slate-500 border border-slate-750 rounded-lg text-[11px] font-bold opacity-40 transition-all pointer-events-none";
+
+            let activeCityPins = travelSpots.filter(spot => {
+                const latVal = spot.latitude ? String(spot.latitude).trim() : "";
+                return latVal !== "" && latVal !== "0" && checkedCitiesStateArray.includes(spot.city);
+            });
+
+            if (activeCityPins.length === 0) {
+                triggerCuteSpeechBubbleHUD("No pins found for this city!", document.getElementById('shortcutMagnifyingButton'), event);
+                return;
+            }
+
+            isCameraLocked = false;
+            syncCameraLockVisualUIState();
+
+            if (activeCityPins.length === 1) {
+                leafletMapInstance.setView([parseFloat(activeCityPins[0].latitude), parseFloat(activeCityPins[0].longitude)], 18, { animate: true });
             } else {
-                helperHUD.className = "text-[9px] font-bold mt-1.5 tracking-wide flex items-center gap-1 text-emerald-400 bg-emerald-500/5 p-1.5 rounded-lg border border-emerald-500/10";
-                helperHUD.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-500"></i> Criteria requirement satisfied';
-                submitBtn.disabled = false;
-                submitBtn.className = "w-full py-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-lg text-[11px] font-bold shadow-md cursor-pointer transition-all active:scale-[0.98]";
+                let boundsContainer = L.latLngBounds();
+                activeCityPins.forEach(spot => {
+                    boundsContainer.extend([parseFloat(spot.latitude), parseFloat(spot.longitude)]);
+                });
+
+                leafletMapInstance.fitBounds(boundsContainer, {
+                    padding: [50, 50], 
+                    animate: true,
+                    duration: 0.6
+                });
             }
         }
 
+        function setPriorityFilterState(shouldShowStarredOnly) {
+            if (activeTabID === 'itinerary') return;
+            killLiveSpeechBubbleHUDState();
+            showStarredOnly = shouldShowStarredOnly;
+            localStorage.setItem('compass_starred_only', JSON.stringify(showStarredOnly));
+            syncPriorityFilterViewModeUI(); renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        function silentPassiveHardwareLocationPingRefresh() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        gpsStatusCachedBool = true;
+                        userLat = pos.coords.latitude; userLon = pos.coords.longitude;
+                        lastGpsSuccessTime = Date.now();
+                        cachedUserCoords = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                    },
+                    () => {},
+                    { enableHighAccuracy: true, timeout: 2000 }
+                );
+            }
+        }
+
+        function syncPriorityFilterViewModeUI() {
+            const showAllBtn = document.getElementById('toggleOptionShowAll');
+            const starredBtn = document.getElementById('toggleOptionStarred');
+            if (showStarredOnly) {
+                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 bg-transparent";
+                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10";
+            } else {
+                showAllBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10";
+                starredBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 bg-transparent";
+            }
+        }
+
+        function buildDynamicShoppingCheckboxList() {
+            const scrollContainer = document.getElementById('checkboxScrollRegionContainer');
+            const stickyPanel = document.getElementById('hideCompletedTargetRowContainer');
+            if(!scrollContainer || !stickyPanel) return;
+            scrollContainer.innerHTML = ''; stickyPanel.innerHTML = '';
+            
+            let uniqueCategories = new Set();
+            travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
+            
+            uniqueCategories.forEach(cat => {
+                if(!cat) return;
+                const label = document.createElement('label');
+                label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer";
+                label.innerHTML = `<span class="truncate pr-2">${cat}</span><input type="checkbox" value="${cat}" ${checkedFilterStateArray.includes(cat) ? 'checked' : ''} onchange="handleCheckboxToggleEvent(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
+                scrollContainer.appendChild(label);
+            });
+
+            const hideCompletedLabel = document.createElement('label');
+            hideCompletedLabel.className = "flex items-center justify-between p-2 rounded-lg bg-pink-500/5 hover:bg-pink-500/10 text-pink-400 cursor-pointer text-xs font-bold w-full";
+            hideCompletedLabel.innerHTML = `<span class="truncate pr-2 font-black">Hide Completed</span><input type="checkbox" id="hideCompletedFilterSystemCheckbox" ${hideCompletedSpotsStateBool ? 'checked' : ''} onchange="handleHideCompletedStateToggleCheckboxEvent(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
+            stickyPanel.appendChild(hideCompletedLabel);
+            updateHeaderBadgeHUDCounters();
+        }
+
+        function handleCheckboxToggleEvent(checkboxElement) {
+            const val = checkboxElement.value;
+            if (checkboxElement.checked) { if(!checkedFilterStateArray.includes(val)) checkedFilterStateArray.push(val); } 
+            else { checkedFilterStateArray = checkedFilterStateArray.filter(i => i !== val); }
+            localStorage.setItem('compass_active_filters', JSON.stringify(checkedFilterStateArray));
+            updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        function handleHideCompletedStateToggleCheckboxEvent(checkboxElement) {
+            hideCompletedSpotsStateBool = checkboxElement.checked;
+            localStorage.setItem('compass_hide_completed', JSON.stringify(hideCompletedSpotsStateBool));
+            renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        function clearAllFilterCheckboxes() {
+            checkedFilterStateArray = []; 
+            localStorage.setItem('compass_active_filters', JSON.stringify([]));
+            const checkboxes = document.getElementById('checkboxScrollRegionContainer').querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateHeaderBadgeHUDCounters(); renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        function updateHeaderBadgeHUDCounters() {
+            const badge = document.getElementById('activeFilterBadgeCount');
+            const btn = document.getElementById('filterMenuTriggerBtn');
+            if(!btn) return;
+            const count = checkedFilterStateArray.length;
+            if(count > 0) {
+                if(badge) { badge.innerText = count; badge.classList.remove('hidden'); }
+                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] text-center text-[11px] font-black text-pink-400 flex items-center justify-center gap-1 shadow-inner";
+            } else {
+                if(badge) badge.classList.add('hidden');
+                btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 shadow-inner";
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function getFilteredDatasetRows() {
+            return travelSpots.map(spot => {
+                const latStr = spot.latitude ? String(spot.latitude).trim() : "";
+                const lngStr = spot.longitude ? String(spot.longitude).trim() : "";
+                const hasLatLon = latStr !== "" && latStr !== "0" && lngStr !== "" && lngStr !== "0";
+                
+                let distanceOutputLabel = !hasLatLon ? "Missing Location" : (!gpsStatusCachedBool ? "<i class='fa-solid fa-location-dot mr-1'></i>GPS Off" : "");
+                let rawDistanceValue = 99999;
+                let stableDistanceZoneBucket = 4; 
+
+                if (hasLatLon && gpsStatusCachedBool) {
+                    const dist = calculateDistance(userLat, userLon, parseFloat(spot.latitude), parseFloat(spot.longitude));
+                    rawDistanceValue = dist; 
+                    distanceOutputLabel = dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+                    
+                    if (dist <= 0.5) stableDistanceZoneBucket = 1;       
+                    else if (dist <= 2.0) stableDistanceZoneBucket = 2;  
+                    else if (dist <= 10.0) stableDistanceZoneBucket = 3; 
+                    else stableDistanceZoneBucket = 4;                  
+                }
+
+                return { 
+                    ...spot, 
+                    distRaw: rawDistanceValue, 
+                    distStr: distanceOutputLabel,
+                    distZone: stableDistanceZoneBucket 
+                };
+            }).filter(s => {
+                if (hideCompletedSpotsStateBool && (s.status || "").toLowerCase().trim() === "done") return false;
+                if (showStarredOnly && !['high','🔥','must do','starred'].includes((s.priority || "").toLowerCase())) return false;
+                if (checkedCitiesStateArray.length > 0 && !checkedCitiesStateArray.includes(s.city)) return false;
+                if (checkedFilterStateArray.length > 0) {
+                    if (!s.category) return false;
+                    const spotCats = s.category.split(',').map(item => item.trim().toLowerCase());
+                    return checkedFilterStateArray.some(checkedCat => spotCats.includes(checkedCat.toLowerCase()));
+                }
+                return true;
+            }).sort((a, b) => {
+                const aDone = (a.status || "").toLowerCase().trim() === "done" ? 1 : 0;
+                const bDone = (b.status || "").toLowerCase().trim() === "done" ? 1 : 0;
+                if (aDone !== bDone) return aDone - bDone;
+
+                const aStarred = ['high','🔥','must do','starred'].includes((a.priority || "").toLowerCase()) ? 1 : 0;
+                const bStarred = ['high','🔥','must do','starred'].includes((b.priority || "").toLowerCase()) ? 1 : 0;
+                if (aStarred !== bStarred) return bStarred - aStarred; 
+
+                if (a.distZone !== b.distZone) return a.distZone - b.distZone;
+
+                const aRowId = parseInt(a.rowid) || 0;
+                const bRowId = parseInt(b.rowid) || 0;
+                return aRowId - bRowId;
+            });
+        }
+
+        function plotDynamicMarkersOnCanvasMap() {
+            if(!mapMarkersLayerGroup || !leafletMapInstance) return;
+            mapMarkersLayerGroup.clearLayers();
+
+            const dataset = getFilteredDatasetRows();
+            const currentZoom = leafletMapInstance.getZoom();
+            
+            let overlapPixelRadiusThreshold = 28;
+            if (currentZoom >= 14 && currentZoom <= 15) {
+                overlapPixelRadiusThreshold = 14; 
+            } else if (currentZoom >= 16) {
+                overlapPixelRadiusThreshold = 6; 
+            }
+            
+            let structuredClustersArray = [];
+
+            dataset.forEach(spot => {
+                if(!spot.latitude || !spot.longitude || String(spot.latitude).trim() === "0" || String(spot.latitude).trim() === "") return;
+                
+                const latLngObj = L.latLng(parseFloat(spot.latitude), parseFloat(spot.longitude));
+                const screenPoint = leafletMapInstance.latLngToLayerPoint(latLngObj);
+                
+                let assignedToCluster = false;
+                
+                for (let i = 0; i < structuredClustersArray.length; i++) {
+                    let cluster = structuredClustersArray[i];
+                    const isCoordinatesExactMatch = (cluster.leadLatLng.lat === latLngObj.lat && cluster.leadLatLng.lng === latLngObj.lng);
+                    
+                    let dx = screenPoint.x - cluster.centerPx.x;
+                    let dy = screenPoint.y - cluster.centerPx.y;
+                    let pixelDistance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (isCoordinatesExactMatch || (pixelDistance <= overlapPixelRadiusThreshold)) {
+                        cluster.spots.push(spot);
+                        assignedToCluster = true;
+                        break;
+                    }
+                }
+                
+                if (!assignedToCluster) {
+                    structuredClustersArray.push({
+                        centerPx: screenPoint,
+                        leadLatLng: latLngObj,
+                        spots: [spot]
+                    });
+                }
+            });
+
+            structuredClustersArray.forEach(cluster => {
+                const clusterSize = cluster.spots.length;
+
+                if (clusterSize === 1) {
+                    renderSingleMarkerElement(cluster.spots[0], 0, 0);
+                } else {
+                    if (currentZoom >= 15) {
+                        cluster.spots.forEach((spot, index) => {
+                            const angle = (index / clusterSize) * Math.PI * 2;
+                            const latOffset = Math.sin(angle) * 0.00018;
+                            const lonOffset = Math.cos(angle) * 0.00022;
+                            renderSingleMarkerElement(spot, latOffset, lonOffset);
+                        });
+                    } else {
+                        const clusterHTML = `<div class="cluster-map-cube">${clusterSize}</div>`;
+                        const clusterIcon = L.divIcon({ html: clusterHTML, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
+                        const clusterMarker = L.marker([cluster.leadLatLng.lat, cluster.leadLatLng.lng], { icon: clusterIcon });
+                        
+                        clusterMarker.on('click', (e) => {
+                            L.DomEvent.stopPropagation(e);
+                            const maxZoomPossible = leafletMapInstance.getMaxZoom();
+                            const targetZoomLevel = Math.min(leafletMapInstance.getZoom() + 2, maxZoomPossible);
+                            leafletMapInstance.setView([cluster.leadLatLng.lat, cluster.leadLatLng.lng], targetZoomLevel, { animate: true });
+                        });
+                        mapMarkersLayerGroup.addLayer(clusterMarker);
+                    }
+                }
+            });
+        }
+
+        function renderSingleMarkerElement(spot, latOffset, lonOffset) {
+            const isStarred = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
+            const isDone = (spot.status || "").toLowerCase().trim() === 'done';
+
+            let categoryIconClass = "fa-location-dot text-slate-400";
+            const catStr = (spot.category || "").toLowerCase();
+            if(catStr.includes("photo")) categoryIconClass = "fa-camera-retro text-pink-500";
+            else if(catStr.includes("food")) categoryIconClass = "fa-utensils text-orange-500";
+            else if(catStr.includes("viewpoint")) categoryIconClass = "fa-binoculars text-sky-500";
+            else if(catStr.includes("nature")) categoryIconClass = "fa-leaf text-emerald-500";
+            else if(catStr.includes("culture")) categoryIconClass = "fa-landmark text-violet-500";
+            else if(catStr.includes("shopping") || catStr.includes("shop")) categoryIconClass = "fa-bag-shopping text-rose-500";
+            else if(catStr.includes("activity")) categoryIconClass = "fa-person-running text-amber-500";
+            else if(catStr.includes("relax")) categoryIconClass = "fa-spa text-teal-500";
+            else if(catStr.includes("nightlife") || catStr.includes("bar") || catStr.includes("drink")) categoryIconClass = "fa-martini-glass text-indigo-500";
+
+            let baseThemeClasses = "";
+            if (currentMapStyleKey === 'dark') {
+                baseThemeClasses = "bg-slate-900 border-slate-700 shadow-lg shadow-black/60";
+            } else if (currentMapStyleKey === 'light') {
+                baseThemeClasses = "bg-white border-slate-200 shadow-lg shadow-slate-300/60";
+            } else if (currentMapStyleKey === 'terrain') {
+                baseThemeClasses = "bg-slate-50 border-slate-300 shadow-md shadow-slate-400/50";
+            } else if (currentMapStyleKey === 'satellite') {
+                baseThemeClasses = "bg-slate-950/70 border-white/20 shadow-lg shadow-black/80 backdrop-blur-md";
+            }
+
+            let stateClasses = "";
+            if (isStarred) {
+                if (currentMapStyleKey === 'light' || currentMapStyleKey === 'terrain') {
+                    stateClasses = "!border-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)] ring-2 ring-amber-400/30";
+                } else {
+                    stateClasses = "!border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.7)]";
+                }
+            }
+            if (isDone) {
+                stateClasses += " opacity-40 grayscale";
+            }
+
+            const iconHTML = `<div class="custom-map-cube ${baseThemeClasses} ${stateClasses}"><i class="fa-solid ${categoryIconClass}"></i></div>`;
+            const customMarkerIcon = L.divIcon({ html: iconHTML, className: '', iconSize: [36, 36], iconAnchor: [18, 18] });
+            
+            const finalLat = parseFloat(spot.latitude) + latOffset;
+            const finalLon = parseFloat(spot.longitude) + lonOffset;
+            const leafMarker = L.marker([finalLat, finalLon], { icon: customMarkerIcon });
+
+            leafMarker.on('click', (event) => {
+                L.DomEvent.stopPropagation(event);
+                revealMapItemDetailTrayHUD(spot, isStarred);
+            });
+            mapMarkersLayerGroup.addLayer(leafMarker);
+        }
+
+        function revealMapItemDetailTrayHUD(spotObj, isStarredBool) {
+            const tray = document.getElementById('mapDetailTrayHUD');
+            const blurBg = document.getElementById('dropdownBlurBackdrop');
+            const plusBtn = document.getElementById('globalFloatingActionPlusButton');
+            
+            tray.classList.remove('flipped');
+
+            const isDone = (spotObj.status || "").toLowerCase().trim() === 'done';
+            const ticketLink = spotObj.ticket_url || "";
+            
+            if (plusBtn) plusBtn.classList.add('hidden');
+            if (blurBg) blurBg.classList.remove('hidden');
+
+            const titleWidget = document.getElementById('traySpotTitle');
+            const notesWidget = document.getElementById('traySpotNotes');
+            
+            titleWidget.innerText = spotObj.spot_name || "Unnamed Destination";
+            notesWidget.innerText = spotObj.notes || "No custom notes assigned.";
+            document.getElementById('trayCityBadge').innerText = `${spotObj.city || 'Global'} • ${spotObj.category || 'General'}`;
+
+            if (isDone) {
+                titleWidget.className = "text-base font-black text-slate-500 line-through mt-2 truncate max-w-[220px]";
+                notesWidget.className = "text-xs text-slate-500 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[220px] line-through pr-1 select-none";
+            } else {
+                titleWidget.className = "text-base font-black text-slate-200 mt-2 truncate max-w-[220px]";
+                notesWidget.className = "text-xs text-slate-400 leading-relaxed overflow-y-auto subtle-scrollbar max-h-[220px] pr-1 select-none";
+            }
+            
+            const distHUD = document.getElementById('trayDistanceBadge');
+            
+            distHUD.innerHTML = spotObj.distStr;
+            
+            if(spotObj.distStr.includes("Missing Location")) {
+                distHUD.className = "text-xs font-mono font-bold bg-amber-500/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-500/20 shrink-0 h-fit";
+            } else {
+                distHUD.className = "text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit bg-pink-500/10 text-pink-400";
+            }
+
+            document.getElementById('trayOpenReferenceBtn').href = spotObj.instagram_url || "#";
+            
+            const actionBtn = document.getElementById('trayActionBtn');
+            actionBtn.setAttribute('data-row-id', spotObj.rowid);
+            
+            const directMapsUrl = spotObj.maps_url ? String(spotObj.maps_url).trim() : "";
+            const rawLat = spotObj.latitude ? String(spotObj.latitude).trim() : "";
+            const rawLng = spotObj.longitude ? String(spotObj.longitude).trim() : "";
+            const hasValidMapDestination = (directMapsUrl !== "" && directMapsUrl !== "N/A") || (rawLat !== "" && rawLat !== "0" && rawLng !== "" && rawLng !== "0");
+
+            if (!hasValidMapDestination) {
+                actionBtn.innerHTML = "<i class='fa-solid fa-triangle-exclamation'></i>"; 
+                actionBtn.className = "px-6 bg-slate-950 border border-slate-800 text-amber-400 flex items-center justify-center rounded-xl text-sm font-black h-12 whitespace-nowrap";
+            } else {
+                actionBtn.innerHTML = "<i class='fa-solid fa-map mr-1.5 text-sm'></i> Directions";
+                actionBtn.className = "px-4 bg-slate-950 border border-slate-800 text-slate-300 flex items-center justify-center rounded-xl text-xs font-bold h-12 whitespace-nowrap";
+            }
+
+            const ticketRow = document.getElementById('trayTicketRow');
+            const ticketBtn = document.getElementById('trayTicketBtn');
+            if (ticketLink.trim() !== "") {
+                ticketRow.classList.remove('hidden'); ticketBtn.href = ticketLink;
+            } else {
+                ticketRow.classList.add('hidden');
+            }
+
+            const starredBadge = document.getElementById('trayStarredBadge');
+            if (isStarredBool) starredBadge.classList.remove('hidden'); else starredBadge.classList.add('hidden');
+
+            const doneBtn = document.getElementById('trayDoneToggleBtn');
+            const starBtn = document.getElementById('trayStarToggleBtn');
+
+            doneBtn.innerHTML = isDone ? '<i class="fa-solid fa-arrow-rotate-left mr-1"></i> Undo' : '<i class="fa-solid fa-check mr-1"></i> Mark Done';
+            doneBtn.onclick = function() {
+                updateCloudAction(spotObj.rowid, 'update_status', isDone ? 'Pending' : 'Done', spotObj.spot_name);
+                dismissMapDetailTrayHUDCard();
+            };
+
+            starBtn.innerHTML = isStarredBool ? '<i class="fa-solid fa-star-half-stroke mr-1"></i> Unstar' : '<i class="fa-solid fa-star mr-1"></i> Star';
+            starBtn.onclick = function() {
+                updateCloudAction(spotObj.rowid, 'toggle_priority', isStarredBool ? 'Normal' : 'Starred', spotObj.spot_name);
+                dismissMapDetailTrayHUDCard();
+            };
+
+            const backDesc = document.getElementById('trayBackLongDescription');
+            backDesc.innerText = (spotObj.long_description && spotObj.long_description !== "N/A") ? spotObj.long_description : "Disclaimer: Deep background details unpopulated.";
+
+            const hoursGrid = document.getElementById('trayBackHoursGrid');
+            hoursGrid.innerHTML = '';
+            const staticHoursString = spotObj.opening_hours || "";
+            if (staticHoursString.trim() !== "" && staticHoursString !== "N/A") {
+                const daysTokens = staticHoursString.split(/[\n;]+/);
+                daysTokens.forEach(token => {
+                    if(!token.trim()) return;
+                    const rowDiv = document.createElement('div');
+                    rowDiv.className = "flex justify-between items-center py-0.5 border-b border-slate-900/40 last:border-0";
+                    rowDiv.innerHTML = `<span>${token.trim()}</span>`;
+                    hoursGrid.appendChild(rowDiv);
+                });
+            } else {
+                hoursGrid.innerHTML = `<div class="text-slate-500 italic text-[10px] p-1">Disclaimer: Schedule data unavailable.</div>`;
+            }
+
+            const warningCard = document.getElementById('trayBackBookingWarningCard');
+            const warningText = document.getElementById('trayBackBookingValueText');
+            const bookingString = (spotObj.booking_requirement || "").trim();
+            if (bookingString !== "" && bookingString !== "N/A" && bookingString.toLowerCase() !== "none") {
+                warningText.innerText = bookingString;
+                warningCard.classList.remove('hidden');
+            } else {
+                warningCard.classList.add('hidden');
+            }
+
+            tray.classList.remove('hidden');
+        }
+
+        function dismissMapDetailTrayHUDCard() {
+            const mapDetailTray = document.getElementById('mapDetailTrayHUD');
+            if (mapDetailTray) {
+                mapDetailTray.classList.add('hidden');
+                mapDetailTray.classList.remove('flipped');
+            }
+            const blurBg = document.getElementById('dropdownBlurBackdrop');
+            if (blurBg) blurBg.classList.add('hidden');
+            const plusBtn = document.getElementById('globalFloatingActionPlusButton');
+            if (plusBtn) plusBtn.classList.remove('hidden');
+        }
+
+        function handleManualInlineCardFlipExecution(event, nodeWrapperId, operationDirection) {
+            if(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const targetElement = document.getElementById(nodeWrapperId);
+            if(!targetElement) return;
+
+            if(operationDirection === 'forward') {
+                targetElement.classList.add('flipped');
+            } else {
+                targetElement.classList.remove('flipped');
+            }
+        }
+
+        function renderList() {
+            const scrollContainerFrame = document.getElementById('gesture-touch-container');
+            const counterHUD = document.getElementById('vaultDensityHUDLabelCounter');
+            if(!scrollContainerFrame) return;
+
+            const dynamicOldCards = scrollContainerFrame.querySelectorAll('.dynamic-card-node, .dynamic-tailpiece-node, .dynamic-empty-node, .dynamic-spacer-node');
+            dynamicOldCards.forEach(el => el.remove());
+
+            const processed = getFilteredDatasetRows();
+            if (counterHUD) counterHUD.innerText = `Showing ${processed.length} / ${travelSpots.length} Spots`;
+            
+            if(processed.length === 0) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = "dynamic-empty-node text-center text-slate-600 py-12 text-xs w-full block shrink-0";
+                errorDiv.innerText = "No entries loaded matching these selection profiles.";
+                scrollContainerFrame.appendChild(errorDiv);
+                return;
+            }
+
+            processed.forEach((spot, idx) => {
+                const isDone = (spot.status || "").toLowerCase().trim() === "done";
+                const isHigh = ['high','🔥','must do','starred'].includes((spot.priority || "").toLowerCase());
+                const ticketLink = spot.ticket_url || "";
+                
+                const directMapsUrl = spot.maps_url ? String(spot.maps_url).trim() : "";
+                const latVal = spot.latitude ? String(spot.latitude).trim() : "";
+                const lngVal = spot.longitude ? String(spot.longitude).trim() : "";
+                const hasCoordinates = latVal !== "" && latVal !== "0" && lngVal !== "" && lngVal !== "0";
+                const hasValidMapDestination = (directMapsUrl !== "" && directMapsUrl !== "N/A") || hasCoordinates;
+
+                const uniqueCardContainerId = `list-flip-wrapper-node-${idx}`;
+
+                let hoursHTMLTokens = '';
+                if(spot.opening_hours && spot.opening_hours !== "N/A" && spot.opening_hours.trim() !== "") {
+                    spot.opening_hours.split(/[\n;]+/).forEach(t => {
+                        if(t.trim()) hoursHTMLTokens += `<div class="flex justify-between border-b border-slate-950 last:border-0 py-0.5"><span>${t.trim()}</span></div>`;
+                    });
+                } else {
+                    hoursHTMLTokens = `<div class="text-slate-600 italic text-[10px]">Schedule unpopulated.</div>`;
+                }
+
+                const cardWrapper = document.createElement('div');
+                cardWrapper.id = uniqueCardContainerId;
+                cardWrapper.className = "dynamic-card-node w-full min-h-[260px] h-auto flip-perspective-container transform transition-transform duration-200 shrink-0 block";
+
+                cardWrapper.innerHTML = `
+                    <div class="flip-card-inner-rotator w-full h-full">
+                        
+                        <div class="flip-card-front-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start gap-2">
+                                    <div class="max-w-[70%]">
+                                        <span class="text-[9px] uppercase px-2 py-0.5 rounded bg-slate-950 text-slate-400 font-bold border border-slate-800">${spot.city} • ${spot.category}</span>
+                                        <h3 class="text-base font-bold ${isDone ? 'text-slate-500 line-through' : 'text-slate-200'} mt-1.5 truncate">${spot.spot_name}</h3>
+                                    </div>
+                                    <span id="dist-badge-${spot.rowid}" class="text-xs font-mono font-bold px-2 py-1 rounded-lg shrink-0 h-fit ${!hasCoordinates ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-pink-500/10 text-pink-400'}">${spot.distStr}</span>
+                                </div>
+                                <div class="mt-3 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 min-h-[90px] overflow-hidden">
+                                    <p class="text-xs ${isDone ? 'text-slate-500 line-through' : 'text-slate-400'} leading-relaxed max-h-16 overflow-y-auto pr-1 subtle-scrollbar" ontouchstart="handleNoteTouchStartEvent(event, this.innerText)" ontouchmove="handleNoteTouchMoveEvent(event)" ontouchend="handleNoteTouchEndEvent(event)" onmousedown="handleNoteMouseDownEvent(event, this.innerText)" onmousemove="handleNoteMouseMoveEvent(event)" onmouseup="handleNoteMouseUpEvent(event)">${spot.notes || 'No custom notes.'}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2 mt-3">
+                                <div class="flex gap-2">
+                                    <a href="${spot.instagram_url || '#'}" target="_blank" class="flex-1 bg-gradient-to-r from-pink-600 to-purple-600 text-center text-xs font-bold py-3 rounded-xl text-white flex items-center justify-center shadow-lg">Open Reference</a>
+                                    <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-4 flex items-center justify-center rounded-xl text-xs font-bold whitespace-nowrap h-12 ${!hasValidMapDestination ? 'bg-slate-950 border border-slate-800 text-amber-400 text-sm font-black w-14 shrink-0' : 'bg-slate-950 border border-slate-800 text-slate-300 flex-1'}">
+                                        ${!hasValidMapDestination ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-map mr-1.5 text-sm"></i> Directions'}
+                                    </button>
+                                </div>
+                                ${ticketLink.trim() !== "" ? `<a href="${ticketLink}" target="_blank" class="w-full mt-1 bg-emerald-600 text-center text-xs font-bold py-2.5 rounded-xl text-white block">📄 View Ticket Details</a>` : ''}
+                                <div class="flex gap-2 mt-1 justify-end items-center">
+                                    <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'forward')" class="text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-sky-500/20">
+                                        <i class="fa-solid fa-circle-info mr-1"></i> Extra Info
+                                    </button>
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'update_status', '${isDone ? 'Pending' : 'Done'}', '${spot.spot_name}')" class="text-xs px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-400 font-bold active:bg-slate-855">${isDone ? '<i class="fa-solid fa-arrow-rotate-left mr-1"></i> Undo' : '<i class="fa-solid fa-check mr-1"></i> Mark Done'}</button>
+                                    <button onclick="updateCloudAction(${spot.rowid}, 'toggle_priority', '${isHigh ? 'Normal' : 'Starred'}', '${spot.spot_name}')" class="text-xs px-2 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-amber-400">${isHigh ? '<i class="fa-solid fa-star-half-stroke mr-1"></i> Unstar' : '<i class="fa-solid fa-star mr-1"></i> Star'}</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flip-card-back-face w-full h-full p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col justify-between overflow-hidden">
+                            <div class="flex border-b border-slate-800/60 pb-1.5 shrink-0 items-center justify-between">
+                                <span class="text-[10px] font-black uppercase text-slate-400 tracking-wider">Extra Info</span>
+                                <span class="text-[8px] text-slate-600 font-mono">ID: #${spot.rowid}</span>
+                            </div>
+                            <div class="flex-1 overflow-y-auto subtle-scrollbar my-2 pr-0.5 space-y-3 text-[11px]">
+                                <p class="text-slate-300 leading-relaxed font-medium bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl">${(spot.long_description && spot.long_description !== "N/A") ? spot.long_description : 'No background summary recorded.'}</p>
+                                
+                                <div class="space-y-1">
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-pink-500 block">Itinerary Mapping Tracker</span>
+                                    <div class="bg-slate-950 border border-slate-955 p-2 rounded-xl flex items-center justify-between gap-2">
+                                        <span class="font-bold text-slate-400 uppercase tracking-wide text-[9px]">Map to Schedule:</span>
+                                        <div class="flex gap-1">
+                                            <button onclick="injectActiveSpotToItineraryDay(1, ${spot.rowid}, event)" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[9px] font-bold">D1</button>
+                                            <button onclick="injectActiveSpotToItineraryDay(2, ${spot.rowid}, event)" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[9px] font-bold">D2</button>
+                                            <button onclick="injectActiveSpotToItineraryDay(3, ${spot.rowid}, event)" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[9px] font-bold">D3</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-slate-500 block mb-0.5">Schedule</span>
+                                    <div class="bg-slate-950/50 border border-slate-950 p-2.5 rounded-xl font-mono text-[10px] text-slate-400 space-y-0.5">${hoursHTMLTokens}</div>
+                                </div>
+                                ${(spot.booking_requirement && spot.booking_requirement !== "N/A" && spot.booking_requirement.toLowerCase() !== "none") ? `
+                                <div class="p-2.5 bg-amber-500/5 border border-amber-500/20 rounded-xl">
+                                    <span class="text-[8px] font-black uppercase tracking-widest text-amber-400 block">Alert</span>
+                                    <span class="text-slate-300 leading-relaxed block mt-0.5">${spot.booking_requirement}</span>
+                                </div>` : ''}
+                            </div>
+                            <div class="flex gap-2 justify-end pt-2 border-t border-slate-950 shrink-0 items-center">
+                                <button onclick="handleManualInlineCardFlipExecution(event, '${uniqueCardContainerId}', 'backward')" class="text-slate-400 bg-slate-950 border border-slate-800/80 px-2.5 py-1.5 rounded-lg text-[11px] font-black tracking-wide mr-auto active:bg-slate-900">
+                                    <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+                scrollContainerFrame.appendChild(cardWrapper);
+            });
+
+            const tailEndLabelDeckNode = document.createElement('div');
+            tailEndLabelDeckNode.className = "dynamic-tailpiece-node w-full py-4 flex items-center justify-center gap-4 shrink-0 block px-4";
+            tailEndLabelDeckNode.innerHTML = `
+                <div class="flex-grow border-t border-slate-900 max-w-[40px]"></div>
+                <span class="text-[9px] font-bold tracking-[0.15em] uppercase text-slate-600 whitespace-nowrap">End of filtered list</span>
+                <div class="flex-grow border-t border-slate-900 max-w-[40px]"></div>
+            `;
+            scrollContainerFrame.appendChild(tailEndLabelDeckNode);
+
+            const physicalScrollSpacer = document.createElement('div');
+            physicalScrollSpacer.className = "dynamic-spacer-node h-16 shrink-0 block w-full";
+            scrollContainerFrame.appendChild(physicalScrollSpacer);
+        }
+
+        async function updateCloudAction(rowId, action, value, spotName) {
+            const target = travelSpots.find(s => s.rowid === rowId);
+            if (target) {
+                if (action === 'update_status') target.status = value;
+                if (action === 'toggle_priority') target.priority = value;
+                renderList(); plotDynamicMarkersOnCanvasMap();
+                renderItineraryMasterDashboardWorkspace();
+            }
+            silentPassiveHardwareLocationPingRefresh();
+            try {
+                await fetch(API_URL, {
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rowId, action, value, spot: spotName, deviceMeta: cachedHardwareString })
+                });
+            } catch(err) {}
+        }
+
+        function updateGpsHudStatus(state, message) {
+            const btn = document.getElementById('gpsBadgeButton');
+            const dot = document.getElementById('gpsDotSignal');
+            const text = document.getElementById('gpsBadgeText');
+            if(!btn || !dot || !text) return;
+            
+            if (state === 'active') {
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-emerald-500/5 border-emerald-500/20 text-emerald-400 cursor-pointer relative z-[60]";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"; 
+                text.innerText = message || "GPS Active";
+            } else if (state === 'syncing') {
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-amber-500/5 border-amber-500/20 text-amber-400 cursor-pointer relative z-[60]";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce"; 
+                text.innerText = message || "Syncing...";
+            } else {
+                btn.className = "px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border flex items-center gap-1 bg-rose-500/5 border-rose-500/20 text-rose-400 cursor-pointer relative z-[60]";
+                dot.className = "w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"; 
+                text.innerText = message || "GPS Off";
+            }
+        }
+
+        function calculateSmartCityDefaultFilters() {
+            const container = document.getElementById('cityHUDChecklistContainer');
+            if (!container) return; container.innerHTML = '';
+            let citySet = new Set();
+            travelSpots.forEach(spot => { if (spot.city && String(spot.city).trim() !== "") citySet.add(spot.city.trim()); });
+            if (citySet.size === 0) {
+                container.innerHTML = `<div class="text-slate-500 text-[11px] p-2">No cities recorded</div>`; return;
+            }
+            citySet.forEach(city => {
+                const label = document.createElement('label');
+                label.className = "flex items-center justify-between p-2 rounded-lg hover:bg-slate-800 cursor-pointer";
+                const isChecked = checkedCitiesStateArray.includes(city);
+                label.innerHTML = `<span class="truncate pr-2">${city}</span><input type="checkbox" value="${city}" ${isChecked ? 'checked' : ''} onchange="handleCityHUDCheckboxEventToggle(this)" class="w-3.5 h-3.5 accent-pink-500 rounded bg-slate-950">`;
+                container.appendChild(label);
+            });
+            updateCityHUDTriggerButtonLabelText();
+        }
+
+        function handleCityHUDCheckboxEventToggle(checkboxElement) {
+            const val = checkboxElement.value;
+            if (checkboxElement.checked) { if(!checkedCitiesStateArray.includes(val)) checkedCitiesStateArray.push(val); } 
+            else { checkedCitiesStateArray = checkedCitiesStateArray.filter(c => c !== val); }
+            localStorage.setItem('compass_active_cities', JSON.stringify(checkedCitiesStateArray));
+            updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        function clearAllSelectedCityCheckboxes() {
+            checkedCitiesStateArray = []; localStorage.setItem('compass_active_cities', JSON.stringify([]));
+            const checkboxes = document.getElementById('cityHUDChecklistContainer').querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateCityHUDTriggerButtonLabelText(); renderList(); plotDynamicMarkersOnCanvasMap();
+        }
+
+        function updateCityHUDTriggerButtonLabelText() {
+            const textNode = document.getElementById('cityHUDTriggerText');
+            const btn = document.getElementById('cityFilterHUDTriggerBtn');
+            const count = checkedCitiesStateArray.length;
+            if (count === 0) {
+                textNode.innerText = "All Cities";
+                btn.className = "w-full bg-slate-950 border border-slate-800/80 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-slate-300 flex items-center justify-center gap-1 truncate shadow-inner";
+            } else {
+                textNode.innerText = count === 1 ? checkedCitiesStateArray[0] : `Cities (${count})`;
+                btn.className = "w-full bg-pink-500/10 border border-pink-500/30 rounded-xl h-[38px] px-2 text-center text-[11px] font-black text-pink-400 flex items-center justify-center gap-1 truncate shadow-inner";
+            }
+        }
+
+        function toggleQuickAddModal(show) { document.getElementById('quickAddModal').classList.toggle('hidden', !show); }
+        let formPriorityState = "Normal";
+        function toggleFormPriorityState() {
+            const btn = document.getElementById('form-priority-btn');
+            if(formPriorityState === "Normal") {
+                formPriorityState = "Starred"; btn.innerHTML = '<i class="fa-solid fa-star mr-1"></i> Starred';
+                btn.className = "px-4 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500 text-amber-400 font-extrabold";
+            } else {
+                formPriorityState = "Normal"; btn.innerHTML = 'Normal';
+                btn.className = "px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 font-bold";
+            }
+        }
+
+        async function submitNewSpotToCloud() {
+            const url = document.getElementById('new-url').value;
+            const mapsUrl = document.getElementById('new-maps-url').value;
+            const city = document.getElementById('new-city').value;
+            const cat = document.getElementById('new-category').value;
+            const keyword = document.getElementById('new-keyword').value;
+            const notes = document.getElementById('new-notes').value;
+            const submitBtn = document.getElementById('form-submit-btn');
+
+            if(!keyword) { alert("Provide a keyword title for the spot asset."); return; }
+            if(!url && !mapsUrl) { alert("Please provide at least a Reference Link or a Google Maps Link."); return; }
+            
+            submitBtn.innerHTML = "<i class='fa-solid fa-arrows-rotate animate-spin mr-2'></i> Injecting into Sheet Database..."; 
+            submitBtn.disabled = true;
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'append_new_spot', 
+                        city: city || 'Global', 
+                        spot_name: keyword, 
+                        category: cat || 'General', 
+                        instagram_url: url, 
+                        maps_url: mapsUrl, 
+                        notes: notes, 
+                        priority: formPriorityState, 
+                        deviceMeta: cachedHardwareString 
+                    })
+                });
+                document.getElementById('new-url').value = ''; 
+                document.getElementById('new-maps-url').value = ''; 
+                document.getElementById('new-city').value = ''; 
+                document.getElementById('new-category').value = ''; 
+                document.getElementById('new-keyword').value = ''; 
+                document.getElementById('new-notes').value = '';
+                toggleQuickAddModal(false); setTimeout(() => syncData(true), 1000);
+            } catch(err) { alert("Submission timed out."); } 
+            finally { submitBtn.innerHTML = "<i class='fa-solid fa-floppy-disk mr-2'></i> Save"; submitBtn.disabled = false; }
+        }
+
+        async function syncData(isManualForce) {
+            const syncText = document.getElementById('syncText');
+            const syncIconFrame = document.getElementById('syncButtonIconFrame');
+            
+            if (PULL_INDICATOR) PULL_INDICATOR.style.height = '0px';
+
+            if (syncText && isManualForce) syncText.innerText = "Checking cloud...";
+            if (syncIconFrame && isManualForce) syncIconFrame.classList.add('animate-spin');
+            
+            try {
+                const response = await fetch(API_URL);
+                const cloudData = await response.json();
+                if(Array.isArray(cloudData)) {
+                    travelSpots = cloudData;
+                    localStorage.setItem('compass_cache', JSON.stringify(travelSpots));
+                    calculateSmartCityDefaultFilters(); renderList(); plotDynamicMarkersOnCanvasMap();
+                    buildItinerarySubMenuChecklist();
+                    
+                    // Fetch itineraries immediately after getting the main vault spots
+                    await loadUserItineraries();
+                    
+                    updateNetworkStatusHUD();
+                }
+            } catch (e) { 
+                if(syncText) syncText.innerText = "Offline Mode"; 
+            } finally {
+                if (syncIconFrame) {
+                    setTimeout(() => { syncIconFrame.classList.remove('animate-spin'); }, 400);
+                }
+            }
+        }
+
+        function toggleSettingsMenu(show) { 
+            const drawer = document.getElementById('settingsDrawer');
+            if (drawer) drawer.classList.toggle('hidden', !show); 
+            
+            // If opening up the settings tray window, select the active dropdown values instantly
+            if (show) {
+                const switchUserBox = document.getElementById('settingsSwitchUserDropdown');
+                const mainSelectionBox = document.getElementById('user-dropdown-select');
+                
+                if (switchUserBox && mainSelectionBox) {
+                    // Mirror options from the main loading menu dropdown right down to your settings list
+                    switchUserBox.innerHTML = mainSelectionBox.innerHTML;
+                    
+                    // Force the dropdown selection tracker index to highlight your exact current username token
+                    if (currentUser) {
+                        switchUserBox.value = currentUser;
+                        
+                        // Prefill rename element fields cleanly for straightforward editing modifications
+                        const renameField = document.getElementById('settingsRenameField');
+                        if (renameField) renameField.placeholder = currentUser;
+                    }
+                }
+            }
+        }
+        function setupNetworkListeners() { window.addEventListener('online', updateNetworkStatusHUD); window.addEventListener('offline', updateNetworkStatusHUD); }
+        function updateNetworkStatusHUD() {
+            const indicator = document.getElementById('networkIndicator'); const syncText = document.getElementById('syncText');
+            if(!indicator || !syncText) return;
+            if (navigator.onLine) {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-emerald-500"; syncText.className = "text-[9px] font-mono text-slate-500"; syncText.innerText = "Synced Live Data";
+            } else {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"; syncText.className = "text-[9px] font-mono text-amber-400 font-black tracking-wide"; syncText.innerText = "OFFLINE MODE";
+            }
+        }
         // 🌐 ADMINISTRATIVE PROFILE MANAGEMENT ENGINE
         async function commitProfileRename() {
             const renameField = document.getElementById('settingsRenameField');
-            if (!renameField || renameField.value.trim().length < 3) return;
+            if (!renameField || !renameField.value.trim()) {
+                alert("Please enter a valid profile name.");
+                return;
+            }
             
             const oldName = currentUser || "Global Traveller";
             const newName = renameField.value.trim();
             
-            openThematicUXModalHUD({
-                title: "Update Label Identity",
-                desc: `Are you sure you want to change your profile identity from "${oldName}" to "${newName}"?`,
-                confirmText: "Update Identity",
-                theme: "pink",
-                onConfirm: async function() {
-                    dismissThematicUXModalHUD();
-                    try {
-                        await fetch(BACKEND_URL, {
-                            method: 'POST',
-                            mode: 'cors',
-                            body: JSON.stringify({
-                                action: 'log_name_change',
-                                user: newName,
-                                oldName: oldName,
-                                deviceMeta: cachedHardwareString
-                            })
-                        });
-                    } catch (err) {
-                        console.error("Failed to update profile rename cloud sync logs:", err);
-                    }
+            if (oldName === newName) {
+                alert("The new profile name matches your current label.");
+                return;
+            }
 
-                    localStorage.setItem('compass_user', newName);
-                    currentUser = newName;
-                    renameField.value = '';
-                    
-                    toggleSettingsMenu(false);
-                    syncData(true);
-                    
-                    setTimeout(() => {
-                        openThematicUXModalHUD({
-                            title: "Resource Synced",
-                            desc: `Identity updated successfully. Global asset tables have been re-mapped onto the account label "${newName}".`,
-                            confirmText: "Continue",
-                            theme: "pink",
-                            onConfirm: function() { dismissThematicUXModalHUD(); }
-                        });
-                    }, 400);
-                }
-            });
+            if (!confirm(`Are you sure you want to change your profile identity from "${oldName}" to "${newName}"?`)) return;
+
+            try {
+                await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: JSON.stringify({
+                        action: 'log_name_change',
+                        user: newName,
+                        oldName: oldName,
+                        deviceMeta: cachedHardwareString
+                    })
+                });
+            } catch (err) {
+                console.error("Failed to log name change to cloud logs:", err);
+            }
+
+            localStorage.setItem('compass_user', newName);
+            currentUser = newName;
+            renameField.value = '';
+            
+            alert(`Identity profile updated to: ${newName}. Syncing resources...`);
+            toggleSettingsMenu(false);
+            syncData(true);
         }
 
         // 🌐 CLOUD REGISTRY SCRUBBER PROTOCOL
-        function openThematicPurgeModalHUD() {
-            const htmlLayoutInput = `
-                <div class="space-y-1.5 text-left mt-2">
-                    <label class="block text-[9px] uppercase font-black text-slate-400 tracking-wider">Master Security Vault Key</label>
-                    <input type="password" id="thematicPurgePassFieldHUD" oninput="document.getElementById('thematicUXActionBtnHUD').disabled = (this.value.trim().length === 0)" placeholder="Enter credentials..." class="w-full bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-slate-200 focus:outline-none">
-                </div>
-            `;
-            
-            openThematicUXModalHUD({
-                title: "Cloud Purge Vault",
-                desc: "This will permanently incinerate all analytics rows, audit tables, and database logs connected down to your active cloud spreadsheets environment pipeline.",
-                confirmText: "Purge Database",
-                theme: "red",
-                htmlInput: htmlLayoutInput,
-                startDisabled: true,
-                onConfirm: async function() {
-                    const passField = document.getElementById('thematicPurgePassFieldHUD');
-                    const adminPassword = passField ? passField.value.trim() : "";
-                    dismissThematicUXModalHUD();
-                    
-                    document.getElementById('buildingItineraryLoaderPopup').classList.remove('hidden');
-                    
-                    try {
-                        const response = await fetch(BACKEND_URL, {
-                            method: 'POST',
-                            mode: 'cors',
-                            body: JSON.stringify({
-                                action: 'purge_server_history',
-                                user: currentUser || "System Admin",
-                                password: adminPassword
-                            })
-                        });
-                        
-                        document.getElementById('buildingItineraryLoaderPopup').classList.add('hidden');
-                        const outcome = await response.json();
-                        
-                        setTimeout(() => {
-                            if (outcome.result === "success") {
-                                openThematicUXModalHUD({
-                                    title: "Cloud Purged",
-                                    desc: "Absolute destruction confirmation. External data sheet blocks and telemetry logs have been scrubbed cleanly.",
-                                    confirmText: "Acknowledge",
-                                    theme: "pink",
-                                    onConfirm: function() { dismissThematicUXModalHUD(); toggleSettingsMenu(false); syncData(true); }
-                                });
-                            } else if (outcome.result === "auth_failed") {
-                                openThematicUXModalHUD({
-                                    title: "Access Rejected",
-                                    desc: "Master key criteria assertion mismatch parameters. Verification credentials unauthenticated.",
-                                    confirmText: "Retry",
-                                    theme: "red",
-                                    onConfirm: function() { dismissThematicUXModalHUD(); }
-                                });
-                            } else {
-                                openThematicUXModalHUD({
-                                    title: "Execution Error",
-                                    desc: "Cloud transaction rejected: " + (outcome.error || "Timeout exception metadata anomaly context logs."),
-                                    confirmText: "Acknowledge",
-                                    theme: "red",
-                                    onConfirm: function() { dismissThematicUXModalHUD(); }
-                                });
-                            }
-                        }, 350);
-                    } catch (err) {
-                        document.getElementById('buildingItineraryLoaderPopup').classList.add('hidden');
-                        console.error("Purge failure:", err);
-                        setTimeout(() => {
-                            openThematicUXModalHUD({
-                                title: "Network Error",
-                                desc: "Infrastructure server interface unreachable. Check downstream connection lines.",
-                                confirmText: "Okay",
-                                theme: "red",
-                                onConfirm: function() { dismissThematicUXModalHUD(); }
-                            });
-                        }, 350);
-                    }
+        async function triggerSecureServerHistoryPurgeVault() {
+            const adminPassword = prompt("🚨 SECURE AREA PROTOCOL:\n\nEnter the Master Admin Password to proceed with live server database log purges:");
+            if (adminPassword === null) return; 
+            if (!adminPassword.trim()) {
+                alert("Password cannot be blank.");
+                return;
+            }
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: JSON.stringify({
+                        action: 'purge_server_history',
+                        user: currentUser || "System Admin",
+                        password: adminPassword.trim()
+                    })
+                });
+                
+                const outcome = await response.json();
+                if (outcome.result === "success") {
+                    alert("🚨 CRITICAL SUCCESS:\n\nGoogle Sheets historical server records and log metrics have been fully scrubbed.");
+                    toggleSettingsMenu(false);
+                    syncData(true);
+                } else if (outcome.result === "auth_failed") {
+                    alert("❌ AUTHENTICATION FAILED:\n\nInvalid Admin Password provided.");
+                } else {
+                    alert("Error: " + (outcome.error || "Unknown response received from cloud ecosystem."));
                 }
-            });
+            } catch (err) {
+                console.error("Purge failure:", err);
+                alert("Communication crash. Verify your web app script setup properties.");
+            }
         }
 
         // 🌐 SYSTEM ACCOUNT LOGOUT PROFILE
-        function openThematicLogoutModalHUD() {
-            openThematicUXModalHUD({
-                title: "Terminate Session",
-                desc: "Are you sure you want to log out of Save2Go? Caches, offline index markers, and state properties will be completely cleared.",
-                confirmText: "Clear & Logout",
-                theme: "red",
-                onConfirm: function() {
-                    dismissThematicUXModalHUD();
-                    localStorage.clear();
-                    window.location.reload();
-                }
-            });
+        function clearDeviceSessionAndLogout() {
+            if (!confirm("Are you sure you want to drop your active profile context? This resets your local offline registry cache layers completely.")) return;
+            localStorage.clear();
+            alert("Local application sandbox cache destroyed cleanly.");
+            window.location.reload();
         }
 
+
         /* ==========================================================================
-            PURE ADDITIVE JS LAYER: V5 SCHEDULING SEQUENCE TIMELINE ENGINE
-            ========================================================================== */
+           PURE ADDITIVE JS LAYER: V5 SCHEDULING SEQUENCE TIMELINE ENGINE
+           ========================================================================== */
 
         function isItineraryCacheWhollyEmpty() {
             return (!itineraryItems["1"] || itineraryItems["1"].length === 0) &&
@@ -1573,9 +2540,9 @@
             const currentRowId = actionBtn.getAttribute('data-row-id');
             if (!currentRowId) { container.innerHTML = ''; return; }
             container.innerHTML = `
-                <button onclick="injectActiveSpotToItineraryDay(1, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-855">D1</button>
-                <button onclick="injectActiveSpotToItineraryDay(2, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-855">D2</button>
-                <button onclick="injectActiveSpotToItineraryDay(3, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-855">D3</button>
+                <button onclick="injectActiveSpotToItineraryDay(1, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D1</button>
+                <button onclick="injectActiveSpotToItineraryDay(2, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D2</button>
+                <button onclick="injectActiveSpotToItineraryDay(3, ${currentRowId}, event)" class="px-2 py-1 bg-slate-900 border border-slate-800 rounded font-black text-[9px] text-pink-400 active:bg-slate-850">D3</button>
             `;
         }
 
@@ -1623,57 +2590,6 @@
             itineraryItems[activeItineraryDayTracker] = [];
             localStorage.setItem('compass_itinerary_cache', JSON.stringify(itineraryItems));
             renderItineraryMasterDashboardWorkspace();
-        }
-
-        // --- DESTRUCTIVE PURGES LOGIC CORRECTION ---
-        function triggerClearItineraryData() {
-            openThematicUXModalHUD({
-                title: "Incinerate Cached Schedules",
-                desc: "This will permanently incinerate all travel spot sequence routes and offline calendar entries. This operation is non-reversible.",
-                confirmText: "Scrub Caches",
-                theme: "red",
-                onConfirm: async function() {
-                    dismissThematicUXModalHUD();
-                    const targetedUserIdentity = currentUser || "";
-                    if (targetedUserIdentity && Array.isArray(savedItineraries) && savedItineraries.length > 0) {
-                        for (const itin of savedItineraries) {
-                            try {
-                                await fetch(BACKEND_URL, {
-                                    method: 'POST',
-                                    mode: 'no-cors',
-                                    body: JSON.stringify({
-                                        action: 'sync_itinerary',
-                                        method: 'delete',
-                                        user: targetedUserIdentity,
-                                        itin_id: itin.id
-                                    })
-                                });
-                            } catch (err) {
-                                console.error("Failed to sync matrix purge downstream:", err);
-                            }
-                        }
-                    }
-
-                    localStorage.removeItem('compass_saved_itineraries');
-                    localStorage.removeItem('compass_itinerary_cache');
-                    localStorage.removeItem('compass_active_itinerary_id');
-                    savedItineraries = [];
-                    itineraryItems = { "1": [], "2": [], "3": [] };
-                    activeItineraryId = null;
-
-                    renderItineraryMasterDashboardWorkspace();
-                    
-                    setTimeout(() => {
-                        openThematicUXModalHUD({
-                            title: "Itineraries Purged",
-                            desc: "Offline timeline blocks have been cleared and spreadsheet storage configurations have been updated.",
-                            confirmText: "Continue",
-                            theme: "pink",
-                            onConfirm: function() { dismissThematicUXModalHUD(); }
-                        });
-                    }, 350);
-                }
-            });
         }
 
         function removeSpotFromItineraryDay(rowId) {
@@ -1739,9 +2655,1239 @@
             alert(`Surgically compiled matrix track. Injecting ${injectionCounter} sequence units into Day ${activeItineraryDayTracker}.`);
         }
 
+        /* DYNAMIC DRAWER CONFIGURATOR AND PATTERN CONSTRUCTORS */
+        function toggleItineraryCreationDrawerForm(show) {
+            const modal = document.getElementById('itineraryCreationDrawerModal');
+            if (modal) modal.classList.toggle('hidden', !show);
+        }
+
+        function openItineraryCreationDrawerForm() {
+            toggleItineraryCreationDrawerForm(true);
+            itinSelectedCategorySequence = [];
+            
+            // Auto-select a food category as a baseline default
+            let defaultFoodCategory = 'Food Spot'; 
+            if (travelSpots && travelSpots.length > 0) {
+                let uniqueCategories = new Set();
+                travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
+                for (let cat of uniqueCategories) {
+                    if (cat.toLowerCase().includes('food')) {
+                        defaultFoodCategory = cat;
+                        break;
+                    }
+                }
+            }
+            itinSelectedCategorySequence = [defaultFoodCategory];
+            
+            const selectCity = document.getElementById('itin-new-city');
+            if (selectCity) {
+                selectCity.innerHTML = '';
+                let citySet = new Set();
+                travelSpots.forEach(spot => { if (spot.city) citySet.add(spot.city.trim()); });
+                citySet.forEach(city => {
+                    const opt = document.createElement('option');
+                    opt.value = city; opt.innerText = city;
+                    selectCity.appendChild(opt);
+                });
+            }
+            
+            updateMultiDateUILabel();
+            renderItineraryFormCategoriesAndQueryRows();
+        }
+
+        // ========================================================
+        // PACING TOGGLE ENGINE
+        // ========================================================
+        function setItinPacingMode(mode) {
+            itinPacingMode = mode;
+            const maxBtn = document.getElementById('itinPacingToggleMax');
+            const relBtn = document.getElementById('itinPacingToggleRelaxed');
+            if(mode === 'max') {
+                maxBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors";
+                relBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent";
+            } else {
+                maxBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent";
+                relBtn.className = "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors";
+            }
+        }
+
+        // ========================================================
+        // MULTI-DATE CALENDAR UI ENGINE
+        // ========================================================
+        function openMultiDatePickerModal() {
+            document.getElementById('itinCalendarModal').classList.remove('hidden');
+            renderMultiDateCalendarGrid();
+        }
+
+        function changeMultiCalendarMonth(offset) {
+            calMonth += offset;
+            if (calMonth < 0) { calMonth = 11; calYear--; }
+            else if (calMonth > 11) { calMonth = 0; calYear++; }
+            renderMultiDateCalendarGrid();
+        }
+
+        function renderMultiDateCalendarGrid() {
+            const grid = document.getElementById('calendarDaysGrid');
+            const title = document.getElementById('calendarMonthTitle');
+            grid.innerHTML = '';
+            
+            let firstDay = new Date(calYear, calMonth, 1).getDay();
+            let daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            title.innerText = `${monthNames[calMonth]} ${calYear}`;
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div></div>`;
+            }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                let dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                let isSelected = selectedMultiDatesArray.includes(dateStr);
+                let btnClass = isSelected 
+                    ? "w-8 h-8 rounded-full bg-pink-600 text-white font-bold text-xs flex items-center justify-center mx-auto shadow-lg shadow-pink-600/30 transform scale-110 transition-transform" 
+                    : "w-8 h-8 rounded-full bg-slate-900 text-slate-300 font-medium text-xs flex items-center justify-center mx-auto border border-slate-800 hover:bg-slate-800 hover:text-white cursor-pointer transition-colors";
+                
+                grid.innerHTML += `<div onclick="toggleMultiDateSelection('${dateStr}')" class="${btnClass}">${i}</div>`;
+            }
+        }
+
+        function toggleMultiDateSelection(dateStr) {
+            if (selectedMultiDatesArray.includes(dateStr)) {
+                selectedMultiDatesArray = selectedMultiDatesArray.filter(d => d !== dateStr);
+            } else {
+                selectedMultiDatesArray.push(dateStr);
+            }
+            renderMultiDateCalendarGrid();
+        }
+
+        function checkSequentialDates(dates) {
+            if(dates.length <= 1) return true;
+            let sorted = [...dates].sort(); 
+            for(let i=1; i<sorted.length; i++) {
+                let d1 = new Date(sorted[i-1]);
+                d1.setDate(d1.getDate() + 1);
+                let nextDayStr = d1.toISOString().split('T')[0];
+                if (nextDayStr !== sorted[i]) return false;
+            }
+            return true;
+        }
+
+        function closeMultiDatePickerModal() {
+            document.getElementById('itinCalendarModal').classList.add('hidden');
+            updateMultiDateUILabel();
+        }
+
+        function updateMultiDateUILabel() {
+            const display = document.getElementById('itin-date-display');
+            const meta = document.getElementById('itin-date-meta');
+            
+            if (selectedMultiDatesArray.length === 0) {
+                display.innerText = "Select Dates";
+                meta.classList.add('hidden');
+            } else if (selectedMultiDatesArray.length === 1) {
+                display.innerText = selectedMultiDatesArray[0];
+                meta.classList.add('hidden');
+            } else {
+                display.innerText = `${selectedMultiDatesArray.length} Days Selected`;
+                let isSeq = checkSequentialDates(selectedMultiDatesArray);
+                if (!isSeq) {
+                    meta.innerText = "Non-sequential days";
+                    meta.classList.remove('hidden');
+                } else {
+                    meta.classList.add('hidden');
+                }
+            }
+        }
+
+        function renderItineraryFormCategoriesAndQueryRows() {
+            const gridContainer = document.getElementById('itinModalCategoryGridContainer');
+            const rowBox = document.getElementById('itinModalSequenceQueryRowBox');
+            if (!gridContainer || !rowBox) return;
+
+            gridContainer.innerHTML = '';
+            rowBox.innerHTML = '';
+
+            let countsMap = {};
+            itinSelectedCategorySequence.forEach(cat => { countsMap[cat] = (countsMap[cat] || 0) + 1; });
+
+            let uniqueCategories = new Set();
+            travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
+
+            uniqueCategories.forEach(catName => {
+                if (!catName) return;
+                const count = countsMap[catName] || 0;
+                const isSelected = count > 0;
+
+                const btn = document.createElement('button');
+                btn.type = "button";
+                if (isSelected) {
+                    btn.className = "px-2 py-1.5 rounded-lg text-[10px] font-black flex items-center justify-between min-h-[30px] bg-pink-500/10 border border-dashed border-pink-500 text-pink-400 shadow-sm transition-all";
+                } else {
+                    btn.className = "px-2 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-between min-h-[30px] bg-slate-950/60 border border-dashed border-slate-700 text-slate-400 hover:bg-slate-900 transition-all";
+                }
+
+                btn.onclick = function() {
+                    itinSelectedCategorySequence.push(catName);
+                    renderItineraryFormCategoriesAndQueryRows();
+                };
+
+                btn.innerHTML = `
+                    <span class="truncate pr-1.5">${catName}</span>
+                    ${isSelected ? `<span class="text-[8px] bg-pink-600 text-white font-mono px-1 py-0.5 rounded shrink-0">x${count}</span>` : `<i class="fa-solid fa-plus text-[8px] opacity-40 shrink-0"></i>`}
+                `;
+                gridContainer.appendChild(btn);
+            });
+
+            if (itinSelectedCategorySequence.length === 0) {
+                rowBox.innerHTML = ''; 
+            } else {
+                itinSelectedCategorySequence.forEach((cat, idx) => {
+                    const pill = document.createElement('div');
+                    pill.className = "flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-2 shrink-0 text-[10px] font-bold text-slate-300 shadow";
+                    pill.innerHTML = `
+                        <span>${cat}</span>
+                        <button onclick="removeCategoryFromSequenceByIndex(${idx})" class="w-4 h-4 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-[8px] hover:bg-red-900/60 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                    `;
+                    rowBox.appendChild(pill);
+
+                    if (idx < itinSelectedCategorySequence.length - 1) {
+                        const separator = document.createElement('span');
+                        separator.className = "text-pink-500 font-black text-[14px] shrink-0 mx-0.5 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]";
+                        separator.innerText = "→";
+                        rowBox.appendChild(separator);
+                    }
+                });
+            }
+        }
+
+        function removeCategoryFromSequenceByIndex(index) {
+            itinSelectedCategorySequence.splice(index, 1);
+            renderItineraryFormCategoriesAndQueryRows();
+        }
+
+        function compileItineraryFromSequencePatternForm() {
+            const chosenCity = document.getElementById('itin-new-city').value;
+            if (!chosenCity) { alert("Please assign a valid target city boundary first."); return; }
+            if (itinSelectedCategorySequence.length === 0) { alert("Please select at least one pattern category element to construct the timeline matrix."); return; }
+
+            let calculatedTrackIds = [];
+            let utilizedRowIds = new Set();
+
+            itinSelectedCategorySequence.forEach(searchCategory => {
+                const matchedRecord = travelSpots.find(spot => {
+                    if (utilizedRowIds.has(spot.rowid)) return false;
+                    if ((spot.city || "").trim() !== chosenCity.trim()) return false;
+                    
+                    const spotCats = (spot.category || "").split(',').map(c => c.trim().toLowerCase());
+                    return spotCats.includes(searchCategory.toLowerCase());
+                });
+
+                if (matchedRecord) {
+                    calculatedTrackIds.push(parseInt(matchedRecord.rowid));
+                    utilizedRowIds.add(matchedRecord.rowid);
+                }
+            });
+
+            if (calculatedTrackIds.length === 0) {
+                alert(`No database assets found inside ${chosenCity} matching your precise sequence blueprint.`);
+                return;
+            }
+
+            itineraryItems[activeItineraryDayTracker] = calculatedTrackIds;
+            localStorage.setItem('compass_itinerary_cache', JSON.stringify(itineraryItems));
+            toggleItineraryCreationDrawerForm(false);
+            renderItineraryMasterDashboardWorkspace();
+            alert(`Surgically compiled matrix track sequence pattern mapping. Injected ${calculatedTrackIds.length} path targets.`);
+        }
+
+        // =====================================================================
+        // THEMATIC MODAL & CACHE CONTROLLERS
+        // =====================================================================
+        let pendingConfirmCallback = null;
+        
+        function openThematicConfirm(title, desc, confirmText, callback, theme = 'pink') {
+            document.getElementById('thematicConfirmTitle').innerText = title;
+            document.getElementById('thematicConfirmDesc').innerText = desc;
+            const btn = document.getElementById('thematicConfirmActionBtn');
+            const icon = document.getElementById('thematicConfirmIcon');
+            btn.innerText = confirmText;
+            
+            if (theme === 'pink') {
+                btn.className = "w-full max-w-[200px] py-3.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-pink-600/20 active:scale-95 transition-transform";
+                icon.className = "w-16 h-16 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-500 text-2xl mx-auto mb-2 border border-pink-500/20";
+                icon.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+            } else {
+                btn.className = "flex-1 py-3.5 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-red-600/20 active:scale-95 transition-transform";
+                icon.className = "w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 text-2xl mx-auto mb-2 border border-red-500/20";
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            }
+
+            pendingConfirmCallback = callback;
+            const modal = document.getElementById('thematicConfirmModal');
+            const box = document.getElementById('thematicConfirmBox');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                box.classList.remove('scale-95'); box.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeThematicConfirm() {
+            const modal = document.getElementById('thematicConfirmModal');
+            const box = document.getElementById('thematicConfirmBox');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            box.classList.remove('scale-100'); box.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+            pendingConfirmCallback = null;
+        }
+
+        document.getElementById('thematicConfirmActionBtn').addEventListener('click', () => {
+            if (pendingConfirmCallback) pendingConfirmCallback();
+            closeThematicConfirm();
+        });
+
+        
+        
+
+        function promptDeleteItinerary() {
+            openThematicConfirm("Delete Itinerary", "Are you sure you want to delete this specific itinerary?", "Delete", () => {
+                savedItineraries = savedItineraries.filter(i => i.id !== activeItineraryId);
+                localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                syncItineraryToCloud({id: activeItineraryId}, 'delete');
+                activeItineraryId = null;
+                closeItineraryDetailView();
+            }, 'red');
+        }
+
+        // =====================================================================
+        // MASTER LIST & DETAIL VIEW RENDERING
+        // =====================================================================
+        function getActiveItinerary() { return savedItineraries.find(i => i.id === activeItineraryId); }
+
+        function renderItineraryMasterDashboardWorkspace() {
+            const masterList = document.getElementById('itineraryMasterListScroll');
+            const container = document.getElementById('itineraryMasterListView');
+            
+            // CRITICAL FIX: Ensure the container is visible
+            if (container) container.classList.remove('hidden');
+            const detailView = document.getElementById('itineraryDetailView');
+            if (detailView) detailView.classList.add('hidden');
+            
+            if (!masterList) return;
+            masterList.innerHTML = '';
+
+            // Target the actual navigation header template panel row inside your file
+            const topHeaderBar = container ? container.querySelector('.flex.justify-between.items-center') : null;
+
+            // Enforce layout container visibility flags before running rendering sequences
+            const listContainerDeck = document.getElementById('view-itinerary');
+            if (listContainerDeck) listContainerDeck.classList.add('active-view');
+            
+            const masterListViewFallback = document.getElementById('itineraryMasterListView');
+            if (masterListViewFallback) masterListViewFallback.classList.remove('hidden');
+
+            // Check if itineraries are truly empty (either from fetch or empty local storage)
+            if (!savedItineraries || savedItineraries.length === 0) {
+                if (topHeaderBar) topHeaderBar.classList.add('hidden');
+
+                masterList.innerHTML = `
+                    <div class="flex flex-col justify-center items-center py-12 text-center px-6">
+                        <div class="max-w-xs space-y-4">
+                            <div class="w-16 h-16 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-500 text-2xl mx-auto">
+                                <i class="fa-solid fa-route"></i>
+                            </div>
+                            <h2 class="text-lg font-black text-slate-200">Build Your First Itinerary</h2>
+                            <p class="text-sm text-slate-400">Create daily schedules using saved spots.</p>
+                            <button onclick="toggleItineraryCreationDrawerForm(true)" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl text-xs font-black uppercase text-white shadow-lg">
+                                + New Itinerary
+                            </button>
+                        </div>
+                    </div>`;
+                return;
+            }
+            if (topHeaderBar) topHeaderBar.classList.remove('hidden');
+
+
+            savedItineraries.forEach(itin => {
+                // FILTER LOGIC: Apply city filter if cities are selected in the master filter
+                if (checkedCitiesStateArray.length > 0 && !checkedCitiesStateArray.includes(itin.city)) {
+                    return; // Skip this itinerary
+                }
+
+                let pendingCount = 0;
+                itin.days.forEach(d => d.timeline.forEach(s => { if(!s.isDone) pendingCount++; }));
+                
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col gap-2 cursor-pointer active:scale-[0.98] transition-transform shadow-lg";
+                card.onclick = () => openItineraryDetailView(itin.id);
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h3 class="text-sm font-black text-slate-200">${itin.title}</h3>
+                        <span class="text-[9px] font-bold px-2 py-1 bg-slate-800 border border-slate-700 rounded-md text-slate-400 shadow-inner">${itin.days.length} Days</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                        <i class="fa-solid fa-location-dot text-pink-500"></i> ${itin.city}
+                    </div>
+                    <div class="mt-2 flex items-center justify-between border-t border-slate-800 pt-3">
+                        <span class="text-[10px] font-black ${pendingCount > 0 ? 'text-amber-400' : 'text-emerald-400'}">${pendingCount === 0 ? '<i class="fa-solid fa-check-circle mr-1"></i> Completed' : pendingCount + ' Pending Spots'}</span>
+                        <i class="fa-solid fa-chevron-right text-slate-600"></i>
+                    </div>
+                `;
+                masterList.appendChild(card);
+            });
+
+            // ADD FOOTER
+            masterList.innerHTML += `
+                <div class="text-center py-8 text-[10px] font-black text-slate-600 tracking-widest opacity-60 border-t border-slate-800/50 mt-4">
+                    End of Filtered Itinerary List
+                </div>`;
+        }
+
+        function openItineraryDetailView(itinId) {
+            activeItineraryId = itinId;
+            activeItineraryDayTracker = 0;
+            document.getElementById('itineraryMasterListView').classList.add('hidden');
+            document.getElementById('itineraryDetailView').classList.remove('hidden');
+            renderDetailViewTimeline();
+        }
+
+        function closeItineraryDetailView() {
+            document.getElementById('itineraryDetailView').classList.add('hidden');
+            document.getElementById('itineraryMasterListView').classList.remove('hidden');
+            renderItineraryMasterDashboardWorkspace();
+        }
+
+        function navigateItineraryDay(offset) {
+            const itin = getActiveItinerary();
+            if(!itin) return;
+            activeItineraryDayTracker += offset;
+            if (activeItineraryDayTracker < 0) activeItineraryDayTracker = 0;
+            if (activeItineraryDayTracker >= itin.days.length) activeItineraryDayTracker = itin.days.length - 1;
+            renderDetailViewTimeline();
+        }
+
+        function renderDetailViewTimeline() {
+            const container = document.getElementById('itineraryTimelineScrollContainer');
+            const itin = getActiveItinerary();
+            if (!itin) return;
+
+            document.getElementById('detailItineraryTitle').innerText = itin.title;
+            document.getElementById('detailDayLabel').innerText = `Day ${activeItineraryDayTracker + 1} of ${itin.days.length}`;
+            
+            const activeDay = itin.days[activeItineraryDayTracker];
+            document.getElementById('detailDateLabel').innerText = new Date(activeDay.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+
+            container.innerHTML = '';
+            
+            if (activeDay.timeline.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-600 py-16 text-xs font-medium space-y-3"><div class="text-4xl opacity-30"><i class="fa-solid fa-mug-hot"></i></div><p>No activities scheduled for this day.</p></div>`;
+                return;
+            }
+
+            activeDay.timeline.forEach((spot, spotIndex) => {
+                const card = document.createElement('div');
+                card.className = `w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 relative flex items-center gap-3 shrink-0 transition-all ${spot.isDone ? 'itin-done-card border-slate-900' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="absolute top-0 bottom-0 left-0 w-1 bg-gradient-to-b from-pink-500 to-purple-600 opacity-80 rounded-l-2xl"></div>
+                    
+                    <div class="flex items-start gap-3 w-full">
+                        <div class="flex flex-col items-center justify-start shrink-0 w-8 pt-1 pl-1">
+                            <button onclick="toggleActivityDoneState(${activeItineraryDayTracker}, ${spotIndex})" class="w-7 h-7 rounded-full border-2 flex items-center justify-center transition-colors ${spot.isDone ? 'bg-pink-600 border-pink-600 text-white shadow-[0_0_10px_rgba(236,72,153,0.5)]' : 'border-slate-600 text-transparent hover:border-pink-500'}">
+                                <i class="fa-solid fa-check text-[12px]"></i>
+                            </button>
+                        </div>
+                        <div class="flex-1 min-w-0 pl-1">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="flex flex-col min-w-0">
+                                    <span class="text-[9px] font-mono font-bold text-pink-400 bg-pink-500/10 px-1.5 py-0.5 rounded w-fit mb-1 border border-pink-500/20 shadow-inner">${formatMinutesToTime(spot.sch_start)} - ${formatMinutesToTime(spot.sch_end)}</span>
+                                    <h3 class="text-[13px] font-black truncate text-slate-200 ${spot.isDone ? 'itin-done-text' : ''}">${spot.spot_name}</h3>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 flex items-center gap-1">${spot.category} ${spot.isAnchored ? '<span class="text-amber-400 ml-1 flex items-center gap-0.5"><i class="fa-solid fa-lock text-[8px]"></i> Fixed</span>' : ''}</p>
+                                </div>
+                                <button onclick="removeActivityFromTimeline(${activeItineraryDayTracker}, ${spotIndex})" class="w-6 h-6 flex items-center justify-center bg-red-950/20 text-red-500 rounded-full shrink-0 text-xs hover:bg-red-900/60 transition-colors"><i class="fa-solid fa-xmark"></i></button>
+                            </div>
+                            ${spot.notes ? `<div class="mt-2.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60"><p class="text-[10px] leading-relaxed font-medium text-slate-400 line-clamp-2 ${spot.isDone ? 'itin-done-text' : ''}">${spot.notes}</p></div>` : ''}
+                            <div class="flex gap-2 mt-3 justify-end items-center">
+                                <button onclick="swapActivityInTimeline(${activeItineraryDayTracker}, ${spotIndex})" class="mr-auto px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-lg text-[10px] font-black tracking-wide active:bg-indigo-500/20 transition-colors ${spot.isDone ? 'opacity-50 pointer-events-none' : ''}"><i class="fa-solid fa-arrows-rotate mr-1"></i> Swap</button>
+                                <a href="${spot.instagram_url || spot.reference_link || '#'}" target="_blank" class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-[10px] font-bold text-slate-300 active:bg-slate-900 transition-colors ${spot.isDone ? 'opacity-50 pointer-events-none' : ''}">Reference</a>
+                                <button data-row-id="${spot.rowid}" onclick="handleAdaptiveDirectionClick(this, event)" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/20 text-pink-400 rounded-lg text-[10px] font-black tracking-wide active:bg-pink-600/20 transition-colors ${spot.isDone ? 'opacity-50 pointer-events-none' : ''}"><i class="fa-solid fa-map mr-1"></i> Directions</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // ADD FOOTER
+            container.innerHTML += `
+                <div class="text-center py-8 text-[10px] font-black text-slate-600 tracking-widest opacity-60 border-t border-slate-800/50 mt-4">
+                    End of Selected Day Itinerary List
+                </div>`;
+        }
+
+        // =====================================================================
+        // ITINERARY MUTATION LOGIC (Swap, Recalculate, State)
+        // =====================================================================
+        function toggleActivityDoneState(dayIndex, spotIndex) {
+            const itin = getActiveItinerary();
+            if(!itin) return;
+            itin.days[dayIndex].timeline[spotIndex].isDone = !itin.days[dayIndex].timeline[spotIndex].isDone;
+            localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+            syncItineraryToCloud(itin, 'save');
+            renderDetailViewTimeline();
+        }
+
+        function removeActivityFromTimeline(dayIndex, spotIndex) {
+            const itin = getActiveItinerary();
+            if(!itin) return;
+            itin.days[dayIndex].timeline.splice(spotIndex, 1);
+            localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+            renderDetailViewTimeline();
+        }
+
+        function swapActivityInTimeline(dayIndex, spotIndex) {
+            const itin = getActiveItinerary();
+            const currentSpot = itin.days[dayIndex].timeline[spotIndex];
+            
+            let allUsedIds = new Set();
+            itin.days.forEach(d => d.timeline.forEach(s => allUsedIds.add(s.rowid)));
+
+            let candidates = travelSpots.filter(s => s.city === itin.city && !allUsedIds.has(s.rowid) && (s.category || "").toLowerCase().includes(currentSpot.category.toLowerCase()));
+            
+            if (candidates.length > 0) {
+                const replacement = candidates[Math.floor(Math.random() * candidates.length)];
+                itin.days[dayIndex].timeline[spotIndex] = {
+                    ...replacement,
+                    sch_start: currentSpot.sch_start,
+                    sch_end: currentSpot.sch_end, // Lock into identical time slot
+                    isDone: false,
+                    isAnchored: false
+                };
+                localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                renderDetailViewTimeline();
+                showFormErrorSpeechBubble([`Swapped for: ${replacement.spot_name}`]);
+            } else {
+                showFormErrorSpeechBubble(["No unused alternatives found for this category!"]);
+            }
+        }
+
+        function promptRecalculateItinerary() {
+            openThematicConfirm(
+                "Recalculate Flow",
+                "This will scan past days and roll over unfinished activities into today's timeline. Are you sure?",
+                "Recalculate",
+                () => { executeRecalculateEngine(); },
+                false // Amber theme
+            );
+        }
+
+        function executeRecalculateEngine() {
+            document.getElementById('buildingItineraryLoaderPopup').classList.remove('hidden');
+            
+            setTimeout(() => {
+                const itin = getActiveItinerary();
+                let missedSpots = [];
+                
+                // Harvest all unfinished spots from Days prior to the current active Day
+                for (let i = 0; i < activeItineraryDayTracker; i++) {
+                    let day = itin.days[i];
+                    for (let j = day.timeline.length - 1; j >= 0; j--) {
+                        if (!day.timeline[j].isDone) {
+                            missedSpots.push(day.timeline[j]);
+                            day.timeline.splice(j, 1); 
+                        }
+                    }
+                }
+
+                if (missedSpots.length > 0) {
+                    let currentDay = itin.days[activeItineraryDayTracker];
+                    let currentStart = parseTimeToMinutes("09:00"); // Base start
+                    
+                    // Inject missed items into the beginning of today's timeline
+                    missedSpots.reverse().forEach(spot => {
+                        spot.sch_start = currentStart;
+                        spot.sch_end = currentStart + spot.logicDur;
+                        currentStart = spot.sch_end + 15;
+                        currentDay.timeline.unshift(spot);
+                    });
+
+                    // Re-flow the math for the rest of today's activities so they shift down
+                    currentDay.timeline.sort((a, b) => a.sch_start - b.sch_start);
+                    let recalcTime = parseTimeToMinutes("09:00");
+                    currentDay.timeline.forEach(s => {
+                        s.sch_start = recalcTime;
+                        s.sch_end = recalcTime + s.logicDur;
+                        recalcTime = s.sch_end + 15;
+                    });
+
+                    localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                    renderDetailViewTimeline();
+                    showFormErrorSpeechBubble(["Recalculation Complete: Missed items rolled over!"]);
+                } else {
+                    showFormErrorSpeechBubble(["No missed activities found to roll over!"]);
+                }
+                
+                document.getElementById('buildingItineraryLoaderPopup').classList.add('hidden');
+            }, 1000);
+        }
+        // =====================================================================
+        // V5 ITINERARY MATRIX ENGINE (BRAINS)
+        // =====================================================================
+        
+        function parseTimeToMinutes(timeStr) {
+            if (!timeStr || !timeStr.includes(':')) return 0;
+            const parts = timeStr.split(':');
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        }
+
+        function formatMinutesToTime(mins) {
+            let h = Math.floor(mins / 60); let m = mins % 60;
+            const period = h >= 12 && h < 24 ? 'PM' : 'AM';
+            if (h > 12) h -= 12; if (h === 0) h = 12;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} ${period}`;
+        }
+
+        function minutesToHHMM(mins) {
+            let h = Math.floor(mins / 60);
+            let m = mins % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function detectAnchoredTime(bookingText) {
+            if (!bookingText) return null;
+            const match = bookingText.match(/\b([0-1]?[0-9]|2[0-3]):[0-5][0-9]\b/);
+            return match ? parseTimeToMinutes(match[0]) : null;
+        }
+
+        function getCategoryLogic(catString) {
+            if (!catString) return CATEGORY_DEFAULTS['default'];
+            const lower = catString.toLowerCase();
+            for (let key in CATEGORY_DEFAULTS) { if (lower.includes(key)) return CATEGORY_DEFAULTS[key]; }
+            return CATEGORY_DEFAULTS['default'];
+        }
+
+        function showFormErrorSpeechBubble(missingFieldsArray) {
+            const bubble = document.getElementById('globalToastSpeechBubbleHUD');
+            const textNode = document.getElementById('speechBubbleTextContainer');
+            const btn = document.getElementById('buildItinerarySubmitBtn');
+            
+            // 1. Format the missing items into a clean, readable list
+            let msg = "<span class='text-pink-400'>Missing Information:</span><br><div class='text-left mt-1 space-y-0.5 ml-2 text-[10px]'>";
+            missingFieldsArray.forEach(field => msg += `<div><i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i> ${field}</div>`);
+            msg += "</div>";
+            
+            textNode.innerHTML = msg;
+            
+            // 2. Position the bubble perfectly above the button
+            const rect = btn.getBoundingClientRect();
+            bubble.style.left = "50%";
+            bubble.style.transform = "translateX(-50%)";
+            bubble.style.bottom = (window.innerHeight - rect.top + 15) + "px";
+            bubble.style.top = "auto";
+            
+            // 3. Show it, then hide it after 4 seconds
+            bubble.classList.remove('hidden');
+            setTimeout(() => bubble.classList.add('hidden'), 4000);
+        }
+
+        function generateIntelligentItinerary() {
+            const title = document.getElementById('itin-new-name').value.trim();
+            const chosenCity = document.getElementById('itin-new-city').value;
+            const startMins = parseTimeToMinutes(document.getElementById('itin-new-start').value || "09:00");
+            const endMins = parseTimeToMinutes(document.getElementById('itin-new-end').value || "21:00");
+
+            // --- UX CHECK: Collect missing fields ---
+            let missing = [];
+            if (!title) missing.push("Itinerary Name");
+            if (!chosenCity) missing.push("City Selection");
+            if (selectedMultiDatesArray.length === 0) missing.push("Travel Dates");
+            if (itinSelectedCategorySequence.length === 0) missing.push("Category Sequence");
+
+            // If anything is missing, trigger the bubble and stop the engine
+            if (missing.length > 0) {
+                showFormErrorSpeechBubble(missing);
+                return; 
+            }
+
+            // --- SUCCESS: Trigger the beautiful loading screen ---
+            document.getElementById('buildingItineraryLoaderPopup').classList.remove('hidden');
+            
+            // Run the heavy math on a slight delay so the UI loader has time to appear gracefully
+            setTimeout(() => {
+                const bufferMins = itinPacingMode === 'max' ? 15 : 45;
+                
+                let availablePool = travelSpots.filter(s => s.city === chosenCity).map(s => {
+                    const logic = getCategoryLogic(s.category);
+                    const anchoredMins = detectAnchoredTime(s.booking_requirement);
+                    return { 
+                        ...s, 
+                        isAnchored: anchoredMins !== null, anchoredTime: anchoredMins,
+                        logicDur: itinPacingMode === 'max' ? logic.durationMax : logic.durationRelaxed,
+                        logicOpen: logic.open * 60, logicClose: logic.close * 60
+                    };
+                });
+
+                let newItinerary = { 
+                    id: isEditingMode ? editingItinId : Date.now().toString(), 
+                    title: title, 
+                    city: chosenCity, 
+                    days: [],
+                    config: { 
+                        dates: [...selectedMultiDatesArray], 
+                        categories: [...itinSelectedCategorySequence], 
+                        pacing: itinPacingMode,
+                        start: startMins,
+                        end: endMins
+                    }
+                };
+                let usedSpotIds = new Set();
+                let sequenceIndex = 0;
+
+                selectedMultiDatesArray.sort().forEach(dateStr => {
+                    let dailyTimeline = [];
+                    let currentTime = startMins;
+                    let lastCoords = null;
+                    let sequenceAttempts = 0;
+                    let maxAttempts = itinSelectedCategorySequence.length * 3; 
+
+                    while (currentTime < endMins && sequenceAttempts < maxAttempts) {
+                        const targetCategory = itinSelectedCategorySequence[sequenceIndex];
+                        
+                        let candidates = availablePool.filter(spot => {
+                            if (usedSpotIds.has(spot.rowid)) return false;
+                            if (!(spot.category || "").toLowerCase().includes(targetCategory.toLowerCase())) return false;
+                            let fitsHours = (currentTime >= spot.logicOpen) && (currentTime + spot.logicDur <= spot.logicClose);
+                            if (spot.isAnchored) {
+                                if (spot.anchoredTime < currentTime) return false; 
+                                return true; 
+                            }
+                            return fitsHours; 
+                        });
+
+                    // BUG FIX: If strict unused pool is exhausted, relax the rules so future days still generate
+                    if (candidates.length === 0) {
+                        candidates = availablePool.filter(spot => {
+                            if (!(spot.category || "").toLowerCase().includes(targetCategory.toLowerCase())) return false;
+                            let fitsHours = (currentTime >= spot.logicOpen) && (currentTime + spot.logicDur <= spot.logicClose);
+                            return fitsHours; 
+                        });
+                    }
+
+                        if (candidates.length > 0) {
+                            candidates.sort((a, b) => {
+                                let scoreA = 0; let scoreB = 0;
+                                scoreA += ['high','🔥','must do','starred'].includes((a.priority || "").toLowerCase()) ? -100 : 0;
+                                scoreB += ['high','🔥','must do','starred'].includes((b.priority || "").toLowerCase()) ? -100 : 0;
+                                if(a.isAnchored) scoreA -= 200; if(b.isAnchored) scoreB -= 200;
+
+                                if (lastCoords && a.latitude && a.longitude && b.latitude && b.longitude) {
+                                    scoreA += (calculateDistance(lastCoords.lat, lastCoords.lon, a.latitude, a.longitude) * 5);
+                                    scoreB += (calculateDistance(lastCoords.lat, lastCoords.lon, b.latitude, b.longitude) * 5);
+                                }
+                                return scoreA - scoreB;
+                            });
+
+                            const winner = candidates[0];
+                            if (winner.isAnchored && winner.anchoredTime > currentTime) currentTime = winner.anchoredTime;
+
+                            dailyTimeline.push({ ...winner, sch_start: currentTime, sch_end: currentTime + winner.logicDur, isDone: false });
+                            usedSpotIds.add(winner.rowid);
+                            if (winner.latitude) lastCoords = { lat: winner.latitude, lon: winner.longitude };
+                            
+                            currentTime += winner.logicDur + bufferMins;
+                            sequenceAttempts = 0; 
+                        } else {
+                            sequenceAttempts++;
+                        }
+                        sequenceIndex = (sequenceIndex + 1) % itinSelectedCategorySequence.length;
+                    }
+
+                    dailyTimeline.sort((a, b) => a.sch_start - b.sch_start);
+                    newItinerary.days.push({ date: dateStr, timeline: dailyTimeline });
+                });
+
+                if (isEditingMode) {
+                    const idx = savedItineraries.findIndex(i => i.id === editingItinId);
+                    if (idx !== -1) savedItineraries[idx] = newItinerary;
+                    isEditingMode = false; editingItinId = null;
+                    // Reset button back to default
+                    const btn = document.getElementById('buildItinerarySubmitBtn');
+                    if(btn) {
+                        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Build Itinerary';
+                        btn.onclick = () => generateIntelligentItinerary();
+                    }
+                } else {
+                    savedItineraries.push(newItinerary);
+                }
+
+                activeItineraryId = newItinerary.id;
+                activeItineraryDayTracker = 0;
+                
+                localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                localStorage.setItem('compass_active_itinerary_id', activeItineraryId);
+                syncItineraryToCloud(newItinerary, 'save');
+                
+                // --- CLEANUP: Hide the loader, close the drawer, and show the result! ---
+                document.getElementById('buildingItineraryLoaderPopup').classList.add('hidden');
+                toggleItineraryCreationDrawerForm(false);
+                switchMasterMenuDashboardTab('itinerary');
+                
+                // CRITICAL FIX: Force the screen to redraw the cards immediately!
+                renderItineraryMasterDashboardWorkspace();
+                
+            }, 800); // 800ms delay to let the animation play smoothly
+        }
+
+
+        function openInlineUnscheduledSpotDrawer() {
+            const drawer = document.getElementById('inlineUnscheduledSpotsDrawer');
+            const container = document.getElementById('unscheduledSpotsContainer');
+            const activeItin = getActiveItinerary();
+            if(!activeItin) return;
+
+            drawer.classList.remove('hidden'); container.innerHTML = '';
+
+            // BUG FIX: Match cities safely ignoring casing or trailing spaces
+            const targetCity = (activeItin.city || "").trim().toLowerCase();
+            const citySpots = travelSpots.filter(s => (s.city || "").trim().toLowerCase() === targetCity);
+
+            // Build map of where spots are currently used
+            let currentItinUsedMap = {}; 
+            activeItin.days.forEach((day, idx) => { day.timeline.forEach(s => currentItinUsedMap[s.rowid] = idx); });
+
+            let otherItinUsedMap = {}; 
+            savedItineraries.forEach(itin => {
+                if (itin.id !== activeItin.id) { itin.days.forEach(day => day.timeline.forEach(s => otherItinUsedMap[s.rowid] = itin.title)); }
+            });
+
+            let unusedSpots = [];
+            let usedSpots = [];
+
+            citySpots.forEach(spot => {
+                if (currentItinUsedMap[spot.rowid] !== undefined) {
+                    // Spot is in THIS itinerary. Skip if it's already in the CURRENT day.
+                    if (currentItinUsedMap[spot.rowid] !== activeItineraryDayTracker) {
+                        usedSpots.push({ spot, label: `Assigned to Day ${currentItinUsedMap[spot.rowid] + 1}` });
+                    }
+                } else if (otherItinUsedMap[spot.rowid]) {
+                    usedSpots.push({ spot, label: `Used in ${otherItinUsedMap[spot.rowid]}` });
+                } else {
+                    unusedSpots.push({ spot });
+                }
+            });
+
+            if (unusedSpots.length === 0 && usedSpots.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-xs py-8 mt-4">No places found in ${activeItin.city} to add.</div>`; return;
+            }
+
+            // Render Unused Spots Section
+            if (unusedSpots.length > 0) {
+                const freshDeck = document.createElement('div');
+                freshDeck.className = "space-y-2 mb-6";
+                unusedSpots.forEach(item => {
+                    freshDeck.innerHTML += `
+                        <div class="flex justify-between items-center bg-slate-950 p-3 rounded-xl border border-slate-800 shadow">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <h4 class="text-xs font-bold text-slate-200 truncate">${item.spot.spot_name}</h4>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wide">${item.spot.category}</span>
+                            </div>
+                            <button onclick="injectUnscheduledSpot(${item.spot.rowid})" class="px-3 py-1.5 bg-pink-600/10 border border-pink-500/30 text-pink-400 rounded-lg text-[10px] font-black tracking-wider shadow active:scale-95 transition-transform">Add</button>
+                        </div>`;
+                });
+                container.appendChild(freshDeck);
+            }
+
+            // Render Used Spots Section (Visually distinct)
+            if (usedSpots.length > 0) {
+                const usedDeck = document.createElement('div');
+                usedDeck.className = "space-y-2 pb-6";
+                usedDeck.innerHTML = `<h4 class="text-[9px] font-black text-slate-500 tracking-widest mb-3 flex items-center gap-1.5"><i class="fa-solid fa-link"></i> Already Added Elsewhere</h4>`;
+                usedSpots.forEach(item => {
+                    usedDeck.innerHTML += `
+                        <div class="flex justify-between items-center bg-slate-950/40 p-3 rounded-xl border border-slate-800/60 shadow opacity-80">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <h4 class="text-xs font-bold text-slate-300 truncate">${item.spot.spot_name}</h4>
+                                <span class="text-[8px] font-bold text-amber-500/80 uppercase tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 mt-1 inline-block">${item.label}</span>
+                            </div>
+                            <button onclick="injectUnscheduledSpot(${item.spot.rowid})" class="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-[10px] font-black tracking-wider shadow active:scale-95 transition-transform">Move Here</button>
+                        </div>`;
+                });
+                container.appendChild(usedDeck);
+            }
+        }
+
+        function closeInlineUnscheduledSpotDrawer() { document.getElementById('inlineUnscheduledSpotsDrawer').classList.add('hidden'); }
+
+        function injectUnscheduledSpot(rowId) {
+            const spot = travelSpots.find(s => s.rowid === rowId);
+            const activeItin = getActiveItinerary();
+            if(!spot || !activeItin) return;
+
+            // 1. Check if it's being moved from an old day inside this itinerary
+            let oldDayIndex = -1;
+            let oldSpotIndex = -1;
+            activeItin.days.forEach((day, dIdx) => {
+                day.timeline.forEach((s, sIdx) => { if (s.rowid === rowId) { oldDayIndex = dIdx; oldSpotIndex = sIdx; } });
+            });
+
+            // 2. Calculate time block for the current day
+            let tl = activeItin.days[activeItineraryDayTracker].timeline;
+            let lastEnd = tl.length > 0 ? tl[tl.length-1].sch_end : parseTimeToMinutes("09:00");
+            const logic = getCategoryLogic(spot.category);
+            const duration = itinPacingMode === 'max' ? logic.durationMax : logic.durationRelaxed;
+            
+            tl.push({
+                ...spot,
+                logicDur: duration,
+                sch_start: lastEnd + (itinPacingMode === 'max' ? 15 : 30),
+                sch_end: lastEnd + (itinPacingMode === 'max' ? 15 : 30) + duration,
+                isDone: false
+            });
+
+            // 3. Remove from old day & Trigger Background Rebalance
+            if (oldDayIndex !== -1 && oldDayIndex !== activeItineraryDayTracker) {
+                activeItin.days[oldDayIndex].timeline.splice(oldSpotIndex, 1);
+
+                // Intelligently rebalance the old day forward to close the time gap seamlessly
+                let recalcTime = parseTimeToMinutes("09:00");
+                activeItin.days[oldDayIndex].timeline.forEach(s => {
+                    s.sch_start = recalcTime;
+                    s.sch_end = recalcTime + s.logicDur;
+                    recalcTime = s.sch_end + (itinPacingMode === 'max' ? 15 : 30);
+                });
+
+                localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                closeInlineUnscheduledSpotDrawer();
+                renderDetailViewTimeline();
+                
+                openThematicConfirm(
+                    "Spot Moved Successfully",
+                    `Moved ${spot.spot_name} to Day ${activeItineraryDayTracker + 1}. The previous day has been automatically rebalanced.`,
+                    "Okay",
+                    null,
+                    'pink'
+                );
+            } else {
+                // Completely new spot or copied from a different trip entirely
+                localStorage.setItem('compass_saved_itineraries', JSON.stringify(savedItineraries));
+                closeInlineUnscheduledSpotDrawer(); 
+                renderDetailViewTimeline();
+                
+                openThematicConfirm("Spot Added", `${spot.spot_name} was added to your schedule.`, "Okay", null, 'pink');
+            }
+        }
+
+        // --- ITINERARY WIZARD AND MODAL INTERACTION CONTROLS ---
+        function validateItineraryForm() {
+            const name = document.getElementById('itin-new-name')?.value.trim();
+            const city = document.getElementById('itin-new-city')?.value;
+            const hasDates = selectedMultiDatesArray.length > 0;
+            const hasSequence = itinSelectedCategorySequence.length > 0;
+            const btn = document.getElementById('buildItinerarySubmitBtn');
+            
+            if (btn) {
+                if (name && city && hasDates && hasSequence) {
+                    btn.classList.remove('opacity-50', 'grayscale');
+                } else {
+                    btn.classList.add('opacity-50', 'grayscale');
+                }
+            }
+        }
+
+        function toggleItineraryCreationDrawerForm(show) { 
+            document.getElementById('itineraryCreationDrawerModal').classList.toggle('hidden', !show); 
+        }
+        
+        function openItineraryCreationDrawerForm() {
+            toggleItineraryCreationDrawerForm(true);
+            
+            // RESET EDITING STATE
+            isEditingMode = false;
+            editingItinId = null;
+            const btn = document.getElementById('buildItinerarySubmitBtn');
+            if(btn) {
+                btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Build Itinerary';
+                btn.onclick = () => generateIntelligentItinerary();
+            }
+
+            let defaultFoodCategory = 'Food Spot'; 
+            if (travelSpots && travelSpots.length > 0) {
+                let uniqueCategories = new Set(); 
+                travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
+                for (let cat of uniqueCategories) { if (cat.toLowerCase().includes('food')) { defaultFoodCategory = cat; break; } }
+            }
+            itinSelectedCategorySequence = [defaultFoodCategory];
+            
+            const selectCity = document.getElementById('itin-new-city'); 
+            if (selectCity) {
+                selectCity.innerHTML = '';
+                let citySet = new Set(); 
+                travelSpots.forEach(spot => { if (spot.city) citySet.add(spot.city.trim()); });
+                citySet.forEach(city => { selectCity.innerHTML += `<option value="${city}">${city}</option>`; });
+            }
+            renderItineraryFormCategoriesAndQueryRows();
+            updateMultiDateUILabel();
+            validateItineraryForm();
+        }
+
+        function openEditItineraryModal(itinId) {
+            const itin = savedItineraries.find(i => i.id === itinId);
+            if (!itin || !itin.config) return;
+            
+            isEditingMode = true;
+            editingItinId = itinId;
+            
+            // Fill the UI
+            document.getElementById('itin-new-name').value = itin.title;
+            document.getElementById('itin-new-city').value = itin.city;
+            document.getElementById('itin-new-start').value = minutesToHHMM(itin.config.start);
+            document.getElementById('itin-new-end').value = minutesToHHMM(itin.config.end);
+            
+            // Sync logic state
+            itinSelectedCategorySequence = [...itin.config.categories];
+            selectedMultiDatesArray = [...itin.config.dates];
+            setItinPacingMode(itin.config.pacing);
+            
+            // Update button
+            const btn = document.getElementById('buildItinerarySubmitBtn');
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-cube mr-2"></i> Rebuild Itinerary';
+                btn.onclick = () => handleRebuildItinerary();
+            }
+            
+            // UI Refresh
+            renderItineraryFormCategoriesAndQueryRows();
+            updateMultiDateUILabel();
+            toggleItineraryCreationDrawerForm(true);
+            validateItineraryForm();
+        }
+
+        function checkIfSettingsChanged(newConfig) {
+            const itin = savedItineraries.find(i => i.id === editingItinId);
+            if (!itin || !itin.config) return true;
+            return JSON.stringify(itin.config) !== JSON.stringify(newConfig);
+        }
+
+        function handleRebuildItinerary() {
+            const newConfig = {
+                dates: [...selectedMultiDatesArray],
+                categories: [...itinSelectedCategorySequence],
+                pacing: itinPacingMode,
+                start: parseTimeToMinutes(document.getElementById('itin-new-start').value || "09:00"),
+                end: parseTimeToMinutes(document.getElementById('itin-new-end').value || "21:00")
+            };
+
+            if (!checkIfSettingsChanged(newConfig)) {
+                showFormErrorSpeechBubble(["No settings changed"]);
+                return;
+            }
+
+            generateIntelligentItinerary();
+        }
+
+        function setItinPacingMode(mode) {
+            itinPacingMode = mode;
+            document.getElementById('itinPacingToggleMax').className = mode === 'max' ? "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors" : "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent";
+            document.getElementById('itinPacingToggleRelaxed').className = mode === 'relaxed' ? "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-amber-400 bg-amber-500/10 flex items-center justify-center gap-1.5 transition-colors" : "flex-1 text-center text-[10px] font-black tracking-wide rounded-lg text-slate-500 flex items-center justify-center gap-1.5 transition-colors bg-transparent";
+        }
+
+        function renderItineraryFormCategoriesAndQueryRows() {
+            const gridContainer = document.getElementById('itinModalCategoryGridContainer'); 
+            const rowBox = document.getElementById('itinModalSequenceQueryRowBox');
+            if (!gridContainer || !rowBox) return;
+            gridContainer.innerHTML = ''; 
+            rowBox.innerHTML = '';
+
+            let countsMap = {}; 
+            itinSelectedCategorySequence.forEach(cat => { countsMap[cat] = (countsMap[cat] || 0) + 1; });
+            let uniqueCategories = travelSpots.length > 0 ? new Set() : new Set(['Food Spot', 'Culture', 'Viewpoint', 'Activity']);
+            travelSpots.forEach(spot => { if (spot.category) spot.category.split(',').forEach(c => uniqueCategories.add(c.trim())); });
+
+            uniqueCategories.forEach(catName => {
+                const count = countsMap[catName] || 0; 
+                const isSelected = count > 0;
+                const btn = document.createElement('button');
+                btn.className = isSelected ? "px-2 py-1.5 rounded-lg text-[10px] font-black flex items-center justify-between min-h-[30px] bg-pink-500/10 border border-dashed border-pink-500 text-pink-400 shadow-sm" : "px-2 py-1.5 rounded-lg text-[10px] font-bold flex items-center justify-between min-h-[30px] bg-slate-950/60 border border-dashed border-slate-700 text-slate-400 hover:bg-slate-900";
+                btn.onclick = function() { itinSelectedCategorySequence.push(catName); renderItineraryFormCategoriesAndQueryRows(); };
+                btn.innerHTML = `<span class="truncate pr-1.5">${catName}</span> ${isSelected ? `<span class="text-[8px] bg-pink-600 text-white font-mono px-1 py-0.5 rounded shrink-0">x${count}</span>` : `<i class="fa-solid fa-plus text-[8px] opacity-40 shrink-0"></i>`}`;
+                gridContainer.appendChild(btn);
+            });
+
+            itinSelectedCategorySequence.forEach((cat, idx) => {
+                const pill = document.createElement('div');
+                pill.className = "flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-2 shrink-0 text-[10px] font-bold text-slate-300 shadow";
+                pill.innerHTML = `<span>${cat}</span><button onclick="itinSelectedCategorySequence.splice(${idx}, 1); renderItineraryFormCategoriesAndQueryRows();" class="w-4 h-4 bg-red-950/40 border border-red-500/30 rounded-full flex items-center justify-center text-red-400 text-[8px] hover:bg-red-900/60 transition-colors"><i class="fa-solid fa-xmark"></i></button>`;
+                rowBox.appendChild(pill);
+                if (idx < itinSelectedCategorySequence.length - 1) rowBox.innerHTML += `<span class="text-pink-500 font-black text-[14px] shrink-0 mx-0.5 drop-shadow-[0_0_5px_rgba(236,72,153,0.5)]">→</span>`;
+            });
+            validateItineraryForm();
+        }
+
+        function openMultiDatePickerModal() { 
+            document.getElementById('itinCalendarModal').classList.remove('hidden'); 
+            renderMultiDateCalendarGrid(); 
+        }
+        
+        function closeMultiDatePickerModal() { 
+            document.getElementById('itinCalendarModal').classList.add('hidden'); 
+            const display = document.getElementById('itin-date-display'); 
+            const meta = document.getElementById('itin-date-meta');
+            if (!display || !meta) return;
+            if (selectedMultiDatesArray.length === 0) { display.innerText = "Select Dates"; meta.classList.add('hidden'); }
+            else if (selectedMultiDatesArray.length === 1) { display.innerText = selectedMultiDatesArray[0]; meta.classList.add('hidden'); }
+            else { display.innerText = `${selectedMultiDatesArray.length} Days Selected`; meta.classList.remove('hidden'); }
+            validateItineraryForm();
+        }
+        
+        function toggleMultiDateSelection(dateStr) { 
+            if (selectedMultiDatesArray.includes(dateStr)) {
+                selectedMultiDatesArray = selectedMultiDatesArray.filter(d => d !== dateStr);
+            } else {
+                selectedMultiDatesArray.push(dateStr);
+            }
+            renderMultiDateCalendarGrid(); 
+        }
+        
+        function changeMultiCalendarMonth(offset) { 
+            calMonth += offset; 
+            if (calMonth < 0) { calMonth = 11; calYear--; } 
+            else if (calMonth > 11) { calMonth = 0; calYear++; } 
+            renderMultiDateCalendarGrid(); 
+        }
+        
+        function renderMultiDateCalendarGrid() {
+            const grid = document.getElementById('calendarDaysGrid');
+            if (!grid) return;
+            grid.innerHTML = ''; 
+            document.getElementById('calendarMonthTitle').innerText = `${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][calMonth]} ${calYear}`;
+            for (let i = 0; i < new Date(calYear, calMonth, 1).getDay(); i++) grid.innerHTML += `<div></div>`;
+            for (let i = 1; i <= new Date(calYear, calMonth + 1, 0).getDate(); i++) {
+                let dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                let isSelected = selectedMultiDatesArray.includes(dateStr);
+                grid.innerHTML += `<div onclick="toggleMultiDateSelection('${dateStr}')" class="${isSelected ? "w-8 h-8 rounded-full bg-pink-600 text-white font-bold text-xs flex items-center justify-center mx-auto shadow-lg shadow-pink-600/30 transform scale-110 transition-transform" : "w-8 h-8 rounded-full bg-slate-900 text-slate-300 font-medium text-xs flex items-center justify-center mx-auto border border-slate-800 cursor-pointer hover:bg-slate-800"}">${i}</div>`;
+            }
+        }
+        function recalculateFutureItineraryTimeline() { 
+            alert("Recalculate logic triggered: Ready for logic expansion to roll-over unfinished items."); 
+        }
+
+        // --- SYSTEM SETTINGS & NETWORK CONTROLS ---
+        function toggleSettingsMenu(show) { 
+            document.getElementById('settingsDrawer').classList.toggle('hidden', !show); 
+        }
+        
+        function setupNetworkListeners() { 
+            window.addEventListener('online', updateNetworkStatusHUD); 
+            window.addEventListener('offline', updateNetworkStatusHUD); 
+        }
+        
+        function updateNetworkStatusHUD() {
+            const indicator = document.getElementById('networkIndicator'); 
+            const syncText = document.getElementById('syncText');
+            if(!indicator || !syncText) return;
+            if (navigator.onLine) {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-emerald-500"; 
+                syncText.className = "text-[9px] font-mono text-slate-500"; 
+                syncText.innerText = "Synced Live Data";
+            } else {
+                indicator.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"; 
+                syncText.className = "text-[9px] font-mono text-amber-400 font-black tracking-wide"; 
+                syncText.innerText = "OFFLINE MODE";
+            }
+        }
+        
+        // 🌐 ADMINISTRATIVE PROFILE MANAGEMENT ENGINE
+        async function commitProfileRename() {
+            const renameField = document.getElementById('settingsRenameField');
+            if (!renameField || !renameField.value.trim()) {
+                alert("Please enter a valid profile name.");
+                return;
+            }
+            
+            const oldName = currentUser || "Global Traveller";
+            const newName = renameField.value.trim();
+            
+            if (oldName === newName) {
+                alert("The new profile name matches your current label.");
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to change your profile identity from "${oldName}" to "${newName}"?`)) return;
+
+            try {
+                await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: JSON.stringify({
+                        action: 'log_name_change',
+                        user: newName,
+                        oldName: oldName,
+                        deviceMeta: cachedHardwareString
+                    })
+                });
+            } catch (err) {
+                console.error("Failed to log name change to cloud logs:", err);
+            }
+
+            localStorage.setItem('compass_user', newName);
+            currentUser = newName;
+            renameField.value = '';
+            
+            alert(`Identity profile updated to: ${newName}. Syncing resources...`);
+            toggleSettingsMenu(false);
+            syncData(true);
+        }
+
+        // 🌐 CLOUD REGISTRY SCRUBBER PROTOCOL
+        async function triggerSecureServerHistoryPurgeVault() {
+            const adminPassword = prompt("🚨 SECURE AREA PROTOCOL:\n\nEnter the Master Admin Password to proceed with live server database log purges:");
+            if (adminPassword === null) return; 
+            if (!adminPassword.trim()) {
+                alert("Password cannot be blank.");
+                return;
+            }
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: JSON.stringify({
+                        action: 'purge_server_history',
+                        user: currentUser || "System Admin",
+                        password: adminPassword.trim()
+                    })
+                });
+                
+                const outcome = await response.json();
+                if (outcome.result === "success") {
+                    alert("🚨 CRITICAL SUCCESS:\n\nGoogle Sheets historical server records and log metrics have been fully scrubbed.");
+                    toggleSettingsMenu(false);
+                    syncData(true);
+                } else if (outcome.result === "auth_failed") {
+                    alert("❌ AUTHENTICATION FAILED:\n\nInvalid Admin Password provided.");
+                } else {
+                    alert("Error: " + (outcome.error || "Unknown response received from cloud ecosystem."));
+                }
+            } catch (err) {
+                console.error("Purge failure:", err);
+                alert("Communication crash. Verify your web app script setup properties.");
+            }
+        }
+
+        // 🌐 SYSTEM ACCOUNT LOGOUT PROFILE
+        function clearDeviceSessionAndLogout() {
+            if (!confirm("Are you sure you want to drop your active profile context? This resets your local offline registry cache layers completely.")) return;
+            localStorage.clear();
+            alert("Local application sandbox cache destroyed cleanly.");
+            window.location.reload();
+        }
+
         // =====================================================================
         // ITINERARY CLOUD SYNC ENGINE
         // =====================================================================
+        const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyYTU_I0zel50EKpB767LmQ2NjeKudS93yv8-DYSYnBxaFS5_I1TWily79rOkMdGTu5IA/exec";
+
         // 1. PUSH TO CLOUD
         async function syncItineraryToCloud(itinData, method = 'save', targetUser = null) {
             const userToSync = targetUser || localStorage.getItem('compass_user') || "Explorer";
@@ -1753,7 +3899,7 @@
             try {
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
-                    mode: 'no-cors', 
+                    mode: 'no-cors', // Essential for Apps Script redirects
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'sync_itinerary',
@@ -1764,6 +3910,8 @@
                     })
                 });
                 console.log("Sync request sent to backend.");
+                // For no-cors, we can't read response. Check status via other means if needed.
+                // The actual success/failure will be handled by the Apps Script.
             } catch (err) {
                 console.error("Sync failed, caching locally:", err);
             }
@@ -1771,7 +3919,7 @@
 
         // 2. FETCH FROM CLOUD
         async function loadUserItineraries() {
-            const userToFetch = currentUser || ""; 
+            const userToFetch = currentUser || ""; // Use currentUser as the primary source
             if (!userToFetch) {
                 savedItineraries = [];
                 localStorage.setItem('compass_saved_itineraries', JSON.stringify([]));
@@ -1783,6 +3931,7 @@
                 const response = await fetch(`${BACKEND_URL}?action=get_itineraries&user=${encodeURIComponent(userToFetch)}`);
                 const results = await response.json();
                 
+                // Ensure results are clean
                 if (Array.isArray(results) && results.length > 0) {
                     savedItineraries = results.map(r => r.data);
                 } else {
@@ -1793,11 +3942,54 @@
                 renderItineraryMasterDashboardWorkspace();
             } catch (err) {
                 console.error("Cloud fetch failed, using local storage.");
+                // Fallback to local storage state if network fails
                 try {
                     savedItineraries = JSON.parse(localStorage.getItem('compass_saved_itineraries')) || [];
                 } catch(e) { savedItineraries = []; }
                 renderItineraryMasterDashboardWorkspace();
             }
+        }
+
+        async function triggerClearItineraryData() {
+            if (!confirm("🚨 ABSOLUTE DESTRUCTION PROTOCOL:\n\nThis will permanently incinerate ALL offline travel spots, itineraries, notes, and local app cache data.\n\nAre you absolutely sure?")) return;
+            
+            const targetedUserIdentity = currentUser || "";
+
+            // If we have an active identity profile and saved itineraries, clean up the database rows first
+            if (targetedUserIdentity && Array.isArray(savedItineraries) && savedItineraries.length > 0) {
+                for (const itin of savedItineraries) {
+                    try {
+                        await fetch(BACKEND_URL, {
+                            method: 'POST',
+                            mode: 'cors',
+                            body: JSON.stringify({
+                                action: 'sync_itinerary',
+                                method: 'delete',
+                                user: targetedUserIdentity,
+                                itin_id: itin.id
+                            })
+                        });
+                    } catch (err) {
+                        console.error("Failed to delete itinerary from cloud database during wipe:", err);
+                    }
+                }
+            }
+
+            // Scrub local data caches clean
+            localStorage.clear();
+            travelSpots = [];
+            savedItineraries = [];
+            itineraryItems = { "1": [], "2": [], "3": [] };
+            currentUser = "";
+
+            // Dismiss overlays and update view panes dynamically
+            toggleSettingsMenu(false);
+            renderList();
+            plotDynamicMarkersOnCanvasMap();
+            renderItineraryMasterDashboardWorkspace();
+            
+            alert("Local storage and connected database itineraries successfully wiped.");
+            window.location.reload();
         }
     </script>
 </body>
